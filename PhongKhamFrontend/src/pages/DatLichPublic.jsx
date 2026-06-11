@@ -207,7 +207,7 @@ function DatLichPublic() {
       case 1:
         return <span className="status-badge status-active">Đang khám</span>;
       case 2:
-        return <span className="status-badge status-completed" style={{ background: '#f59e0b', color: '#fff' }}>Chờ thanh toán</span>;
+        return <span className="status-badge status-completed bg-[#f59e0b] text-white">Chờ thanh toán</span>;
       case 3:
         return <span className="status-badge status-completed">Đã hoàn thành</span>;
       default:
@@ -219,63 +219,59 @@ function DatLichPublic() {
   const getApptStatusBadge = (status) => {
     switch (status) {
       case 'ChoXacNhan':
-        return <span className="status-badge status-waiting" style={styles.badgeWait}>Chờ xác nhận</span>;
+        return <span className="status-badge status-waiting bg-[#cbd5e1] text-[#475569]">Chờ xác nhận</span>;
       case 'DaXacNhan':
         return <span className="status-badge status-active">Đã xác nhận</span>;
       case 'DaKham':
         return <span className="status-badge status-completed">Đã khám</span>;
       case 'DaHuy':
-        return <span className="status-badge status-danger" style={styles.badgeCancel}>Đã hủy</span>;
+        return <span className="status-badge status-danger bg-[#fee2e2] text-[#ef4444]">Đã hủy</span>;
       default:
         return <span className="status-badge status-waiting">Chờ xử lý</span>;
     }
   };
 
   return (
-    <div style={styles.container}>
+    <div className="min-h-screen bg-slate-50">
       {/* 1. Header & Navigation */}
-      <header style={styles.header}>
-        <div style={styles.headerInner}>
-          <div style={styles.logoContainer} onClick={() => navigate('/dat-lich-kham')}>
-            <div style={styles.logoIcon}>NT</div>
+      <header className="bg-white border-b border-slate-200 py-3 px-6 sticky top-0 z-50 shadow-sm">
+        <div className="max-w-[1200px] mx-auto flex justify-between items-center">
+          <div className="flex items-center gap-2.5 cursor-pointer" onClick={() => navigate('/dat-lich-kham')}>
+            <div className="w-10 h-10 rounded-lg bg-[var(--primary)] text-white flex items-center justify-center font-bold text-xl">NT</div>
             <div>
-              <h1 style={styles.logoText}>PHÒNG KHÁM ĐA KHOA NHẬT TẢO</h1>
-              <p style={styles.logoSubtext}>Cổng thông tin Đăng ký & Tra cứu y khoa trực tuyến</p>
+              <h1 className="text-base font-[850] text-[var(--primary)] m-0">PHÒNG KHÁM ĐA KHOA NHẬT TẢO</h1>
+              <p className="text-[11px] text-[var(--text-muted)] m-0">Cổng thông tin Đăng ký & Tra cứu y khoa trực tuyến</p>
             </div>
           </div>
-          <div style={styles.headerRight}>
-            <span>Hotline: <strong style={{ color: 'var(--primary)' }}>1900 6868</strong></span>
+          <div className="flex gap-5 text-[13.5px] font-semibold">
+            <span>Hotline: <strong className="text-[var(--primary)]">1900 6868</strong></span>
           </div>
         </div>
       </header>
 
       {/* 2. Hero Section */}
-      <section style={styles.hero}>
-        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
-          <h2 style={styles.heroTitle}>Chào mừng bạn đến với Cổng y tế trực tuyến</h2>
-          <p style={styles.heroSub}>
+      <section className="bg-gradient-to-br from-[#0f172a] to-[#1e293b] text-white py-12 px-6 text-center">
+        <div className="max-w-[800px] mx-auto">
+          <h2 className="text-[28px] font-[850] mb-3 tracking-[-0.5px]">Chào mừng bạn đến với Cổng y tế trực tuyến</h2>
+          <p className="text-[15px] opacity-85 mb-6 font-normal leading-relaxed">
             Nhanh chóng đăng ký lịch hẹn khám và chủ động quản lý, tra cứu hồ sơ bệnh án cá nhân chỉ với vài bước đơn giản.
           </p>
 
           {/* Các tab chuyển hướng */}
-          <div style={styles.tabsContainer}>
+          <div className="inline-flex bg-white/10 p-1.5 rounded-xl gap-2">
             <button
               onClick={() => setActiveTab('book')}
-              style={{
-                ...styles.tabBtn,
-                backgroundColor: activeTab === 'book' ? '#ffffff' : 'transparent',
-                color: activeTab === 'book' ? 'var(--primary)' : '#ffffff'
-              }}
+              className={`py-2.5 px-6 rounded-lg border-none font-bold text-sm cursor-pointer transition-all duration-200 ease-in-out flex items-center gap-2 ${
+                activeTab === 'book' ? 'bg-white text-[var(--primary)]' : 'bg-transparent text-white'
+              }`}
             >
               <Calendar size={16} /> Đăng ký đặt lịch khám
             </button>
             <button
               onClick={() => setActiveTab('search')}
-              style={{
-                ...styles.tabBtn,
-                backgroundColor: activeTab === 'search' ? '#ffffff' : 'transparent',
-                color: activeTab === 'search' ? 'var(--primary)' : '#ffffff'
-              }}
+              className={`py-2.5 px-6 rounded-lg border-none font-bold text-sm cursor-pointer transition-all duration-200 ease-in-out flex items-center gap-2 ${
+                activeTab === 'search' ? 'bg-white text-[var(--primary)]' : 'bg-transparent text-white'
+              }`}
             >
               <Search size={16} /> Tra cứu bệnh án & Lịch hẹn
             </button>
@@ -284,26 +280,26 @@ function DatLichPublic() {
       </section>
 
       {/* 3. Vùng xử lý chính */}
-      <main style={styles.mainContent}>
+      <main className="max-w-[1000px] mx-auto my-10 px-5 pb-20">
         
         {/* TAB 1: ĐẶT LỊCH HẸN KHÁM */}
         {activeTab === 'book' && (
-          <div style={styles.card}>
-            <div style={styles.cardHeader}>
-              <div style={styles.cardIconBox}>
+          <div className="bg-white rounded-2xl shadow-[0_4px_12px_rgba(0,0,0,0.03)] border border-slate-200 overflow-hidden">
+            <div className="py-5 px-6 border-b border-slate-200 bg-slate-50 flex items-center gap-2.5">
+              <div className="p-2 rounded-lg bg-[var(--primary-light)] text-[var(--primary)]">
                 <UserCheck size={20} />
               </div>
               <div>
-                <h3 style={styles.cardTitle}>ĐĂNG KÝ HỒ SƠ ĐẶT HẸN KHÁM BỆNH</h3>
-                <p style={styles.cardSub}>Thông tin lịch hẹn sẽ được gửi đến bộ phận Tiếp đón của phòng khám</p>
+                <h3 className="text-base font-extrabold m-0 text-[var(--text-main)]">ĐĂNG KÝ HỒ SƠ ĐẶT HẸN KHÁM BỆNH</h3>
+                <p className="text-xs text-[var(--text-muted)] m-0">Thông tin lịch hẹn sẽ được gửi đến bộ phận Tiếp đón của phòng khám</p>
               </div>
             </div>
 
-            <div style={{ padding: '32px 24px' }}>
-              <form onSubmit={handleBookAppointment} style={styles.bookingFormGrid}>
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label className="form-label" style={styles.formLabelBold}>
-                    <User size={14} style={{ color: 'var(--text-muted)' }} /> Họ tên người bệnh <span style={{ color: 'red' }}>*</span>
+            <div className="py-8 px-6">
+              <form onSubmit={handleBookAppointment} className="grid grid-cols-2 gap-6">
+                <div className="form-group !m-0">
+                  <label className="form-label font-bold text-[13px] mb-2 flex items-center gap-1.5">
+                    <User size={14} className="text-[var(--text-muted)]" /> Họ tên người bệnh <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
@@ -311,15 +307,14 @@ function DatLichPublic() {
                     value={bookingForm.hoTenKhach}
                     onChange={handleInputChange}
                     placeholder="Nhập đầy đủ họ và tên của bạn..."
-                    className="form-input"
-                    style={styles.formInputName}
+                    className="form-input uppercase h-10 text-[13.5px]"
                     required
                   />
                 </div>
 
-                <div className="form-group" style={{ margin: 0 }}>
-                  <label className="form-label" style={styles.formLabelBold}>
-                    <Phone size={14} style={{ color: 'var(--text-muted)' }} /> Số điện thoại liên lạc <span style={{ color: 'red' }}>*</span>
+                <div className="form-group !m-0">
+                  <label className="form-label font-bold text-[13px] mb-2 flex items-center gap-1.5">
+                    <Phone size={14} className="text-[var(--text-muted)]" /> Số điện thoại liên lạc <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="tel"
@@ -327,54 +322,49 @@ function DatLichPublic() {
                     value={bookingForm.sdt}
                     onChange={handleInputChange}
                     placeholder="Nhập số điện thoại (ví dụ: 0912345678)..."
-                    className="form-input"
-                    style={{ height: '40px', fontSize: '13.5px' }}
+                    className="form-input h-10 text-[13.5px]"
                     required
                   />
                 </div>
 
-                <div className="form-group" style={styles.gridSpan2}>
-                  <label className="form-label" style={styles.formLabelBold}>
-                    <Calendar size={14} style={{ color: 'var(--text-muted)' }} /> Chọn ngày hẹn khám bệnh <span style={{ color: 'red' }}>*</span>
+                <div className="form-group !m-0 col-span-2">
+                  <label className="form-label font-bold text-[13px] mb-2 flex items-center gap-1.5">
+                    <Calendar size={14} className="text-[var(--text-muted)]" /> Chọn ngày hẹn khám bệnh <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="date"
                     name="ngayHen"
                     value={bookingForm.ngayHen}
                     onChange={handleInputChange}
-                    className="form-input"
-                    style={{ height: '40px', fontSize: '13.5px' }}
+                    className="form-input h-10 text-[13.5px]"
                     required
                   />
                 </div>
 
-                <div className="form-group" style={styles.gridSpan2}>
-                  <label className="form-label" style={styles.formLabelBold}>
-                    <FileText size={14} style={{ color: 'var(--text-muted)' }} /> Lý do khám / Triệu chứng bệnh lý
+                <div className="form-group !m-0 col-span-2">
+                  <label className="form-label font-bold text-[13px] mb-2 flex items-center gap-1.5">
+                    <FileText size={14} className="text-[var(--text-muted)]" /> Lý do khám / Triệu chứng bệnh lý
                   </label>
                   <textarea
                     name="yeuCauKham"
                     value={bookingForm.yeuCauKham}
                     onChange={handleInputChange}
                     placeholder="Vui lòng miêu tả ngắn gọn triệu chứng hoặc nhu cầu khám (ví dụ: Đau họng, khám sức khỏe định kỳ)..."
-                    className="form-input"
-                    style={styles.textArea}
+                    className="form-input min-h-[120px] resize-y font-inherit p-3 text-[13.5px]"
                   />
                 </div>
 
-                <div style={styles.bookingActions}>
+                <div className="col-span-2 flex justify-end gap-4 mt-3">
                   <button
                     type="button"
                     onClick={() => setBookingForm(prev => ({ ...prev, hoTenKhach: '', sdt: '', yeuCauKham: '' }))}
-                    className="btn-outline"
-                    style={styles.resetBtn}
+                    className="btn-outline h-[42px] px-6 text-[13.5px] font-bold"
                   >
                     Nhập lại
                   </button>
                   <button
                     type="submit"
-                    className="btn-primary"
-                    style={styles.submitBtn}
+                    className="btn-primary h-[42px] px-8 text-[13.5px] font-bold w-auto mt-0"
                   >
                     Gửi Đăng Ký Đặt Lịch
                   </button>
@@ -386,23 +376,22 @@ function DatLichPublic() {
 
         {/* TAB 2: TRA CỨU HỒ SƠ Y TẾ */}
         {activeTab === 'search' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          <div className="flex flex-col gap-6">
             {/* Thanh Tìm kiếm */}
-            <div style={styles.searchCard}>
-              <h3 style={styles.searchTitle}>TRA CỨU HỒ SƠ BỆNH ÁN & LỊCH HẸN TRỰC TUYẾN</h3>
-              <form onSubmit={handleSearch} style={{ display: 'flex', gap: '12px' }}>
-                <div style={{ flex: 1, position: 'relative' }}>
+            <div className="bg-white rounded-2xl p-6 shadow-[0_4px_12px_rgba(0,0,0,0.03)] border border-slate-200">
+              <h3 className="text-[15px] font-[850] text-[var(--text-main)] mb-4">TRA CỨU HỒ SƠ BỆNH ÁN & LỊCH HẸN TRỰC TUYẾN</h3>
+              <form onSubmit={handleSearch} className="flex gap-3">
+                <div className="flex-1 relative">
                   <input
                     type="text"
                     placeholder="Điền mã người bệnh (BN...) hoặc mã hồ sơ khám (PK...)..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="form-input"
-                    style={styles.searchBarInput}
+                    className="form-input pl-10 h-11 w-full text-sm"
                   />
-                  <Search size={18} style={styles.searchBarIcon} />
+                  <Search size={18} className="absolute left-3.5 top-[13px] text-[var(--text-muted)]" />
                 </div>
-                <button type="submit" className="btn-primary" style={styles.searchSubmit}>
+                <button type="submit" className="btn-primary h-11 px-7 m-0 flex items-center text-sm font-bold w-auto mt-0 shrink-0">
                   Tìm Kiếm
                 </button>
               </form>
@@ -410,59 +399,59 @@ function DatLichPublic() {
 
             {/* Hiển thị chi tiết Kết quả */}
             {!searched ? (
-              <div style={styles.noSearchState}>
-                <ClipboardList size={54} style={styles.noSearchIcon} />
-                <h4 style={styles.noSearchTitle}>Vui lòng nhập thông tin tra cứu</h4>
-                <p style={styles.noSearchText}>
+              <div className="bg-white rounded-2xl py-12 px-6 border border-slate-200 text-center text-[var(--text-muted)]">
+                <ClipboardList size={54} className="stroke-[1] text-[var(--primary-light)] mb-4 mx-auto" />
+                <h4 className="font-extrabold text-base text-[var(--text-main)] mb-1.5">Vui lòng nhập thông tin tra cứu</h4>
+                <p className="max-w-[400px] mx-auto text-[13px] leading-relaxed">
                   Nhập chính xác mã người bệnh (BN...) hoặc mã hồ sơ khám bệnh (PK...) được ghi trên phiếu tiếp nhận để xem kết quả chẩn đoán và đơn thuốc.
                 </p>
               </div>
             ) : searchResult ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '30px' }}>
+              <div className="flex flex-col gap-[30px]">
                 
                 {/* 1. Thông tin bệnh nhân */}
-                <div style={styles.resultCard}>
-                  <div style={styles.resultCardHeader}>
-                    <UserRound size={18} style={{ color: 'var(--primary)' }} />
-                    <strong style={styles.resultCardTitle}>HỒ SƠ HÀNH CHÍNH NGƯỜI BỆNH</strong>
+                <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_4px_12px_rgba(0,0,0,0.02)] overflow-hidden">
+                  <div className="py-4 px-6 border-b border-slate-200 bg-slate-50 flex items-center gap-2.5">
+                    <UserRound size={18} className="text-[var(--primary)]" />
+                    <strong className="text-sm font-extrabold text-[var(--text-main)]">HỒ SƠ HÀNH CHÍNH NGƯỜI BỆNH</strong>
                   </div>
-                  <div style={{ padding: '24px' }}>
-                    <div style={styles.patientGrid}>
-                      <div><strong>Họ và tên:</strong> <span style={styles.patientName}>{searchResult.patient.hoTen}</span></div>
-                      <div><strong>Mã người bệnh:</strong> <span style={{ fontWeight: '600' }}>{searchResult.patient.maBN}</span></div>
+                  <div className="p-6">
+                    <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-x-8 gap-y-4 text-[13.5px]">
+                      <div><strong>Họ và tên:</strong> <span className="text-[var(--primary)] font-[750] uppercase">{searchResult.patient.hoTen}</span></div>
+                      <div><strong>Mã người bệnh:</strong> <span className="font-semibold">{searchResult.patient.maBN}</span></div>
                       <div><strong>Ngày sinh:</strong> {searchResult.patient.ngaySinh || 'N/A'}</div>
                       <div><strong>Giới tính:</strong> {searchResult.patient.gioiTinh || 'N/A'}</div>
                       <div><strong>Số điện thoại:</strong> {searchResult.patient.sdt}</div>
                       <div><strong>Địa chỉ:</strong> {searchResult.patient.diaChi || 'N/A'}</div>
-                      <div style={styles.patientHistoryRow}>
+                      <div className="col-span-full border-t border-dashed border-slate-200 pt-3 mt-1">
                         <strong>Tiền sử bệnh lý cá nhân:</strong>{' '}
-                        <span style={{ color: '#ef4444', fontWeight: '600' }}>{searchResult.patient.tienSuBenh || 'Không'}</span>
+                        <span className="text-[#ef4444] font-semibold">{searchResult.patient.tienSuBenh || 'Không'}</span>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* 2. Lịch đặt khám sắp tới */}
-                <div style={styles.resultCard}>
-                  <div style={styles.resultCardHeader}>
-                    <Clock size={18} style={{ color: 'var(--primary)' }} />
-                    <strong style={styles.resultCardTitle}>LỊCH HẸN ĐÃ ĐĂNG KÝ ({searchResult.appointments.length})</strong>
+                <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_4px_12px_rgba(0,0,0,0.02)] overflow-hidden">
+                  <div className="py-4 px-6 border-b border-slate-200 bg-slate-50 flex items-center gap-2.5">
+                    <Clock size={18} className="text-[var(--primary)]" />
+                    <strong className="text-sm font-extrabold text-[var(--text-main)]">LỊCH HẸN ĐÃ ĐĂNG KÝ ({searchResult.appointments.length})</strong>
                   </div>
-                  <div style={{ padding: '20px' }}>
+                  <div className="p-5">
                     {searchResult.appointments.length === 0 ? (
-                      <div style={styles.noDataText}>
+                      <div className="p-6 border border-dashed border-slate-300 rounded-lg text-[var(--text-muted)] text-[13px] text-center">
                         Người bệnh hiện không có lịch hẹn trực tuyến nào.
                       </div>
                     ) : (
-                      <div style={{ display: 'grid', gap: '12px' }}>
+                      <div className="grid gap-3">
                         {searchResult.appointments.map((appt, i) => (
-                          <div key={i} style={styles.apptItem}>
+                          <div key={i} className="border border-slate-200 rounded-xl p-4 flex justify-between items-center bg-[#fafafa]">
                             <div>
-                              <div style={{ fontWeight: '700', fontSize: '14.5px', color: 'var(--text-main)', marginBottom: '4px' }}>
+                              <div className="font-bold text-[14.5px] text-[var(--text-main)] mb-1">
                                 Ngày hẹn khám: {appt.ngayHen}
                               </div>
-                              <div style={{ color: 'var(--text-muted)', fontSize: '12.5px' }}>
-                                Mã đặt lịch: <strong style={{ color: 'var(--text-main)' }}>{appt.maDatLich}</strong> | Lý do khám: {appt.yeuCauKham}
+                              <div className="text-[var(--text-muted)] text-[12.5px]">
+                                Mã đặt lịch: <strong className="text-[var(--text-main)]">{appt.maDatLich}</strong> | Lý do khám: {appt.yeuCauKham}
                               </div>
                             </div>
                             <div>{getApptStatusBadge(appt.trangThai)}</div>
@@ -474,62 +463,62 @@ function DatLichPublic() {
                 </div>
 
                 {/* 3. Lịch sử thăm khám & điều trị bệnh */}
-                <div style={styles.resultCard}>
-                  <div style={styles.resultCardHeader}>
-                    <History size={18} style={{ color: 'var(--primary)' }} />
-                    <strong style={styles.resultCardTitle}>HỒ SƠ LỊCH SỬ CHỮA BỆNH ({searchResult.visits.length})</strong>
+                <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_4px_12px_rgba(0,0,0,0.02)] overflow-hidden">
+                  <div className="py-4 px-6 border-b border-slate-200 bg-slate-50 flex items-center gap-2.5">
+                    <History size={18} className="text-[var(--primary)]" />
+                    <strong className="text-sm font-extrabold text-[var(--text-main)]">HỒ SƠ LỊCH SỬ CHỮA BỆNH ({searchResult.visits.length})</strong>
                   </div>
-                  <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                  <div className="p-6 flex flex-col gap-6">
                     {searchResult.visits.length === 0 ? (
-                      <div style={styles.noDataText}>
+                      <div className="p-6 border border-dashed border-slate-300 rounded-lg text-[var(--text-muted)] text-[13px] text-center">
                         Chưa tìm thấy lịch sử hồ sơ bệnh án cũ của bệnh nhân này.
                       </div>
                     ) : (
                       searchResult.visits.map((visit, i) => (
-                        <div key={i} style={styles.visitItem}>
+                        <div key={i} className="border border-slate-200 rounded-xl p-5 bg-white shadow-[0_2px_8px_rgba(0,0,0,0.015)]">
                           {/* Mã phiếu & Ngày khám */}
-                          <div style={styles.visitItemHeader}>
-                            <span style={{ fontWeight: '800', color: 'var(--primary)', fontSize: '14px' }}>MÃ HỒ SƠ: {visit.maPhieu}</span>
-                            <span style={styles.visitTime}>
+                          <div className="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
+                            <span className="font-extrabold text-[var(--primary)] text-sm">MÃ HỒ SƠ: {visit.maPhieu}</span>
+                            <span className="text-[12.5px] text-[var(--text-muted)] flex items-center gap-1">
                               <Clock size={13} /> {new Date(visit.ngayKham).toLocaleDateString('vi-VN')} {new Date(visit.ngayKham).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}
                             </span>
                           </div>
 
                           {/* Chi tiết hồ sơ bệnh */}
-                          <div style={styles.visitGrid}>
+                          <div className="grid grid-cols-2 gap-x-6 gap-y-4 text-[13px] text-[var(--text-main)]">
                             <div>
                               <strong>Bác sĩ chuyên khoa khám:</strong>
-                              <p style={styles.visitDocText}>{visit.tenBacSi}</p>
+                              <p className="mt-1 mb-0 mx-0 font-semibold text-[13.5px] text-[var(--primary)]">{visit.tenBacSi}</p>
                             </div>
                             <div>
                               <strong>Trạng thái hồ sơ:</strong>
-                              <div style={{ marginTop: '4px' }}>{getStatusBadge(visit.trangThai)}</div>
+                              <div className="mt-1">{getStatusBadge(visit.trangThai)}</div>
                             </div>
-                            <div style={{ gridColumn: 'span 2' }}>
+                            <div className="col-span-2">
                               <strong>Triệu chứng / Lý do nhập viện khám:</strong>
-                              <p style={styles.visitReasonText}>{visit.lyDoKham}</p>
+                              <p className="mt-1 mb-0 mx-0 text-[var(--text-main)] text-[13px] bg-slate-50 p-2.5 px-3 rounded-md">{visit.lyDoKham}</p>
                             </div>
                             
                             {/* Kết luận & chẩn đoán bệnh */}
-                            <div style={styles.visitSectionBorder}>
+                            <div className="col-span-2 border-t border-slate-100 pt-3">
                               <strong>Chẩn đoán bệnh (ICD):</strong>
-                              <p style={styles.diagnosisText}>
+                              <p className="mt-1 mb-0 mx-0 text-[13.5px] text-[#ef4444] font-bold">
                                 {visit.maICD ? `${visit.maICD} - ${visit.tenBenhICD}` : (visit.chanDoan || 'Chưa có kết luận chẩn đoán')}
                               </p>
                             </div>
 
                             {/* Chỉ định cận lâm sàng */}
-                            <div style={styles.visitSectionBorder}>
-                              <strong style={styles.subSectionTitle}>
-                                <ClipboardList size={14} style={{ color: 'var(--primary)' }} />
+                            <div className="col-span-2 border-t border-slate-100 pt-3">
+                              <strong className="flex items-center gap-1.5 mb-2">
+                                <ClipboardList size={14} className="text-[var(--primary)]" />
                                 Danh mục Xét nghiệm & Cận lâm sàng chỉ định
                               </strong>
                               {!visit.chiDinh || visit.chiDinh.length === 0 ? (
-                                <p style={styles.emptyText}>Không có chỉ định cận lâm sàng.</p>
+                                <p className="m-0 italic text-[var(--text-muted)]">Không có chỉ định cận lâm sàng.</p>
                               ) : (
-                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                                <div className="flex flex-wrap gap-2">
                                   {visit.chiDinh.map((item, idx) => (
-                                    <span key={idx} style={styles.clsBadge}>
+                                    <span key={idx} className="bg-[var(--primary-light)] text-[var(--primary)] py-1 px-2.5 rounded-full text-xs font-semibold">
                                       {item.tenXN}
                                     </span>
                                   ))}
@@ -538,30 +527,30 @@ function DatLichPublic() {
                             </div>
 
                             {/* Toa thuốc kê */}
-                            <div style={styles.visitSectionBorder}>
-                              <strong style={styles.subSectionTitleGreen}>
-                                <Pill size={14} style={{ color: '#10b981' }} />
+                            <div className="col-span-2 border-t border-slate-100 pt-3">
+                              <strong className="flex items-center gap-1.5 mb-2">
+                                <Pill size={14} className="text-[#10b981]" />
                                 Đơn thuốc được bác sĩ kê toa
                               </strong>
                               {!visit.donThuoc || visit.donThuoc.length === 0 ? (
-                                <p style={styles.emptyText}>Không có đơn thuốc nào được kê.</p>
+                                <p className="m-0 italic text-[var(--text-muted)]">Không có đơn thuốc nào được kê.</p>
                               ) : (
-                                <table style={styles.medTable}>
+                                <table className="w-full border-collapse mt-2">
                                   <thead>
-                                    <tr style={styles.medTableHeader}>
-                                      <th style={styles.medTh}>Tên thuốc</th>
-                                      <th style={styles.medThCenter}>Số lượng</th>
-                                      <th style={styles.medThCenter}>Số ngày</th>
-                                      <th style={styles.medTh}>Hướng dẫn sử dụng</th>
+                                    <tr className="bg-slate-50 text-left border-b border-slate-200">
+                                      <th className="p-2 text-xs font-bold">Tên thuốc</th>
+                                      <th className="p-2 text-xs font-bold w-[90px] text-center">Số lượng</th>
+                                      <th className="p-2 text-xs font-bold w-[90px] text-center">Số ngày</th>
+                                      <th className="p-2 text-xs font-bold">Hướng dẫn sử dụng</th>
                                     </tr>
                                   </thead>
                                   <tbody>
                                     {visit.donThuoc.map((med, idx) => (
-                                      <tr key={idx} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                                        <td style={{ padding: '8px', fontWeight: '600' }}>{med.tenThuoc}</td>
-                                        <td style={{ padding: '8px', textAlign: 'center' }}>{med.soLuong}</td>
-                                        <td style={{ padding: '8px', textAlign: 'center' }}>{med.soNgay} ngày</td>
-                                        <td style={{ padding: '8px', color: 'var(--text-muted)' }}>{med.cachDung || 'Uống theo chỉ dẫn'}</td>
+                                      <tr key={idx} className="border-b border-[#f1f5f9]">
+                                        <td className="p-2 font-semibold">{med.tenThuoc}</td>
+                                        <td className="p-2 text-center">{med.soLuong}</td>
+                                        <td className="p-2 text-center">{med.soNgay} ngày</td>
+                                        <td className="p-2 text-[var(--text-muted)]">{med.cachDung || 'Uống theo chỉ dẫn'}</td>
                                       </tr>
                                     ))}
                                   </tbody>
@@ -571,7 +560,7 @@ function DatLichPublic() {
 
                             {/* Lời dặn dò */}
                             {visit.loiDan && (
-                              <div style={styles.adviceRow}>
+                              <div className="col-span-2 border-t border-slate-100 pt-3 text-[var(--text-muted)] text-[12.5px] italic">
                                 <strong>* Lời dặn từ bác sĩ điều trị:</strong> {visit.loiDan}
                               </div>
                             )}
@@ -584,10 +573,10 @@ function DatLichPublic() {
 
               </div>
             ) : (
-              <div style={styles.searchErrorBox}>
-                <ShieldAlert size={54} style={styles.searchErrorIcon} />
-                <h4 style={styles.searchErrorTitle}>Không tìm thấy hồ sơ người bệnh</h4>
-                <p style={styles.searchErrorText}>
+              <div className="bg-white rounded-2xl py-12 px-6 border border-slate-200 text-center text-[var(--text-muted)]">
+                <ShieldAlert size={54} className="stroke-[1] text-red-400 mb-4 mx-auto" />
+                <h4 className="font-extrabold text-base text-red-500 mb-1.5">Không tìm thấy hồ sơ người bệnh</h4>
+                <p className="max-w-[360px] mx-auto text-[13px] leading-relaxed">
                   Không tìm thấy thông tin bệnh án hay lịch đặt lịch khám nào trùng khớp với mã bạn vừa điền. Vui lòng kiểm tra lại chính xác.
                 </p>
               </div>
@@ -598,213 +587,16 @@ function DatLichPublic() {
       </main>
 
       {/* 4. Footer */}
-      <footer style={styles.footer}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <strong style={styles.footerBrand}>PHÒNG KHÁM ĐA KHOA NHẬT TẢO</strong>
-          <p style={{ margin: '4px 0' }}>Địa chỉ: 123 Đường Nhật Tảo, Phường 4, Quận 10, TP. Hồ Chí Minh</p>
-          <p style={{ margin: '4px 0' }}>Email: contact@nhattaoclinic.vn | Hotline hỗ trợ: 1900 6868</p>
-          <p style={styles.footerCopy}>&copy; {new Date().getFullYear()} Phòng khám đa khoa Nhật Tảo. Bảo lưu mọi quyền.</p>
+      <footer className="bg-[#0f172a] text-[#94a3b8] py-[30px] px-6 text-center border-t border-[#1e293b] text-[13px]">
+        <div className="max-w-[1200px] mx-auto">
+          <strong className="text-white text-sm block mb-1.5">PHÒNG KHÁM ĐA KHOA NHẬT TẢO</strong>
+          <p className="my-1">Địa chỉ: 123 Đường Nhật Tảo, Phường 4, Quận 10, TP. Hồ Chí Minh</p>
+          <p className="my-1">Email: contact@nhattaoclinic.vn | Hotline hỗ trợ: 1900 6868</p>
+          <p className="mt-5 mb-0 mx-0 text-[11px] opacity-60">&copy; {new Date().getFullYear()} Phòng khám đa khoa Nhật Tảo. Bảo lưu mọi quyền.</p>
         </div>
       </footer>
     </div>
   );
 }
-
-// Bảng cấu hình CSS Inline tối ưu hóa giao diện trang Đăng ký/Tra cứu
-const styles = {
-  container: { minHeight: '100vh', backgroundColor: '#f8fafc' },
-  header: {
-    backgroundColor: '#ffffff',
-    borderBottom: '1px solid #e2e8f0',
-    padding: '12px 24px',
-    position: 'sticky',
-    top: 0,
-    zIndex: 50,
-    boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
-  },
-  headerInner: { maxWidth: '1200px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-  logoContainer: { display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' },
-  logoIcon: {
-    width: '40px',
-    height: '40px',
-    borderRadius: '8px',
-    backgroundColor: 'var(--primary)',
-    color: '#ffffff',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontWeight: 'bold',
-    fontSize: '20px'
-  },
-  logoText: { fontSize: '16px', fontWeight: '850', color: 'var(--primary)', margin: 0 },
-  logoSubtext: { fontSize: '11px', color: 'var(--text-muted)', margin: 0 },
-  headerRight: { display: 'flex', gap: '20px', fontSize: '13.5px', fontWeight: '600' },
-  hero: {
-    background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-    color: '#ffffff',
-    padding: '48px 24px',
-    textAlign: 'center'
-  },
-  heroTitle: { fontSize: '28px', fontWeight: '850', marginBottom: '12px', letterSpacing: '-0.5px' },
-  heroSub: { fontSize: '15px', opacity: 0.85, marginBottom: '24px', fontWeight: '400', lineHeight: '1.6' },
-  tabsContainer: {
-    display: 'inline-flex',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    padding: '6px',
-    borderRadius: '12px',
-    gap: '8px'
-  },
-  tabBtn: {
-    padding: '10px 24px',
-    borderRadius: '8px',
-    border: 'none',
-    fontWeight: '700',
-    fontSize: '14px',
-    cursor: 'pointer',
-    transition: 'all 0.2s ease',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px'
-  },
-  mainContent: { maxWidth: '1000px', margin: '40px auto', padding: '0 20px', paddingBottom: '80px' },
-  card: {
-    backgroundColor: '#ffffff',
-    borderRadius: '16px',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
-    border: '1px solid #e2e8f0',
-    overflow: 'hidden'
-  },
-  cardHeader: {
-    padding: '20px 24px',
-    borderBottom: '1px solid #e2e8f0',
-    backgroundColor: '#f8fafc',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px'
-  },
-  cardIconBox: {
-    padding: '8px',
-    borderRadius: '8px',
-    backgroundColor: 'var(--primary-light)',
-    color: 'var(--primary)'
-  },
-  cardTitle: { fontSize: '16px', fontWeight: '800', margin: 0, color: 'var(--text-main)' },
-  cardSub: { fontSize: '12px', color: 'var(--text-muted)', margin: 0 },
-  bookingFormGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' },
-  formLabelBold: { fontWeight: '700', fontSize: '13px', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' },
-  formInputName: { textTransform: 'uppercase', height: '40px', fontSize: '13.5px' },
-  gridSpan2: { margin: 0, gridColumn: 'span 2' },
-  textArea: { minHeight: '120px', resize: 'vertical', fontFamily: 'inherit', padding: '12px', fontSize: '13.5px' },
-  bookingActions: { gridColumn: 'span 2', display: 'flex', justifyContent: 'flex-end', gap: '16px', marginTop: '12px' },
-  resetBtn: { height: '42px', padding: '0 24px', fontSize: '13.5px', fontWeight: '700' },
-  submitBtn: { height: '42px', padding: '0 32px', fontSize: '13.5px', fontWeight: '700', width: 'auto', marginTop: 0 },
-  
-  // Tab Tra Cứu CSS
-  searchCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: '16px',
-    padding: '24px',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
-    border: '1px solid #e2e8f0'
-  },
-  searchTitle: { fontSize: '15px', fontWeight: '850', color: 'var(--text-main)', marginBottom: '16px' },
-  searchBarInput: { paddingLeft: '40px', height: '44px', width: '100%', fontSize: '14px' },
-  searchBarIcon: { position: 'absolute', left: '14px', top: '13px', color: 'var(--text-muted)' },
-  searchSubmit: { height: '44px', padding: '0 28px', margin: 0, display: 'flex', alignItems: 'center', fontSize: '14px', fontWeight: '700', width: 'auto', marginTop: 0, flexShrink: 0 },
-  noSearchState: {
-    backgroundColor: '#ffffff',
-    borderRadius: '16px',
-    padding: '48px 24px',
-    border: '1px solid #e2e8f0',
-    textAlign: 'center',
-    color: 'var(--text-muted)'
-  },
-  noSearchIcon: { strokeWidth: 1, color: 'var(--primary-light)', marginBottom: '16px' },
-  noSearchTitle: { fontWeight: '800', fontSize: '16px', color: 'var(--text-main)', marginBottom: '6px' },
-  noSearchText: { maxWidth: '400px', margin: '0 auto', fontSize: '13px', lineHeight: '1.6' },
-  
-  // Kết quả chi tiết CSS
-  resultCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: '16px',
-    border: '1px solid #e2e8f0',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.02)',
-    overflow: 'hidden'
-  },
-  resultCardHeader: { padding: '16px 24px', borderBottom: '1px solid #e2e8f0', backgroundColor: '#f8fafc', display: 'flex', alignItems: 'center', gap: '10px' },
-  resultCardTitle: { fontSize: '14px', fontWeight: '800', color: 'var(--text-main)' },
-  patientGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px 32px', fontSize: '13.5px' },
-  patientName: { color: 'var(--primary)', fontWeight: '750', textTransform: 'uppercase' },
-  patientHistoryRow: { gridColumn: '1 / -1', borderTop: '1px dashed #e2e8f0', paddingTop: '12px', marginTop: '4px' },
-  noDataText: { padding: '24px', border: '1px dashed #cbd5e1', borderRadius: '8px', color: 'var(--text-muted)', fontSize: '13px', textAlign: 'center' },
-  apptItem: {
-    border: '1px solid #e2e8f0',
-    borderRadius: '10px',
-    padding: '16px',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#fafafa'
-  },
-  badgeWait: { background: '#cbd5e1', color: '#475569' },
-  badgeCancel: { background: '#fee2e2', color: '#ef4444' },
-  
-  // Visit history items CSS
-  visitItem: {
-    border: '1px solid #e2e8f0',
-    borderRadius: '12px',
-    padding: '20px',
-    backgroundColor: '#ffffff',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.015)'
-  },
-  visitItemHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9', paddingBottom: '12px', marginBottom: '16px' },
-  visitTime: { fontSize: '12.5px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' },
-  visitGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px 24px', fontSize: '13px', color: 'var(--text-main)' },
-  visitDocText: { margin: '4px 0 0 0', fontWeight: '600', fontSize: '13.5px', color: 'var(--primary)' },
-  visitReasonText: { margin: '4px 0 0 0', color: 'var(--text-main)', fontSize: '13px', backgroundColor: '#f8fafc', padding: '8px 12px', borderRadius: '6px' },
-  visitSectionBorder: { gridColumn: 'span 2', borderTop: '1px solid #f1f5f9', paddingTop: '12px' },
-  diagnosisText: { margin: '4px 0 0 0', fontSize: '13.5px', color: '#ef4444', fontWeight: '700' },
-  subSectionTitle: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' },
-  subSectionTitleGreen: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' },
-  emptyText: { margin: 0, fontStyle: 'italic', color: 'var(--text-muted)' },
-  clsBadge: {
-    backgroundColor: 'var(--primary-light)',
-    color: 'var(--primary)',
-    padding: '4px 10px',
-    borderRadius: '15px',
-    fontSize: '12px',
-    fontWeight: '600'
-  },
-  medTable: { width: '100%', borderCollapse: 'collapse', marginTop: '8px' },
-  medTableHeader: { background: '#f8fafc', textAlign: 'left', borderBottom: '1px solid #e2e8f0' },
-  medTh: { padding: '8px', fontSize: '12px', fontWeight: '700' },
-  medThCenter: { padding: '8px', fontSize: '12px', fontWeight: '700', width: '90px', textAlign: 'center' },
-  adviceRow: { gridColumn: 'span 2', borderTop: '1px solid #f1f5f9', paddingTop: '12px', color: 'var(--text-muted)', fontSize: '12.5px', fontStyle: 'italic' },
-  
-  // Search error Box CSS
-  searchErrorBox: {
-    backgroundColor: '#ffffff',
-    borderRadius: '16px',
-    padding: '48px 24px',
-    border: '1px solid #e2e8f0',
-    textAlign: 'center',
-    color: 'var(--text-muted)'
-  },
-  searchErrorIcon: { strokeWidth: 1, color: '#f87171', marginBottom: '16px' },
-  searchErrorTitle: { fontWeight: '800', fontSize: '16px', color: '#ef4444', marginBottom: '6px' },
-  searchErrorText: { maxWidth: '360px', margin: '0 auto', fontSize: '13px', lineHeight: '1.6' },
-
-  // Footer CSS
-  footer: {
-    backgroundColor: '#0f172a',
-    color: '#94a3b8',
-    padding: '30px 24px',
-    textAlign: 'center',
-    borderTop: '1px solid #1e293b',
-    fontSize: '13px'
-  },
-  footerBrand: { color: '#ffffff', fontSize: '14px', display: 'block', marginBottom: '6px' },
-  footerCopy: { margin: '20px 0 0 0', fontSize: '11px', opacity: 0.6 }
-};
 
 export default DatLichPublic;

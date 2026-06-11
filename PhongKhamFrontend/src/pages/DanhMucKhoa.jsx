@@ -191,70 +191,68 @@ function DanhMucKhoa() {
   );
 
   return (
-    <div className="kb-wrapper" style={styles.wrapper}>
+    <div className="kb-wrapper h-screen overflow-hidden">
       {/* Topbar điều hướng */}
-      <div className="kb-topbar" style={styles.topbar}>
-        <div style={styles.topbarLeft}>
-          <button className="kb-back-btn" onClick={() => navigate('/')} style={styles.backBtn}>
+      <div className="kb-topbar h-[50px] px-5">
+        <div className="flex-1 flex justify-start">
+          <button className="kb-back-btn py-[5px] px-[10px]" onClick={() => navigate('/')}>
             <ArrowLeft size={16} /> Quay về trang chủ
           </button>
         </div>
-        <div className="kb-topbar-title" style={styles.topbarTitle}>
-          <Database size={18} style={{ marginRight: '6px' }} />
+        <div className="kb-topbar-title flex-1 flex justify-center items-center text-[15px]">
+          <Database size={18} className="mr-1.5" />
           <strong>Danh mục Khoa / Chuyên môn</strong>
         </div>
-        <div style={styles.topbarRight}>
+        <div className="flex-1 flex justify-end items-center text-[12px] opacity-85">
           <span>Trang chủ / Danh mục dùng chung / Quản lý khoa</span>
         </div>
       </div>
 
       {/* Vùng làm việc chính */}
-      <div className="kb-body" style={styles.body}>
+      <div className="kb-body flex h-[calc(100vh-50px)] bg-[var(--bg-main)] overflow-hidden">
         
         {/* CỘT TRÁI: Bảng danh sách Khoa */}
-        <div style={styles.leftCol}>
+        <div className="flex-[1.2] flex flex-col border-r border-[var(--border-color)] h-full bg-white">
           {/* Header Action row */}
-          <div style={styles.panelHeader}>
-            <div style={styles.panelTitleContainer}>
-              <Database size={16} style={{ color: 'var(--primary)' }} />
-              <h3 style={styles.panelTitleText}>
+          <div className="flex justify-between items-center py-3 px-4 border-b border-[var(--border-color)] bg-[var(--bg-main)]">
+            <div className="flex items-center gap-[6px]">
+              <Database size={16} className="text-[var(--primary)]" />
+              <h3 className="text-[14.5px] font-[750] text-[var(--text-main)] m-0">
                 Danh sách khoa phòng chuyên môn
               </h3>
             </div>
             <button
               onClick={handleAddNew}
-              className="btn-primary"
-              style={styles.addBtn}
+              className="btn-primary h-8 text-[12.5px] px-3 flex items-center gap-1 w-auto mt-0 m-0"
             >
               <Plus size={14} /> Thêm mới
             </button>
           </div>
 
           {/* Ô tìm kiếm khoa */}
-          <div style={styles.searchContainer}>
-            <div style={{ position: 'relative' }}>
+          <div className="py-2 px-4 border-b border-[var(--border-color)] bg-[var(--bg-main)]">
+            <div className="relative">
               <input
                 type="text"
                 placeholder="Tìm khoa theo mã hoặc tên..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="form-input"
-                style={styles.searchInput}
+                className="form-input h-[30px] text-[12.5px] pl-[30px]"
               />
-              <Search size={14} style={styles.searchIcon} />
+              <Search size={14} className="absolute left-2 top-2 text-[var(--text-muted)]" />
             </div>
           </div>
 
           {/* Bảng danh sách khoa cuộn được */}
-          <div style={styles.tableContainer}>
-            <table className="kb-table" style={styles.table}>
+          <div className="flex-1 overflow-y-auto">
+            <table className="kb-table w-full border-collapse text-[13px]">
               <thead>
-                <tr style={styles.tableHeaderRow}>
-                  <th style={styles.thStt}>STT</th>
-                  <th style={styles.thMa}>Mã khoa</th>
-                  <th style={{ padding: '8px' }}>Tên khoa phòng / Chuyên môn</th>
-                  <th style={styles.thDocCount}>Số lượng Bác sĩ</th>
-                  <th style={styles.thXoa}>Xóa</th>
+                <tr className="sticky top-0 z-10 bg-[var(--bg-main)] border-b-2 border-[var(--border-color)]">
+                  <th className="w-[50px] text-center p-2">STT</th>
+                  <th className="w-[120px] p-2">Mã khoa</th>
+                  <th className="p-2">Tên khoa phòng / Chuyên môn</th>
+                  <th className="w-[130px] p-2 text-center">Số lượng Bác sĩ</th>
+                  <th className="w-[60px] p-2 text-center">Xóa</th>
                 </tr>
               </thead>
               <tbody>
@@ -262,24 +260,22 @@ function DanhMucKhoa() {
                   <tr 
                     key={k.maKhoa}
                     onClick={() => setSelectedKhoa(k)}
-                    className={selectedKhoa?.maKhoa === k.maKhoa ? 'kb-patient-item--active' : ''}
-                    style={{ 
-                      borderBottom: '1px solid var(--border-color)', 
-                      cursor: 'pointer',
-                      backgroundColor: selectedKhoa?.maKhoa === k.maKhoa ? 'var(--primary-light)' : 'transparent'
-                    }}
+                    className={`border-b border-[var(--border-color)] cursor-pointer ${
+                      selectedKhoa?.maKhoa === k.maKhoa 
+                        ? 'kb-patient-item--active bg-[var(--primary-light)]' 
+                        : 'bg-transparent'
+                    }`}
                   >
-                    <td style={{ textAlign: 'center', padding: '8px' }}>{idx + 1}</td>
-                    <td style={{ padding: '8px', fontWeight: '600' }}>{k.maKhoa}</td>
-                    <td style={{ padding: '8px', fontWeight: '700' }}>{k.tenKhoa}</td>
-                    <td style={styles.tdDocCount}>
+                    <td className="text-center p-2">{idx + 1}</td>
+                    <td className="p-2 font-semibold">{k.maKhoa}</td>
+                    <td className="p-2 font-bold">{k.tenKhoa}</td>
+                    <td className="p-2 text-center font-semibold text-[var(--primary)]">
                       {getDoctorCount(k.tenKhoa)} bác sĩ
                     </td>
-                    <td style={{ padding: '8px', textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
+                    <td className="p-2 text-center" onClick={(e) => e.stopPropagation()}>
                       <button
                         onClick={() => handleDelete(k.maKhoa, k.tenKhoa)}
-                        className="btn-danger"
-                        style={styles.deleteBtn}
+                        className="btn-danger py-1 px-2 m-0 h-auto inline-flex"
                       >
                         <Trash2 size={13} />
                       </button>
@@ -292,73 +288,71 @@ function DanhMucKhoa() {
         </div>
 
         {/* CỘT PHẢI: Form chi tiết & danh sách bác sĩ thuộc khoa */}
-        <div style={styles.rightCol}>
+        <div className="flex-1 flex flex-col h-full bg-white">
           {selectedKhoa === null ? (
-            <div style={styles.noSelected}>
-              <Award size={48} style={styles.noSelectedIcon} />
+            <div className="h-full flex flex-col items-center justify-center text-[var(--text-muted)] text-center gap-3">
+              <Award size={48} className="opacity-25 text-[var(--primary)]" />
               <div>
-                <h4 style={{ fontWeight: '600', color: 'var(--text-main)' }}>Chưa chọn khoa chuyên môn</h4>
-                <p style={{ fontSize: '13px', marginTop: '4px', maxWidth: '300px' }}>
+                <h4 className="font-semibold text-[var(--text-main)]">Chưa chọn khoa chuyên môn</h4>
+                <p className="text-[13px] mt-1 max-w-[300px]">
                   Vui lòng chọn một khoa từ bảng danh sách bên trái hoặc bấm "Thêm mới" để cập nhật thông tin.
                 </p>
               </div>
             </div>
           ) : (
-            <form onSubmit={handleSave} style={styles.form}>
-              <div style={styles.formArea}>
-                <h4 style={styles.formSectionTitle}>
+            <form onSubmit={handleSave} className="h-full flex flex-col justify-between">
+              <div className="flex flex-col gap-4 p-5 flex-1 overflow-y-auto">
+                <h4 className="text-[13.5px] font-[750] text-[var(--primary)] border-b border-[var(--border-color)] pb-2 flex items-center gap-1.5">
                   <Award size={16} /> CHI TIẾT KHOA PHÒNG & CHUYÊN MÔN
                 </h4>
 
-                <div style={styles.formRow}>
-                  <div className="form-group" style={{ margin: 0 }}>
-                    <label className="form-label" style={{ fontSize: '12.5px' }}>Mã khoa phòng <span style={{ color: 'red' }}>*</span></label>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                  <div className="form-group m-0">
+                    <label className="form-label text-[12.5px]">Mã khoa phòng <span className="text-red-500">*</span></label>
                     <input
                       type="text"
-                      className="form-input"
+                      className="form-input h-[34px] text-[13px]"
                       value={khoaForm.maKhoa}
                       onChange={e => setKhoaForm({ ...khoaForm, maKhoa: e.target.value })}
                       required
                       disabled={true}
-                      style={{ height: '34px', fontSize: '13px' }}
                     />
                   </div>
 
-                  <div className="form-group" style={{ margin: 0 }}>
-                    <label className="form-label" style={{ fontSize: '12.5px' }}>Tên khoa / Chuyên môn <span style={{ color: 'red' }}>*</span></label>
+                  <div className="form-group m-0">
+                    <label className="form-label text-[12.5px]">Tên khoa / Chuyên môn <span className="text-red-500">*</span></label>
                     <input
                       type="text"
-                      className="form-input"
+                      className="form-input h-[34px] text-[13px]"
                       placeholder="Nhập tên khoa phòng..."
                       value={khoaForm.tenKhoa}
                       onChange={e => setKhoaForm({ ...khoaForm, tenKhoa: e.target.value })}
                       required
-                      style={{ height: '34px', fontSize: '13px' }}
                     />
                   </div>
                 </div>
 
                 {/* Danh sách Bác sĩ thuộc khoa phòng */}
                 {!selectedKhoa.isNew && (
-                  <div style={{ marginTop: '20px' }}>
-                    <h4 style={styles.doctorSectionTitle}>
-                      <Users size={16} style={{ color: 'var(--primary)' }} />
+                  <div className="mt-5">
+                    <h4 className="text-[13px] font-[750] text-[var(--text-main)] flex items-center gap-1.5 mb-2.5">
+                      <Users size={16} className="text-[var(--primary)]" />
                       Danh sách Bác sĩ thuộc khoa ({getDoctorsInKhoa(selectedKhoa.tenKhoa).length})
                     </h4>
                     
                     {getDoctorsInKhoa(selectedKhoa.tenKhoa).length === 0 ? (
-                      <div style={styles.noDoctors}>
+                      <div className="p-4 border border-dashed border-[var(--border-color)] rounded-lg text-[var(--text-muted)] text-[12.5px] text-center">
                         Khoa này hiện tại chưa có bác sĩ trực thuộc.
                       </div>
                     ) : (
-                      <div style={styles.doctorScrollList}>
+                      <div className="flex flex-col gap-2 max-h-[300px] overflow-y-auto">
                         {getDoctorsInKhoa(selectedKhoa.tenKhoa).map((doc) => (
-                          <div key={doc.maNV} style={styles.doctorItem}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              <User size={14} style={{ color: 'var(--primary)' }} />
+                          <div key={doc.maNV} className="border border-[var(--border-color)] rounded-lg py-2.5 px-3.5 text-[12.5px] flex justify-between items-center bg-[var(--bg-main)]">
+                            <div className="flex items-center gap-2">
+                              <User size={14} className="text-[var(--primary)]" />
                               <div>
-                                <strong style={{ color: 'var(--text-main)' }}>{doc.hoTen}</strong>
-                                <div style={{ fontSize: '10.5px', color: 'var(--text-muted)' }}>Mã NV: {doc.maNV} | ĐT: {doc.sdt}</div>
+                                <strong className="text-[var(--text-main)]">{doc.hoTen}</strong>
+                                <div className="text-[10.5px] text-[var(--text-muted)]">Mã NV: {doc.maNV} | ĐT: {doc.sdt}</div>
                               </div>
                             </div>
                             <span className="status-badge status-active">Hoạt động</span>
@@ -371,21 +365,19 @@ function DanhMucKhoa() {
               </div>
 
               {/* Các nút Hủy/Lưu của Form */}
-              <div style={styles.formActionGroup}>
+              <div className="py-3 px-5 border-t border-[var(--border-color)] bg-[var(--bg-main)] flex justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setSelectedKhoa(null)}
-                  className="btn-outline"
-                  style={styles.cancelBtn}
+                  className="btn-outline h-[34px] text-[13px] m-0 px-4 flex items-center"
                 >
                   Hủy
                 </button>
                 <button
                   type="submit"
-                  className="btn-primary"
-                  style={styles.saveBtn}
+                  className="btn-primary h-[34px] text-[13px] m-0 px-5 flex items-center w-auto mt-0"
                 >
-                  <Save size={14} style={{ marginRight: '6px' }} /> Lưu
+                  <Save size={14} className="mr-1.5" /> Lưu
                 </button>
               </div>
             </form>
@@ -396,97 +388,5 @@ function DanhMucKhoa() {
     </div>
   );
 }
-
-// Cấu hình CSS inline cho giao diện DanhMucKhoa
-const styles = {
-  wrapper: { height: '100vh', overflow: 'hidden' },
-  topbar: { height: '50px', padding: '0 20px' },
-  topbarLeft: { flex: 1, display: 'flex', justifyContent: 'flex-start' },
-  backBtn: { padding: '5px 10px' },
-  topbarTitle: { flex: 1, display: 'flex', justifyContent: 'center', fontSize: '15px' },
-  topbarRight: { flex: 1, display: 'flex', justifyContent: 'flex-end', fontSize: '12px', opacity: 0.85 },
-  body: {
-    display: 'flex',
-    height: 'calc(100vh - 50px)',
-    backgroundColor: 'var(--bg-main)',
-    overflow: 'hidden'
-  },
-  leftCol: {
-    flex: 1.2,
-    display: 'flex',
-    flexDirection: 'column',
-    borderRight: '1px solid var(--border-color)',
-    height: '100%',
-    backgroundColor: '#ffffff'
-  },
-  panelHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '12px 16px',
-    borderBottom: '1px solid var(--border-color)',
-    backgroundColor: 'var(--bg-main)'
-  },
-  panelTitleContainer: { display: 'flex', alignItems: 'center', gap: '6px' },
-  panelTitleText: { fontSize: '14.5px', fontWeight: '750', color: 'var(--text-main)', margin: 0 },
-  addBtn: { height: '32px', fontSize: '12.5px', padding: '0 12px', display: 'flex', alignItems: 'center', gap: '4px', width: 'auto', marginTop: 0, margin: 0 },
-  searchContainer: { padding: '8px 16px', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-main)' },
-  searchInput: { height: '30px', fontSize: '12.5px', paddingLeft: '30px' },
-  searchIcon: { position: 'absolute', left: '8px', top: '8px', color: 'var(--text-muted)' },
-  tableContainer: { flex: 1, overflowY: 'auto' },
-  table: { width: '100%', borderCollapse: 'collapse', fontSize: '13px' },
-  tableHeaderRow: { position: 'sticky', top: 0, zIndex: 10, background: 'var(--bg-main)', borderBottom: '2px solid var(--border-color)' },
-  thStt: { width: '50px', textAlign: 'center', padding: '8px' },
-  thMa: { width: '120px', padding: '8px' },
-  thDocCount: { width: '130px', padding: '8px', textAlign: 'center' },
-  thXoa: { width: '60px', padding: '8px', textAlign: 'center' },
-  tdDocCount: { padding: '8px', textAlign: 'center', fontWeight: '600', color: 'var(--primary)' },
-  deleteBtn: { padding: '4px 8px', margin: 0, height: 'auto', display: 'inline-flex' },
-  rightCol: {
-    flex: 1,
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-    backgroundColor: '#ffffff'
-  },
-  noSelected: {
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    color: 'var(--text-muted)',
-    textAlign: 'center',
-    gap: '12px'
-  },
-  noSelectedIcon: { opacity: 0.25, color: 'var(--primary)' },
-  form: { height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' },
-  formArea: { display: 'flex', flexDirection: 'column', gap: '16px', padding: '20px', flex: 1, overflowY: 'auto' },
-  formSectionTitle: { fontSize: '13.5px', fontWeight: '750', color: 'var(--primary)', borderBottom: '1px solid var(--border-color)', paddingBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' },
-  formRow: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px 16px' },
-  doctorSectionTitle: { fontSize: '13px', fontWeight: '750', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' },
-  noDoctors: { padding: '16px', border: '1px dashed var(--border-color)', borderRadius: '8px', color: 'var(--text-muted)', fontSize: '12.5px', textAlign: 'center' },
-  doctorScrollList: { display: 'flex', flexDirection: 'column', gap: '8px', maxHeight: '300px', overflowY: 'auto' },
-  doctorItem: {
-    border: '1px solid var(--border-color)',
-    borderRadius: '8px',
-    padding: '10px 14px',
-    fontSize: '12.5px',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: 'var(--bg-main)'
-  },
-  formActionGroup: {
-    padding: '12px 20px',
-    borderTop: '1px solid var(--border-color)',
-    backgroundColor: 'var(--bg-main)',
-    display: 'flex',
-    justifyContent: 'flex-end',
-    gap: '12px'
-  },
-  cancelBtn: { height: '34px', fontSize: '13px', margin: 0, padding: '0 16px', display: 'flex', alignItems: 'center' },
-  saveBtn: { height: '34px', fontSize: '13px', margin: 0, padding: '0 20px', display: 'flex', alignItems: 'center', width: 'auto', marginTop: 0 }
-};
 
 export default DanhMucKhoa;

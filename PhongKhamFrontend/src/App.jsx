@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
-import ChangePassword from './pages/ChangePassword';
 import Home from './pages/Home';
 import KhamBenh from './pages/KhamBenh';
 import TiepDon from './pages/TiepDon';
@@ -35,9 +34,6 @@ function App() {
         <Routes>
           {/* Màn hình Đăng nhập (Mọi người đều có thể truy cập mà không cần đăng nhập trước) */}
           <Route path="/login" element={<Login />} />
-          
-          {/* Trang Đổi mật khẩu (Bắt buộc phải qua ProtectedRoute để bảo vệ) */}
-          <Route path="/change-password" element={<ProtectedRoute><ChangePassword /></ProtectedRoute>} />
           
           {/* Trang chủ quản trị (Yêu cầu đăng nhập) */}
           <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />

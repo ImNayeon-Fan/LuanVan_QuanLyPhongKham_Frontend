@@ -454,65 +454,64 @@ function ThanhToanHoaDon() {
   const { services, drugs, supplies, totalServices, totalDrugs, totalSupplies, grandTotal } = getBillingDetails(selectedPhieu);
 
   return (
-    <div className="kb-wrapper" style={styles.wrapper}>
+    <div className="kb-wrapper h-screen overflow-hidden">
       
       {/* Topbar điều hướng */}
-      <div className="kb-topbar hide-on-print" style={styles.topbar}>
-        <div style={styles.topbarLeft}>
-          <button className="kb-back-btn" onClick={() => navigate('/')} style={styles.backBtn}>
+      <div className="kb-topbar hide-on-print h-[50px] px-5 flex items-center justify-between border-b border-[var(--border-color)] bg-white">
+        <div className="flex-1 flex justify-start">
+          <button className="kb-back-btn py-[5px] px-[10px]" onClick={() => navigate('/')}>
             <ArrowLeft size={16} /> Quay về trang chủ
           </button>
         </div>
-        <div className="kb-topbar-title" style={styles.topbarTitle}>
-          <Receipt size={18} style={styles.receiptIcon} />
+        <div className="kb-topbar-title flex-1 flex justify-center items-center text-[15px]">
+          <Receipt size={18} className="mr-[6px]" />
           <strong>Thanh toán & Xuất hóa đơn viện phí</strong>
         </div>
-        <div style={styles.topbarRight}>
+        <div className="flex-1 flex justify-end text-[12px] opacity-85">
           <span>Quầy thu ngân / {thuNgan}</span>
         </div>
       </div>
 
       {/* Main split dashboard area */}
-      <div className="kb-body" style={styles.body}>
+      <div className="kb-body flex h-[calc(100vh-50px)] bg-[var(--bg-main)] overflow-hidden">
         
         {/* CỘT TRÁI: Danh sách phiếu thu */}
-        <div className="hide-on-print" style={styles.leftCol}>
-          <div style={styles.leftColHeader}>
-            <div style={styles.leftColHeaderTitleWrapper}>
+        <div className="hide-on-print flex-[1.1] flex flex-col border-r border-[var(--border-color)] h-full bg-white">
+          <div className="p-[14px] border-b border-[var(--border-color)] bg-[var(--bg-main)]">
+            <div className="flex items-center gap-[6px] mb-3">
               <Receipt size={16} style={{ color: 'var(--primary)' }} />
-              <h3 style={styles.leftColHeaderTitle}>DANH SÁCH PHIẾU THU VIỆN PHÍ</h3>
+              <h3 className="text-[14px] font-[750] text-[var(--text-main)] m-0">DANH SÁCH PHIẾU THU VIỆN PHÍ</h3>
             </div>
             
             {/* Thanh tìm kiếm */}
-            <div className="search-box" style={styles.searchBox}>
+            <div className="search-box mb-2.5 relative">
               <input 
                 type="text" 
                 placeholder="Tìm mã BN, mã hồ sơ, tên..." 
-                className="form-input" 
-                style={styles.searchInput}
+                className="form-input pl-8 h-8 text-[12.5px]" 
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
               />
-              <Search size={14} style={styles.searchIcon} />
+              <Search size={14} className="absolute left-2.5 top-[9px] text-[var(--text-muted)]" />
             </div>
 
             {/* Tab lọc trạng thái */}
-            <div style={styles.tabWrapper}>
+            <div className="flex gap-1 bg-[#e2e8f0] p-[2px] rounded-[6px]">
               <button 
                 onClick={() => setStatusFilter('All')}
-                style={styles.getTabStyle(statusFilter === 'All')}
+                className={`flex-1 py-[5px] px-[5px] border-none text-[11.5px] font-semibold rounded-[4px] cursor-pointer transition-all duration-150 ${statusFilter === 'All' ? 'bg-white text-inherit' : 'bg-transparent text-inherit'}`}
               >
                 Tất cả ({dsPhieuKham.filter(p => p.trangThai === 3).length})
               </button>
               <button 
                 onClick={() => setStatusFilter('Unpaid')}
-                style={styles.getTabStyle(statusFilter === 'Unpaid', '#dc2626')}
+                className={`flex-1 py-[5px] px-[5px] border-none text-[11.5px] font-semibold rounded-[4px] cursor-pointer transition-all duration-150 ${statusFilter === 'Unpaid' ? 'bg-white text-[#dc2626]' : 'bg-transparent text-[#dc2626]'}`}
               >
                 Chưa TT ({dsPhieuKham.filter(p => p.trangThai === 3 && !p.daThanhToan).length})
               </button>
               <button 
                 onClick={() => setStatusFilter('Paid')}
-                style={styles.getTabStyle(statusFilter === 'Paid', '#16a34a')}
+                className={`flex-1 py-[5px] px-[5px] border-none text-[11.5px] font-semibold rounded-[4px] cursor-pointer transition-all duration-150 ${statusFilter === 'Paid' ? 'bg-white text-[#16a34a]' : 'bg-transparent text-[#16a34a]'}`}
               >
                 Đã TT ({dsPhieuKham.filter(p => p.trangThai === 3 && p.daThanhToan).length})
               </button>
@@ -520,9 +519,9 @@ function ThanhToanHoaDon() {
           </div>
 
           {/* List Item container */}
-          <div style={styles.listContainer}>
+          <div className="flex-1 overflow-y-auto p-2">
             {filteredPhieuKham.length === 0 ? (
-              <div style={styles.noDataLeft}>
+              <div className="text-center p-[30px] text-[var(--text-muted)] text-[13px]">
                 Không tìm thấy lượt khám nào cần thanh toán.
               </div>
             ) : (
@@ -535,20 +534,20 @@ function ThanhToanHoaDon() {
                   <div 
                     key={pk.maPhieu}
                     onClick={() => setSelectedPhieu(pk)}
-                    style={styles.getListItemStyle(isSelected)}
+                    className={`p-3 rounded-lg border cursor-pointer mb-2 transition-all duration-150 ease-in-out ${isSelected ? 'border-[var(--primary)] bg-[var(--primary-light)]' : 'border-[var(--border-color)] bg-white'}`}
                   >
-                    <div style={styles.listItemHeader}>
-                      <span style={styles.listItemMaPhieu}>{pk.maPhieu}</span>
+                    <div className="flex justify-between mb-1.5">
+                      <span className="text-[11px] font-bold text-[var(--text-muted)]">{pk.maPhieu}</span>
                       {isPaid ? (
-                        <span style={styles.badgePaid}>Đã TT</span>
+                        <span className="text-[11px] text-[#16a34a] bg-[#dcfce7] py-[1px] px-2 rounded-[10px] font-bold">Đã TT</span>
                       ) : (
-                        <span style={styles.badgeUnpaid}>Chưa TT</span>
+                        <span className="text-[11px] text-[#dc2626] bg-[#fee2e2] py-[1px] px-2 rounded-[10px] font-bold">Chưa TT</span>
                       )}
                     </div>
-                    <div style={styles.listItemName}>{pk.hoTen}</div>
-                    <div style={styles.listItemFooter}>
-                      <span style={styles.listItemMaBN}>Mã NB: {pk.maBN}</span>
-                      <strong style={styles.listItemAmount}>{amount.toLocaleString('vi-VN')} đ</strong>
+                    <div className="text-[13.5px] font-bold text-[var(--text-main)] mb-1">{pk.hoTen}</div>
+                    <div className="flex justify-between items-center text-[12px]">
+                      <span className="text-[var(--text-muted)]">Mã NB: {pk.maBN}</span>
+                      <strong className="text-[#0052cc] text-[13.5px]">{amount.toLocaleString('vi-VN')} đ</strong>
                     </div>
                   </div>
                 );
@@ -558,37 +557,37 @@ function ThanhToanHoaDon() {
         </div>
 
         {/* CỘT PHẢI: Chi tiết phiếu thu & Hóa đơn */}
-        <div style={styles.rightCol}>
+        <div className="flex-[1.9] flex flex-col h-full bg-white">
           {selectedPhieu === null ? (
-            <div className="hide-on-print" style={styles.noDataRight}>
-              <Receipt size={48} style={styles.noDataRightIcon} />
+            <div className="hide-on-print h-full flex flex-col items-center justify-center text-[var(--text-muted)] text-center gap-3">
+              <Receipt size={48} className="opacity-25 text-[var(--primary)]" />
               <div>
-                <h4 style={styles.noDataRightTitle}>Chưa chọn phiếu thu</h4>
-                <p style={styles.noDataRightText}>Chọn một lượt khám bệnh bên trái để tiến hành lập hóa đơn thanh toán.</p>
+                <h4 className="font-semibold text-[var(--text-main)]">Chưa chọn phiếu thu</h4>
+                <p className="text-[13px] mt-1">Chọn một lượt khám bệnh bên trái để tiến hành lập hóa đơn thanh toán.</p>
               </div>
             </div>
           ) : (
-            <div style={styles.rightColScrollable}>
+            <div className="flex flex-col h-full overflow-y-auto">
               
               {/* PHẦN IN PHIẾU THU KHỔ K57 (Chỉ xuất hiện khi in ấn) */}
               {createPortal(
-                <div className="print-only" style={styles.printOnly}>
-                  <div style={styles.printHeader}>
-                    <h3 style={styles.printHeaderTitle}>PHÒNG KHÁM ĐA KHOA NHẬT TẢO</h3>
-                    <p style={styles.printHeaderSub1}>Đ/c: 123 Nhật Tảo, Phường 4, Quận 10, TP. HCM</p>
-                    <p style={styles.printHeaderSub2}>Hotline: 090 123 4567</p>
+                <div className="print-only w-[54mm] py-2 px-[1px] text-[9.5px] text-black font-mono leading-[1.25] mx-auto">
+                  <div className="text-center mb-1.5">
+                    <h3 className="m-0 mb-[2px] text-[11px] font-bold">PHÒNG KHÁM ĐA KHOA NHẬT TẢO</h3>
+                    <p className="m-0 mb-[1px] text-[8.5px]">Đ/c: 123 Nhật Tảo, Phường 4, Quận 10, TP. HCM</p>
+                    <p className="m-0 text-[8.5px]">Hotline: 090 123 4567</p>
                   </div>
 
-                  <div style={styles.printDashedLine} />
+                  <div className="border-b border-dashed border-black my-1.25" />
 
-                  <div style={styles.printTitleArea}>
-                    <h2 style={styles.printTitle}>HÓA ĐƠN THANH TOÁN</h2>
-                    <p style={styles.printTitleDate}>
+                  <div className="text-center mb-2">
+                    <h2 className="m-0 mb-[3px] text-[12px] font-bold">HÓA ĐƠN THANH TOÁN</h2>
+                    <p className="m-0 text-[8.5px] italic">
                       {getVietnameseDateString(selectedPhieu.ngayThanhToan)}
                     </p>
                   </div>
 
-                  <div style={styles.printPatientInfo}>
+                  <div className="flex flex-col gap-[2px] mb-1.5 text-[9px]">
                     <div>Mã NB: <b>{selectedPhieu.maBN}</b></div>
                     <div>Mã hồ sơ: <b>{selectedPhieu.maPhieu}</b></div>
                     <div>Họ tên: <b>{selectedPhieu.hoTen}</b></div>
@@ -597,16 +596,16 @@ function ThanhToanHoaDon() {
                     <div>BS chỉ định: {selectedPhieu.tenBacSi}</div>
                   </div>
 
-                  <div style={styles.printDashedLine} />
+                  <div className="border-b border-dashed border-black my-1.25" />
 
                   {/* Dịch vụ CLS */}
                   {services.length > 0 && (
-                    <div style={styles.printSection}>
-                      <div style={styles.printSectionTitle}>[DỊCH VỤ KỸ THUẬT & CLS]</div>
+                    <div className="mb-1.25">
+                      <div className="font-bold text-[9px] mb-[2px]">[DỊCH VỤ KỸ THUẬT & CLS]</div>
                       {services.map((item, idx) => (
-                        <div key={idx} style={styles.printItemRow}>
+                        <div key={idx} className="pl-[2px] mb-[2px]">
                           <div>{idx + 1}. {item.tenItem}</div>
-                          <div style={styles.printItemDetail}>
+                          <div className="flex justify-between pl-2 text-[8.5px] text-[#222]">
                             <span>{item.soLuong} x {item.donGia.toLocaleString('vi-VN')}</span>
                             <span>{item.thanhTien.toLocaleString('vi-VN')} đ</span>
                           </div>
@@ -617,12 +616,12 @@ function ThanhToanHoaDon() {
 
                   {/* Thuốc đã kê */}
                   {drugs.length > 0 && (
-                    <div style={styles.printSection}>
-                      <div style={styles.printSectionTitle}>[ĐƠN THUỐC ĐÃ KÊ]</div>
+                    <div className="mb-1.25">
+                      <div className="font-bold text-[9px] mb-[2px]">[ĐƠN THUỐC ĐÃ KÊ]</div>
                       {drugs.map((item, idx) => (
-                        <div key={idx} style={styles.printItemRow}>
+                        <div key={idx} className="pl-[2px] mb-[2px]">
                           <div>{idx + 1}. {item.tenItem}</div>
-                          <div style={styles.printItemDetail}>
+                          <div className="flex justify-between pl-2 text-[8.5px] text-[#222]">
                             <span>{item.soLuong} ({item.lieuDung})</span>
                             <span>{item.thanhTien.toLocaleString('vi-VN')} đ</span>
                           </div>
@@ -633,12 +632,12 @@ function ThanhToanHoaDon() {
 
                   {/* Vật tư tiêu hao */}
                   {supplies.length > 0 && (
-                    <div style={styles.printSection}>
-                      <div style={styles.printSectionTitle}>[VẬT TƯ TIÊU HAO]</div>
+                    <div className="mb-1.25">
+                      <div className="font-bold text-[9px] mb-[2px]">[VẬT TƯ TIÊU HAO]</div>
                       {supplies.map((item, idx) => (
-                        <div key={idx} style={styles.printItemRow}>
+                        <div key={idx} className="pl-[2px] mb-[2px]">
                           <div>{idx + 1}. {item.tenItem}</div>
-                          <div style={styles.printItemDetail}>
+                          <div className="flex justify-between pl-2 text-[8.5px] text-[#222]">
                             <span>{item.soLuong} x {item.donGia.toLocaleString('vi-VN')}</span>
                             <span>{item.thanhTien.toLocaleString('vi-VN')} đ</span>
                           </div>
@@ -647,63 +646,63 @@ function ThanhToanHoaDon() {
                     </div>
                   )}
 
-                  <div style={styles.printDashedLine} />
+                  <div className="border-b border-dashed border-black my-1.25" />
 
-                  <div style={styles.printSummary}>
+                  <div className="flex flex-col gap-[3px] text-[9px] text-right">
                     <div>Phương thức: <b>{selectedPhieu.phuongThucTT || phuongThucTT}</b></div>
                     <div>Thu ngân: <b>{selectedPhieu.thuNgan || thuNgan}</b></div>
-                    <div style={styles.printGrandTotalRow}>
+                    <div className="flex justify-between text-[11px] font-bold mt-[3px]">
                       <span>TỔNG TIỀN:</span>
                       <span>{grandTotal.toLocaleString('vi-VN')} đ</span>
                     </div>
                   </div>
 
-                  <div style={styles.printDashedLine} />
+                  <div className="border-b border-dashed border-black my-1.25" />
 
-                  <div style={styles.printFooter}>
-                    <p style={styles.printFooterText1}>Cảm ơn quý khách. Hẹn gặp lại!</p>
-                    <p style={styles.printFooterText2}>PHÒNG KHÁM ĐA KHOA NHẬT TẢO</p>
+                  <div className="text-center mt-2.5 text-[8.5px]">
+                    <p className="m-0 mb-[3px] italic">Cảm ơn quý khách. Hẹn gặp lại!</p>
+                    <p className="m-0 font-bold text-[9.5px] uppercase">PHÒNG KHÁM ĐA KHOA NHẬT TẢO</p>
                   </div>
                 </div>,
                 document.body
               )}
 
               {/* PHẦN HIỂN THỊ TRÊN MÀN HÌNH FRONTEND */}
-              <div className="hide-on-print" style={styles.mainContainer}>
+              <div className="hide-on-print p-5 flex flex-col gap-5">
                 
                 {successMessage && (
-                  <div style={styles.successBanner}>
+                  <div className="bg-[#dcfce7] border border-[#bbf7d0] text-[#16a34a] py-3 px-4 rounded-[var(--radius-lg)] text-[13px] font-semibold flex items-center gap-2 animate-[fadeIn_0.2s_ease-in-out]">
                     <CheckCircle size={16} />
                     {successMessage}
                   </div>
                 )}
                 
                 {/* 1. Header chi tiết phiếu thu */}
-                <div style={styles.detailsHeader}>
-                  <div style={styles.detailsHeaderLeft}>
-                    <div style={styles.avatar}>
+                <div className="flex justify-between items-center bg-[#f8fafc] border border-[var(--border-color)] rounded-[var(--radius-lg)] py-4 px-5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-[46px] h-[46px] rounded-full bg-[var(--primary-light)] text-[var(--primary)] flex items-center justify-center text-[18px] font-bold">
                       {selectedPhieu.hoTen ? selectedPhieu.hoTen.split(' ').pop().charAt(0) : 'BN'}
                     </div>
                     <div>
-                      <h3 style={styles.patientName}>{selectedPhieu.hoTen}</h3>
-                      <p style={styles.patientSubText}>
+                      <h3 className="m-0 text-[16px] font-[750] text-[var(--text-main)]">{selectedPhieu.hoTen}</h3>
+                      <p className="m-0 mt-1 text-[12.5px] text-[var(--text-muted)]">
                         Mã người bệnh: <b style={{ color: 'var(--text-main)' }}>{selectedPhieu.maBN}</b> | Mã hồ sơ: <b style={{ color: 'var(--text-main)' }}>{selectedPhieu.maPhieu}</b>
                       </p>
                     </div>
                   </div>
 
-                  <div style={styles.detailsHeaderRight}>
+                  <div className="text-right">
                     {selectedPhieu.daThanhToan ? (
-                      <div style={styles.statusPaidBadge}>
+                      <div className="inline-flex items-center gap-1.5 text-[#16a34a] bg-[#dcfce7] py-1.5 px-3.5 rounded-[20px] font-bold text-[13px] border border-[#bbf7d0]">
                         <CheckCircle size={15} /> Đã thanh toán
                       </div>
                     ) : (
-                      <div style={styles.statusUnpaidBadge}>
+                      <div className="inline-flex items-center gap-1.5 text-[#dc2626] bg-[#fee2e2] py-1.5 px-3.5 rounded-[20px] font-bold text-[13px] border border-[#fecaca]">
                         <AlertCircle size={15} /> Chưa thanh toán
                       </div>
                     )}
                     {selectedPhieu.daThanhToan && selectedPhieu.ngayThanhToan && (
-                      <p style={styles.billingTime}>
+                      <p className="m-0 mt-1.5 text-[11px] text-[var(--text-muted)]">
                         TT lúc: {new Date(selectedPhieu.ngayThanhToan).toLocaleString('vi-VN')}
                       </p>
                     )}
@@ -711,57 +710,57 @@ function ThanhToanHoaDon() {
                 </div>
 
                 {/* 2. Thông tin chẩn đoán lâm sàng */}
-                <div style={styles.diagnosticGrid}>
+                <div className="grid grid-cols-[1.2fr_1fr_1fr] gap-4 border border-[var(--border-color)] rounded-[var(--radius-lg)] p-4 text-[13px]">
                   <div>
-                    <span style={styles.metaLabel}>Chẩn đoán bệnh lý:</span>
-                    <p style={styles.metaValue}>{selectedPhieu.chanDoan || 'Bác sĩ chưa ghi chẩn đoán'}</p>
+                    <span className="text-[var(--text-muted)]">Chẩn đoán bệnh lý:</span>
+                    <p className="m-0 mt-1 font-semibold text-[var(--text-main)]">{selectedPhieu.chanDoan || 'Bác sĩ chưa ghi chẩn đoán'}</p>
                   </div>
                   <div>
-                    <span style={styles.metaLabel}>Bác sĩ khám bệnh:</span>
-                    <p style={styles.metaValue}>{selectedPhieu.tenBacSi || 'Không rõ'}</p>
+                    <span className="text-[var(--text-muted)]">Bác sĩ khám bệnh:</span>
+                    <p className="m-0 mt-1 font-semibold text-[var(--text-main)]">{selectedPhieu.tenBacSi || 'Không rõ'}</p>
                   </div>
                   <div>
-                    <span style={styles.metaLabel}>Ngày chỉ định khám:</span>
-                    <p style={styles.metaValue}>
+                    <span className="text-[var(--text-muted)]">Ngày chỉ định khám:</span>
+                    <p className="m-0 mt-1 font-semibold text-[var(--text-main)]">
                       {selectedPhieu.ngayKham ? new Date(selectedPhieu.ngayKham).toLocaleDateString('vi-VN') : '—'}
                     </p>
                   </div>
                 </div>
 
                 {/* 3. BẢNG CHI TIẾT CÁC KHOẢN CHI PHÍ */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                <div className="flex flex-col gap-4">
                   
                   {/* BẢNG 1: Dịch vụ y tế & Chỉ định cận lâm sàng */}
-                  <div style={styles.sectionTableWrapper}>
-                    <div style={styles.sectionTableHeader}>
+                  <div className="border border-[var(--border-color)] rounded-[var(--radius-lg)] overflow-hidden">
+                    <div className="bg-[var(--bg-main)] py-2.5 px-3.5 border-b border-[var(--border-color)] flex items-center gap-1.5">
                       <Activity size={14} style={{ color: 'var(--primary)' }} />
-                      <strong style={styles.sectionTableHeaderTitle}>I. Dịch vụ cận lâm sàng & Chỉ định (CLS)</strong>
+                      <strong className="text-[13px] text-[var(--text-main)]">I. Dịch vụ cận lâm sàng & Chỉ định (CLS)</strong>
                     </div>
-                    <table className="kb-table" style={styles.tableCommon}>
+                    <table className="kb-table w-full border-collapse text-[13px]">
                       <thead>
                         <tr>
-                          <th style={styles.thStt}>STT</th>
-                          <th style={styles.thItemName}>Tên dịch vụ kỹ thuật y tế</th>
-                          <th style={styles.thQty}>SL</th>
-                          <th style={styles.thPrice}>Đơn giá (đ)</th>
-                          <th style={styles.thSubtotal}>Thành tiền (đ)</th>
+                          <th className="w-[50px] text-center">STT</th>
+                          <th className="text-left">Tên dịch vụ kỹ thuật y tế</th>
+                          <th className="w-[80px] text-center">SL</th>
+                          <th className="w-[140px] text-right">Đơn giá (đ)</th>
+                          <th className="w-[160px] text-right">Thành tiền (đ)</th>
                         </tr>
                       </thead>
                       <tbody>
                         {services.length === 0 ? (
                           <tr>
-                            <td colSpan="5" style={styles.noDataRow}>
+                            <td colSpan="5" className="text-center p-4 text-[var(--text-muted)] italic">
                               Không có chỉ định cận lâm sàng nào trong lượt khám này.
                             </td>
                           </tr>
                         ) : (
                           services.map((item, idx) => (
                             <tr key={idx}>
-                              <td style={styles.tdCenter}>{idx + 1}</td>
+                              <td className="text-center">{idx + 1}</td>
                               <td style={{ fontWeight: '600' }}>{item.tenItem}</td>
-                              <td style={styles.tdCenter}>{item.soLuong}</td>
-                              <td style={styles.tdRight}>{item.donGia.toLocaleString('vi-VN')}</td>
-                              <td style={styles.tdBoldSubtotal}>{item.thanhTien.toLocaleString('vi-VN')}</td>
+                              <td className="text-center">{item.soLuong}</td>
+                              <td className="text-right">{item.donGia.toLocaleString('vi-VN')}</td>
+                              <td className="text-right font-[750] text-[var(--text-main)]">{item.thanhTien.toLocaleString('vi-VN')}</td>
                             </tr>
                           ))
                         )}
@@ -770,40 +769,40 @@ function ThanhToanHoaDon() {
                   </div>
 
                   {/* BẢNG 2: Đơn thuốc đã kê */}
-                  <div style={styles.sectionTableWrapper}>
-                    <div style={styles.sectionTableHeader}>
+                  <div className="border border-[var(--border-color)] rounded-[var(--radius-lg)] overflow-hidden">
+                    <div className="bg-[var(--bg-main)] py-2.5 px-3.5 border-b border-[var(--border-color)] flex items-center gap-1.5">
                       <Pill size={14} style={{ color: 'var(--primary)' }} />
-                      <strong style={styles.sectionTableHeaderTitle}>II. Danh mục dược phẩm & Thuốc điều trị</strong>
+                      <strong className="text-[13px] text-[var(--text-main)]">II. Danh mục dược phẩm & Thuốc điều trị</strong>
                     </div>
-                    <table className="kb-table" style={styles.tableCommon}>
+                    <table className="kb-table w-full border-collapse text-[13px]">
                       <thead>
                         <tr>
-                          <th style={styles.thStt}>STT</th>
-                          <th style={styles.thItemName}>Tên biệt dược</th>
+                          <th className="w-[50px] text-center">STT</th>
+                          <th className="text-left">Tên biệt dược</th>
                           <th style={{ textAlign: 'left', width: '220px' }}>Liều dùng chỉ định</th>
                           <th style={{ width: '60px', textAlign: 'center' }}>Số ngày</th>
                           <th style={{ width: '80px', textAlign: 'center' }}>SL quy đổi</th>
                           <th style={{ width: '110px', textAlign: 'right' }}>Đơn giá (đ)</th>
-                          <th style={styles.thSubtotal}>Thành tiền (đ)</th>
+                          <th className="w-[160px] text-right">Thành tiền (đ)</th>
                         </tr>
                       </thead>
                       <tbody>
                         {drugs.length === 0 ? (
                           <tr>
-                            <td colSpan="7" style={styles.noDataRow}>
+                            <td colSpan="7" className="text-center p-4 text-[var(--text-muted)] italic">
                               Không có đơn thuốc nào được kê trong lượt khám này.
                             </td>
                           </tr>
                         ) : (
                           drugs.map((item, idx) => (
                             <tr key={idx}>
-                              <td style={styles.tdCenter}>{idx + 1}</td>
+                              <td className="text-center">{idx + 1}</td>
                               <td style={{ fontWeight: '600' }}>{item.tenItem}</td>
                               <td style={{ fontStyle: 'italic', color: 'var(--text-muted)', fontSize: '12px' }}>{item.lieuDung}</td>
-                              <td style={styles.tdCenter}>{item.soNgay} ngày</td>
-                              <td style={styles.tdCenter}>{item.soLuong}</td>
-                              <td style={styles.tdRight}>{item.donGia.toLocaleString('vi-VN')}</td>
-                              <td style={styles.tdBoldSubtotal}>{item.thanhTien.toLocaleString('vi-VN')}</td>
+                              <td className="text-center">{item.soNgay} ngày</td>
+                              <td className="text-center">{item.soLuong}</td>
+                              <td className="text-right">{item.donGia.toLocaleString('vi-VN')}</td>
+                              <td className="text-right font-[750] text-[var(--text-main)]">{item.thanhTien.toLocaleString('vi-VN')}</td>
                             </tr>
                           ))
                         )}
@@ -812,11 +811,11 @@ function ThanhToanHoaDon() {
                   </div>
 
                   {/* BẢNG 3: Vật tư y tế tiêu hao */}
-                  <div style={styles.sectionTableWrapper}>
-                    <div style={styles.sectionTableVatTuHeader}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <div className="border border-[var(--border-color)] rounded-[var(--radius-lg)] overflow-hidden">
+                    <div className="bg-[var(--bg-main)] py-2 px-3.5 border-b border-[var(--border-color)] flex items-center justify-between">
+                      <div className="flex items-center gap-[6px]">
                         <ClipboardList size={14} style={{ color: 'var(--primary)' }} />
-                        <strong style={styles.sectionTableHeaderTitle}>III. Vật tư y tế tiêu hao & Dụng cụ khám</strong>
+                        <strong className="text-[13px] text-[var(--text-main)]">III. Vật tư y tế tiêu hao & Dụng cụ khám</strong>
                       </div>
                       
                       {!selectedPhieu.daThanhToan && (
@@ -829,41 +828,40 @@ function ThanhToanHoaDon() {
                             }
                             setShowVatTuModal(true);
                           }}
-                          className="btn-outline" 
-                          style={styles.addSupplyBtn}
+                          className="btn-outline h-6 text-[11px] px-2 flex items-center gap-[3px]"
                         >
                           <Plus size={10} /> Thêm vật tư
                         </button>
                       )}
                     </div>
-                    <table className="kb-table" style={styles.tableCommon}>
+                    <table className="kb-table w-full border-collapse text-[13px]">
                       <thead>
                         <tr>
-                          <th style={styles.thStt}>STT</th>
-                          <th style={styles.thItemName}>Tên vật tư tiêu hao</th>
+                          <th className="w-[50px] text-center">STT</th>
+                          <th className="text-left">Tên vật tư tiêu hao</th>
                           <th style={{ width: '100px', textAlign: 'center' }}>Số lượng</th>
-                          <th style={styles.thPrice}>Đơn giá (đ)</th>
-                          <th style={styles.thSubtotal}>Thành tiền (đ)</th>
+                          <th className="w-[140px] text-right">Đơn giá (đ)</th>
+                          <th className="w-[160px] text-right">Thành tiền (đ)</th>
                           {!selectedPhieu.daThanhToan && <th style={{ width: '50px', textAlign: 'center' }}>Xóa</th>}
                         </tr>
                       </thead>
                       <tbody>
                         {supplies.length === 0 ? (
                           <tr>
-                            <td colSpan={selectedPhieu.daThanhToan ? 5 : 6} style={styles.noDataRow}>
+                            <td colSpan={selectedPhieu.daThanhToan ? 5 : 6} className="text-center p-4 text-[var(--text-muted)] italic">
                               Chưa ghi nhận sử dụng vật tư y tế tiêu hao.
                             </td>
                           </tr>
                         ) : (
                           supplies.map((item, idx) => (
                             <tr key={idx}>
-                              <td style={styles.tdCenter}>{idx + 1}</td>
+                              <td className="text-center">{idx + 1}</td>
                               <td style={{ fontWeight: '600' }}>{item.tenItem}</td>
-                              <td style={styles.tdCenter}>{item.soLuong}</td>
-                              <td style={styles.tdRight}>{item.donGia.toLocaleString('vi-VN')}</td>
-                              <td style={styles.tdBoldSubtotal}>{item.thanhTien.toLocaleString('vi-VN')}</td>
+                              <td className="text-center">{item.soLuong}</td>
+                              <td className="text-right">{item.donGia.toLocaleString('vi-VN')}</td>
+                              <td className="text-right font-[750] text-[var(--text-main)]">{item.thanhTien.toLocaleString('vi-VN')}</td>
                               {!selectedPhieu.daThanhToan && (
-                                <td style={styles.tdCenter}>
+                                <td className="text-center">
                                   <button 
                                     className="kb-icon-btn kb-icon-btn--danger"
                                     onClick={() => handleDeleteSupply(item.id)}
@@ -884,16 +882,16 @@ function ThanhToanHoaDon() {
                 </div>
 
                 {/* 4. PANEL BẢNG TỔNG HỢP CHI PHÍ & THANH TOÁN */}
-                <div style={styles.summaryPanelRow}>
+                <div className="flex gap-5 mt-2.5">
                   
                   {/* Cấu hình phương thức thanh toán */}
-                  <div style={styles.summaryPanelLeft}>
-                    <h4 style={styles.summaryTitle}>CẤU HÌNH PHƯƠNG THỨC THANH TOÁN</h4>
+                  <div className="flex-1 border border-[var(--border-color)] rounded-[var(--radius-lg)] p-[18px] flex flex-col gap-[14px] bg-[#fafafa]">
+                    <h4 className="text-[13px] font-bold text-[var(--primary)] m-0 border-b border-dashed border-[var(--border-color)] pb-2">CẤU HÌNH PHƯƠNG THỨC THANH TOÁN</h4>
                     
                     <div className="form-group" style={{ margin: 0 }}>
                       <label className="form-label" style={{ fontSize: '12px' }}>Phương thức thanh toán</label>
-                      <div style={styles.paymentRadios}>
-                        <label style={styles.getPaymentRadioLabelStyle(phuongThucTT === 'Tiền mặt', selectedPhieu.daThanhToan)}>
+                      <div className="flex gap-2.5 mt-1.5">
+                        <label className={`flex-1 flex items-center gap-2 py-2 px-3 border rounded-md text-[12.5px] font-semibold ${selectedPhieu.daThanhToan ? 'cursor-default' : 'cursor-pointer'} ${phuongThucTT === 'Tiền mặt' ? 'border-[var(--primary)] bg-[var(--primary-light)]' : 'border-[var(--border-color)] bg-white'}`}>
                           <input 
                             type="radio" 
                             name="paymentMethod" 
@@ -903,7 +901,7 @@ function ThanhToanHoaDon() {
                           />
                           Tiền mặt
                         </label>
-                        <label style={styles.getPaymentRadioLabelStyle(phuongThucTT === 'Chuyển khoản', selectedPhieu.daThanhToan)}>
+                        <label className={`flex-1 flex items-center gap-2 py-2 px-3 border rounded-md text-[12.5px] font-semibold ${selectedPhieu.daThanhToan ? 'cursor-default' : 'cursor-pointer'} ${phuongThucTT === 'Chuyển khoản' ? 'border-[var(--primary)] bg-[var(--primary-light)]' : 'border-[var(--border-color)] bg-white'}`}>
                           <input 
                             type="radio" 
                             name="paymentMethod" 
@@ -918,27 +916,27 @@ function ThanhToanHoaDon() {
                   </div>
 
                   {/* Chi tiết hóa đơn & Thu tiền */}
-                  <div style={styles.summaryPanelRight}>
-                    <h4 style={styles.summaryTitle}>CHI TIẾT PHIẾU THU & HÓA ĐƠN</h4>
+                  <div className="flex-[1.1] border border-[var(--border-color)] rounded-[var(--radius-lg)] p-[18px] flex flex-col gap-3 bg-[#f8fafc]">
+                    <h4 className="text-[13px] font-bold text-[var(--primary)] m-0 border-b border-dashed border-[var(--border-color)] pb-2">CHI TIẾT PHIẾU THU & HÓA ĐƠN</h4>
                     
-                    <div style={styles.summaryRow}>
+                    <div className="flex justify-between text-[13px] text-[var(--text-muted)]">
                       <span>Tổng chi phí lâm sàng:</span>
                       <strong style={{ color: 'var(--text-main)' }}>{totalServices.toLocaleString('vi-VN')} đ</strong>
                     </div>
                     
-                    <div style={styles.summaryRow}>
+                    <div className="flex justify-between text-[13px] text-[var(--text-muted)]">
                       <span>Tổng chi phí đơn thuốc:</span>
                       <strong style={{ color: 'var(--text-main)' }}>{totalDrugs.toLocaleString('vi-VN')} đ</strong>
                     </div>
 
-                    <div style={styles.summaryRow}>
+                    <div className="flex justify-between text-[13px] text-[var(--text-muted)]">
                       <span>Tổng chi phí vật tư y tế:</span>
                       <strong style={{ color: 'var(--text-main)' }}>{totalSupplies.toLocaleString('vi-VN')} đ</strong>
                     </div>
 
-                    <div style={styles.summaryRowGrand}>
+                    <div className="flex justify-between text-[15px] text-[var(--text-main)] border-t border-[var(--border-color)] pt-2.5 mt-1">
                       <span><strong>TỔNG TIỀN THANH TOÁN:</strong></span>
-                      <strong style={styles.grandTotalText}>
+                      <strong className="text-[#0052cc] text-[18px]">
                         {grandTotal.toLocaleString('vi-VN')} VNĐ
                       </strong>
                     </div>
@@ -947,26 +945,23 @@ function ThanhToanHoaDon() {
                       {!selectedPhieu.daThanhToan ? (
                         <button 
                           onClick={handleExecutePayment}
-                          className="btn-primary" 
-                          style={styles.payBtn}
+                          className="btn-primary w-full h-[42px] text-[14px] font-bold flex items-center justify-center gap-2 shadow-[var(--shadow-md)]"
                         >
                           <CreditCard size={18} />
                           THU TIỀN & ĐÓNG PHIẾU [F12]
                         </button>
                       ) : (
-                        <div style={styles.paidActionsContainer}>
+                        <div className="flex gap-2">
                           <button 
                             onClick={handlePrintInvoice}
-                            className="btn-outline" 
-                            style={styles.printBtn}
+                            className="btn-outline flex-1 h-10 text-[13.5px] font-semibold border border-[#0052cc] text-[#0052cc] flex items-center justify-center gap-1.5"
                           >
                             <Printer size={16} />
                             IN PHIẾU THU [F8]
                           </button>
                           <button 
                             disabled
-                            className="btn-outline" 
-                            style={styles.alreadyPaidBtn}
+                            className="btn-outline flex-1 h-10 text-[13.5px] bg-[#e2e8f0] text-[var(--text-muted)] border-none cursor-not-allowed flex items-center justify-center"
                           >
                             ĐÃ THANH TOÁN
                           </button>
@@ -987,27 +982,26 @@ function ThanhToanHoaDon() {
 
       {/* POPUP THÊM VẬT TƯ TIÊU HAO */}
       {showVatTuModal && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modalContainer}>
-            <div style={styles.modalHeader}>
-              <span style={styles.modalHeaderTitle}>KÊ VẬT TƯ TIÊU HAO PHÁT SINH</span>
+        <div className="fixed inset-0 bg-black/40 flex justify-center items-center z-[200] animate-[fadeIn_0.2s]">
+          <div className="bg-white rounded-[var(--radius-lg)] w-[400px] shadow-[var(--shadow-lg)] border border-[var(--border-color)] overflow-hidden">
+            <div className="bg-[var(--primary)] text-white py-3 px-4 flex justify-between items-center">
+              <span className="text-[14px] font-bold">KÊ VẬT TƯ TIÊU HAO PHÁT SINH</span>
               <button 
                 onClick={() => setShowVatTuModal(false)}
-                style={styles.modalCloseBtn}
+                className="bg-none border-none text-white cursor-pointer text-[16px]"
               >
                 &times;
               </button>
             </div>
             
-            <form onSubmit={handleAddSupply} style={styles.modalForm}>
+            <form onSubmit={handleAddSupply} className="p-4 flex flex-col gap-3.5">
               <div className="form-group">
                 <label className="form-label" style={{ fontSize: '12.5px' }}>Tên vật tư y tế</label>
                 {danhMucVatTu.length > 0 ? (
                   <select 
-                    className="form-input" 
+                    className="form-input h-9 text-[13px] px-2" 
                     value={vatTuMoi.tenVT}
                     onChange={e => setVatTuMoi({ ...vatTuMoi, tenVT: e.target.value })}
-                    style={styles.modalFormSelect}
                   >
                     {danhMucVatTu.map(vt => (
                       <option key={vt.maVT} value={vt.tenVT}>{vt.tenVT}</option>
@@ -1016,12 +1010,11 @@ function ThanhToanHoaDon() {
                 ) : (
                   <input 
                     type="text" 
-                    className="form-input" 
+                    className="form-input h-9 text-[13px]" 
                     placeholder="Điền tên vật tư tiêu hao..."
                     value={vatTuMoi.tenVT}
                     onChange={e => setVatTuMoi({ ...vatTuMoi, tenVT: e.target.value })}
                     required
-                    style={styles.modalFormInput}
                   />
                 )}
               </div>
@@ -1031,19 +1024,18 @@ function ThanhToanHoaDon() {
                 <input 
                   type="number" 
                   min="1"
-                  className="form-input" 
+                  className="form-input h-9 text-[13px]" 
                   value={vatTuMoi.soLuong}
                   onChange={e => setVatTuMoi({ ...vatTuMoi, soLuong: parseInt(e.target.value, 10) || 1 })}
                   required
-                  style={styles.modalFormInput}
                 />
               </div>
 
-              <div style={styles.modalActions}>
-                <button type="submit" className="btn-primary" style={styles.modalSubmitBtn}>
+              <div className="flex gap-2.5 mt-2.5">
+                <button type="submit" className="btn-primary flex-1 h-9 text-[13px]">
                   Xác nhận thêm
                 </button>
-                <button type="button" onClick={() => setShowVatTuModal(false)} className="btn-outline" style={styles.modalCancelBtn}>
+                <button type="button" onClick={() => setShowVatTuModal(false)} className="btn-outline flex-1 h-9 text-[13px]">
                   Hủy bỏ
                 </button>
               </div>
@@ -1055,297 +1047,5 @@ function ThanhToanHoaDon() {
     </div>
   );
 }
-
-// Bảng chứa kiểu dáng tập trung cho giao diện thanh toán hóa đơn
-const styles = {
-  wrapper: { height: '100vh', overflow: 'hidden' },
-  topbar: { height: '50px', padding: '0 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border-color)', backgroundColor: '#ffffff' },
-  topbarLeft: { flex: 1, display: 'flex', justifyContent: 'flex-start' },
-  backBtn: { padding: '5px 10px' },
-  topbarTitle: { flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: '15px' },
-  receiptIcon: { marginRight: '6px' },
-  topbarRight: { flex: 1, display: 'flex', justifyContent: 'flex-end', fontSize: '12px', opacity: 0.85 },
-  body: {
-    display: 'flex',
-    height: 'calc(100vh - 50px)',
-    backgroundColor: 'var(--bg-main)',
-    overflow: 'hidden'
-  },
-  leftCol: {
-    flex: 1.1,
-    display: 'flex',
-    flexDirection: 'column',
-    borderRight: '1px solid var(--border-color)',
-    height: '100%',
-    backgroundColor: '#ffffff'
-  },
-  leftColHeader: { padding: '14px', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-main)' },
-  leftColHeaderTitleWrapper: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px' },
-  leftColHeaderTitle: { fontSize: '14px', fontWeight: '750', color: 'var(--text-main)', margin: 0 },
-  searchBox: { marginBottom: '10px', position: 'relative' },
-  searchInput: { paddingLeft: '32px', height: '32px', fontSize: '12.5px' },
-  searchIcon: { position: 'absolute', left: '10px', top: '9px', color: 'var(--text-muted)' },
-  tabWrapper: { display: 'flex', gap: '4px', backgroundColor: '#e2e8f0', padding: '2px', borderRadius: '6px' },
-  getTabStyle: (isActive, color) => ({
-    flex: 1,
-    padding: '5px',
-    border: 'none',
-    background: isActive ? '#ffffff' : 'transparent',
-    fontSize: '11.5px',
-    fontWeight: '600',
-    borderRadius: '4px',
-    color: color || 'inherit',
-    cursor: 'pointer',
-    transition: '0.15s'
-  }),
-  listContainer: { flex: 1, overflowY: 'auto', padding: '8px' },
-  noDataLeft: { textAlign: 'center', padding: '30px', color: 'var(--text-muted)', fontSize: '13px' },
-  getListItemStyle: (isSelected) => ({
-    padding: '12px',
-    borderRadius: '8px',
-    border: `1px solid ${isSelected ? 'var(--primary)' : 'var(--border-color)'}`,
-    backgroundColor: isSelected ? 'var(--primary-light)' : '#ffffff',
-    cursor: 'pointer',
-    marginBottom: '8px',
-    transition: 'all 0.15s ease'
-  }),
-  listItemHeader: { display: 'flex', justifyContent: 'space-between', marginBottom: '6px' },
-  listItemMaPhieu: { fontSize: '11px', fontWeight: '700', color: 'var(--text-muted)' },
-  badgePaid: { fontSize: '11px', color: '#16a34a', backgroundColor: '#dcfce7', padding: '1px 8px', borderRadius: '10px', fontWeight: 'bold' },
-  badgeUnpaid: { fontSize: '11px', color: '#dc2626', backgroundColor: '#fee2e2', padding: '1px 8px', borderRadius: '10px', fontWeight: 'bold' },
-  listItemName: { fontSize: '13.5px', fontWeight: '700', color: 'var(--text-main)', marginBottom: '4px' },
-  listItemFooter: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '12px' },
-  listItemMaBN: { color: 'var(--text-muted)' },
-  listItemAmount: { color: '#0052cc', fontSize: '13.5px' },
-
-  rightCol: {
-    flex: 1.9,
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-    backgroundColor: '#ffffff'
-  },
-  noDataRight: { height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', textAlign: 'center', gap: '12px' },
-  noDataRightIcon: { opacity: 0.25, color: 'var(--primary)' },
-  noDataRightTitle: { fontWeight: '600', color: 'var(--text-main)' },
-  noDataRightText: { fontSize: '13px', marginTop: '4px' },
-  rightColScrollable: { display: 'flex', flexDirection: 'column', height: '100%', overflowY: 'auto' },
-
-  // PRINT TEMPLATE
-  printOnly: {
-    width: '54mm',
-    padding: '8px 1px',
-    fontSize: '9.5px',
-    color: '#000000',
-    fontFamily: 'monospace',
-    lineHeight: '1.25',
-    margin: '0 auto'
-  },
-  printHeader: { textAlign: 'center', marginBottom: '6px' },
-  printHeaderTitle: { margin: '0 0 2px 0', fontSize: '11px', fontWeight: 'bold' },
-  printHeaderSub1: { margin: '0 0 1px 0', fontSize: '8.5px' },
-  printHeaderSub2: { margin: 0, fontSize: '8.5px' },
-  printDashedLine: { borderBottom: '1px dashed #000', margin: '5px 0' },
-  printTitleArea: { textAlign: 'center', marginBottom: '8px' },
-  printTitle: { margin: '0 0 3px 0', fontSize: '12px', fontWeight: 'bold' },
-  printTitleDate: { margin: 0, fontSize: '8.5px', fontStyle: 'italic' },
-  printPatientInfo: { display: 'flex', flexDirection: 'column', gap: '2px', marginBottom: '6px', fontSize: '9px' },
-  printSection: { marginBottom: '5px' },
-  printSectionTitle: { fontWeight: 'bold', fontSize: '9px', marginBottom: '2px' },
-  printItemRow: { paddingLeft: '2px', marginBottom: '2px' },
-  printItemDetail: { display: 'flex', justifyContent: 'space-between', paddingLeft: '8px', fontSize: '8.5px', color: '#222' },
-  printSummary: { display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '9px', textAlign: 'right' },
-  printGrandTotalRow: { display: 'flex', justifyContent: 'space-between', fontSize: '11px', fontWeight: 'bold', marginTop: '3px' },
-  printFooter: { textAlign: 'center', marginTop: '10px', fontSize: '8.5px' },
-  printFooterText1: { margin: '0 0 3px 0', fontStyle: 'italic' },
-  printFooterText2: { margin: 0, fontWeight: 'bold', fontSize: '9.5px', textTransform: 'uppercase' },
-
-  // UI ELEMENTS
-  mainContainer: { padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px' },
-  successBanner: {
-    backgroundColor: '#dcfce7',
-    border: '1px solid #bbf7d0',
-    color: '#16a34a',
-    padding: '12px 16px',
-    borderRadius: 'var(--radius-lg)',
-    fontSize: '13px',
-    fontWeight: '600',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    animation: 'fadeIn 0.2s ease-in-out'
-  },
-  detailsHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: '#f8fafc',
-    border: '1px solid var(--border-color)',
-    borderRadius: 'var(--radius-lg)',
-    padding: '16px 20px'
-  },
-  detailsHeaderLeft: { display: 'flex', alignItems: 'center', gap: '12px' },
-  avatar: {
-    width: '46px',
-    height: '46px',
-    borderRadius: '50%',
-    backgroundColor: 'var(--primary-light)',
-    color: 'var(--primary)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontSize: '18px',
-    fontWeight: '700'
-  },
-  patientName: { margin: 0, fontSize: '16px', fontWeight: '750', color: 'var(--text-main)' },
-  patientSubText: { margin: '4px 0 0 0', fontSize: '12.5px', color: 'var(--text-muted)' },
-  detailsHeaderRight: { textAlign: 'right' },
-  statusPaidBadge: { display: 'inline-flex', alignItems: 'center', gap: '6px', color: '#16a34a', backgroundColor: '#dcfce7', padding: '6px 14px', borderRadius: '20px', fontWeight: '700', fontSize: '13px', border: '1px solid #bbf7d0' },
-  statusUnpaidBadge: { display: 'inline-flex', alignItems: 'center', gap: '6px', color: '#dc2626', backgroundColor: '#fee2e2', padding: '6px 14px', borderRadius: '20px', fontWeight: '700', fontSize: '13px', border: '1px solid #fecaca' },
-  billingTime: { margin: '6px 0 0 0', fontSize: '11px', color: 'var(--text-muted)' },
-  diagnosticGrid: {
-    display: 'grid',
-    gridTemplateColumns: '1.2fr 1fr 1fr',
-    gap: '16px',
-    border: '1px solid var(--border-color)',
-    borderRadius: 'var(--radius-lg)',
-    padding: '16px',
-    fontSize: '13px'
-  },
-  metaLabel: { color: 'var(--text-muted)' },
-  metaValue: { margin: '4px 0 0 0', fontWeight: '600', color: 'var(--text-main)' },
-  sectionTableWrapper: { border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' },
-  sectionTableHeader: { backgroundColor: 'var(--bg-main)', padding: '10px 14px', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', gap: '6px' },
-  sectionTableHeaderTitle: { fontSize: '13px', color: 'var(--text-main)' },
-  tableCommon: { width: '100%', borderCollapse: 'collapse', fontSize: '13px' },
-  thStt: { width: '50px', textAlign: 'center' },
-  thItemName: { textAlign: 'left' },
-  thQty: { width: '80px', textAlign: 'center' },
-  thPrice: { width: '140px', textAlign: 'right' },
-  thSubtotal: { width: '160px', textAlign: 'right' },
-  tdCenter: { textAlign: 'center' },
-  tdRight: { textAlign: 'right' },
-  tdBoldSubtotal: { textAlign: 'right', fontWeight: '750', color: 'var(--text-main)' },
-  noDataRow: { textAlign: 'center', padding: '16px', color: 'var(--text-muted)', fontStyle: 'italic' },
-  sectionTableVatTuHeader: {
-    backgroundColor: 'var(--bg-main)',
-    padding: '8px 14px',
-    borderBottom: '1px solid var(--border-color)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between'
-  },
-  addSupplyBtn: { height: '24px', fontSize: '11px', padding: '0 8px', display: 'flex', alignItems: 'center', gap: '3px' },
-  summaryPanelRow: { display: 'flex', gap: '20px', marginTop: '10px' },
-  summaryPanelLeft: {
-    flex: 1,
-    border: '1px solid var(--border-color)',
-    borderRadius: 'var(--radius-lg)',
-    padding: '18px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '14px',
-    backgroundColor: '#fafafa'
-  },
-  summaryPanelRight: {
-    flex: 1.1,
-    border: '1px solid var(--border-color)',
-    borderRadius: 'var(--radius-lg)',
-    padding: '18px',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px',
-    backgroundColor: '#f8fafc'
-  },
-  summaryTitle: { fontSize: '13px', fontWeight: '700', color: 'var(--primary)', margin: 0, borderBottom: '1px dashed var(--border-color)', paddingBottom: '8px' },
-  paymentRadios: { display: 'flex', gap: '10px', marginTop: '6px' },
-  getPaymentRadioLabelStyle: (isSelected, disabled) => ({
-    flex: 1,
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    padding: '8px 12px',
-    border: `1px solid ${isSelected ? 'var(--primary)' : 'var(--border-color)'}`,
-    borderRadius: '6px',
-    cursor: disabled ? 'default' : 'pointer',
-    backgroundColor: isSelected ? 'var(--primary-light)' : '#ffffff',
-    fontSize: '12.5px',
-    fontWeight: '600'
-  }),
-  summaryRow: { display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: 'var(--text-muted)' },
-  summaryRowGrand: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    fontSize: '15px',
-    color: 'var(--text-main)',
-    borderTop: '1px solid var(--border-color)',
-    paddingTop: '10px',
-    marginTop: '4px'
-  },
-  grandTotalText: { color: '#0052cc', fontSize: '18px' },
-  payBtn: {
-    width: '100%',
-    height: '42px',
-    fontSize: '14px',
-    fontWeight: 'bold',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '8px',
-    boxShadow: 'var(--shadow-md)'
-  },
-  paidActionsContainer: { display: 'flex', gap: '8px' },
-  printBtn: {
-    flex: 1,
-    height: '40px',
-    fontSize: '13.5px',
-    fontWeight: '600',
-    borderColor: '#0052cc',
-    color: '#0052cc',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '6px'
-  },
-  alreadyPaidBtn: {
-    flex: 1,
-    height: '40px',
-    fontSize: '13.5px',
-    backgroundColor: '#e2e8f0',
-    color: 'var(--text-muted)',
-    border: 'none',
-    cursor: 'not-allowed',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  modalOverlay: {
-    position: 'fixed',
-    top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 200,
-    animation: 'fadeIn 0.2s'
-  },
-  modalContainer: {
-    backgroundColor: '#ffffff',
-    borderRadius: 'var(--radius-lg)',
-    width: '400px',
-    boxShadow: 'var(--shadow-lg)',
-    border: '1px solid var(--border-color)',
-    overflow: 'hidden'
-  },
-  modalHeader: { backgroundColor: 'var(--primary)', color: '#ffffff', padding: '12px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-  modalHeaderTitle: { fontSize: '14px', fontWeight: 'bold' },
-  modalCloseBtn: { background: 'none', border: 'none', color: '#ffffff', cursor: 'pointer', fontSize: '16px' },
-  modalForm: { padding: '16px', display: 'flex', flexDirection: 'column', gap: '14px' },
-  modalFormSelect: { height: '36px', fontSize: '13px', padding: '0 8px' },
-  modalFormInput: { height: '36px', fontSize: '13px' },
-  modalActions: { display: 'flex', gap: '10px', marginTop: '10px' },
-  modalSubmitBtn: { flex: 1, height: '36px', fontSize: '13px' },
-  modalCancelBtn: { flex: 1, height: '36px', fontSize: '13px' }
-};
 
 export default ThanhToanHoaDon;

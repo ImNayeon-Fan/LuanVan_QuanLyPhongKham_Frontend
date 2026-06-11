@@ -43,20 +43,30 @@ function TiepDon() {
   
   // Danh sách bác sĩ tải động từ backend và các danh mục gợi ý
   const [danhSachBacSi, setDanhSachBacSi] = useState([]);
-  const [danhMucICD, setDanhMucICD] = useState([]);
+  const [danhMucICD] = useState(() => {
+    try {
+      const stored = localStorage.getItem('danhMucICD');
+      return stored ? JSON.parse(stored) : defaultICDData;
+    } catch {
+      return defaultICDData;
+    }
+  });
   
-  // Trạng thái biểu mẫu nhập liệu
-  const [formData, setFormData] = useState({
-    sdt: '',
-    hoTen: '',
-    ngaySinh: '', // Định dạng hiển thị: DD/MM/YYYY
-    gioiTinh: 'Nam',
-    diaChi: '',
-    tienSuBenh: '',
-    maBacSi: '',
-    lyDoKham: '',
-    maICD: '',
-    tenBenhICD: ''
+  // Trạng thái biểu mẫu nhập liệu (Khởi tạo từ location.state nếu chuyển từ trang Lịch đặt khám)
+  const [formData, setFormData] = useState(() => {
+    const state = location.state || {};
+    return {
+      sdt: state.sdt || '',
+      hoTen: state.hoTen || '',
+      ngaySinh: '', // Định dạng hiển thị: DD/MM/YYYY
+      gioiTinh: 'Nam',
+      diaChi: '',
+      tienSuBenh: '',
+      maBacSi: '',
+      lyDoKham: state.lyDoKham || '',
+      maICD: '',
+      tenBenhICD: ''
+    };
   });
 
   const [notification, setNotification] = useState(null); // Banner thông báo thành công
@@ -64,63 +74,7 @@ function TiepDon() {
   const [icdQuery, setIcdQuery] = useState('');
   const [showIcdDropdown, setShowIcdDropdown] = useState(false);
 
-  // 1. Tải danh sách bác sĩ đang hoạt động từ backend
-  useEffect(() => {
-    const fetchDoctors = async () => {
-      try {
-        const res = await apiGetStaffList('active', 1, 100, '', 2); // RoleID 2 là Bác sĩ
-        if (res && res.data) setDanhSachBacSi(res.data);
-      } catch (err) {
-        console.error('Không thể tải danh sách bác sĩ:', err);
-        showError('Không thể tải danh sách bác sĩ từ máy chủ!');
-      }
-    };
-    fetchDoctors();
-    
-    // Tải danh mục ICD từ LocalStorage
-    try {
-      const stored = localStorage.getItem('danhMucICD');
-      setDanhMucICD(stored ? JSON.parse(stored) : defaultICDData);
-    } catch (e) {
-      setDanhMucICD(defaultICDData);
-    }
-  }, []);
-
-  // 2. Tự động điền dữ liệu nếu chuyển hướng từ trang Lịch đặt khám
-  useEffect(() => {
-    if (location.state) {
-      const { hoTen, sdt, lyDoKham } = location.state;
-      setFormData(prev => ({ ...prev, hoTen: hoTen || '', sdt: sdt || '', lyDoKham: lyDoKham || '' }));
-
-      if (sdt && sdt.length === 10 && sdt.startsWith('0')) {
-        apiTraCuuBenhNhan(sdt)
-          .then(res => {
-            if (res && res.found && res.data) {
-              setFoundPatient(res.data);
-              showSuccess('Đã tự động tìm thấy hồ sơ bệnh nhân cũ từ lịch đặt khám!');
-            }
-          })
-          .catch(err => console.error('Lỗi tự động tra cứu:', err));
-      }
-    }
-  }, [location.state]);
-
-  // 3. Phím tắt: F4 để Lưu tiếp nhận, F2 để Điền nhanh thông tin bệnh nhân cũ
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'F4') {
-        e.preventDefault();
-        handleSave();
-      } else if (e.key === 'F2') {
-        e.preventDefault();
-        if (foundPatient) handleAutoFill();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [formData, foundPatient]);
-
-  // 4. Tra cứu bệnh nhân cũ theo SĐT khi nhập đủ 10 chữ số
+  // Tra cứu bệnh nhân cũ theo SĐT khi nhập đủ 10 chữ số
   const handleSdtChange = async (val) => {
     const cleanVal = val.replace(/\D/g, ''); // Loại bỏ ký tự không phải số
     setFormData(prev => ({ ...prev, sdt: cleanVal }));
@@ -134,7 +88,7 @@ function TiepDon() {
         } else {
           setFoundPatient(null);
         }
-      } catch (err) {
+      } catch {
         setFoundPatient(null);
       }
     } else {
@@ -142,7 +96,7 @@ function TiepDon() {
     }
   };
 
-  // 5. Tự động định dạng dấu gạch chéo ngày sinh (DD/MM/YYYY) khi gõ
+  // Tự động định dạng dấu gạch chéo ngày sinh (DD/MM/YYYY) khi gõ
   const handleNgaySinhChange = (e) => {
     let val = e.target.value;
     const isDeleting = e.nativeEvent.inputType === 'deleteContentBackward';
@@ -167,7 +121,7 @@ function TiepDon() {
     }
   };
 
-  // 6. Điền nhanh thông tin bệnh nhân cũ (F2)
+  // Điền nhanh thông tin bệnh nhân cũ (F2)
   const handleAutoFill = () => {
     if (foundPatient) {
       let displayDob = '';
@@ -217,7 +171,7 @@ function TiepDon() {
     setFoundPatient(null);
   };
 
-  // 7. Gửi yêu cầu lưu tiếp nhận lên Backend C#
+  // Gửi yêu cầu lưu tiếp nhận lên Backend C#
   const handleSave = async () => {
     if (!formData.hoTen.trim()) return showError('Vui lòng nhập Họ và tên bệnh nhân!');
     if (!formData.sdt.trim()) return showError('Vui lòng nhập Số điện thoại!');
@@ -262,6 +216,52 @@ function TiepDon() {
     }
   };
 
+  // 1. Tải danh sách bác sĩ đang hoạt động từ backend
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      try {
+        const res = await apiGetStaffList('active', 1, 100, '', 2); // RoleID 2 là Bác sĩ
+        if (res && res.data) setDanhSachBacSi(res.data);
+      } catch (err) {
+        console.error('Không thể tải danh sách bác sĩ:', err);
+        showError('Không thể tải danh sách bác sĩ từ máy chủ!');
+      }
+    };
+    fetchDoctors();
+  }, []);
+
+  // 2. Tự động điền dữ liệu nếu chuyển hướng từ trang Lịch đặt khám
+  useEffect(() => {
+    if (location.state) {
+      const { sdt } = location.state;
+      if (sdt && sdt.length === 10 && sdt.startsWith('0')) {
+        apiTraCuuBenhNhan(sdt)
+          .then(res => {
+            if (res && res.found && res.data) {
+              setFoundPatient(res.data);
+              showSuccess('Đã tự động tìm thấy hồ sơ bệnh nhân cũ từ lịch đặt khám!');
+            }
+          })
+          .catch(err => console.error('Lỗi tự động tra cứu:', err));
+      }
+    }
+  }, [location.state]);
+
+  // 3. Phím tắt: F4 để Lưu tiếp nhận, F2 để Điền nhanh thông tin bệnh nhân cũ
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'F4') {
+        e.preventDefault();
+        handleSave();
+      } else if (e.key === 'F2') {
+        e.preventDefault();
+        if (foundPatient) handleAutoFill();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [formData, foundPatient]);
+
   const dateWarning = formData.ngaySinh.length === 10 && !isValidDate(formData.ngaySinh) ? 'Ngày sinh không hợp lệ' : '';
   const filteredICDs = danhMucICD.filter(item => 
     item.maICD.toLowerCase().includes((icdQuery || formData.maICD).toLowerCase()) ||
@@ -269,66 +269,66 @@ function TiepDon() {
   );
 
   return (
-    <div className="kb-wrapper" style={styles.wrapper}>
+    <div className="kb-wrapper h-screen overflow-hidden">
       {/* Thanh công cụ định hướng phía trên */}
-      <div className="kb-topbar" style={styles.topbar}>
-        <div style={{ flex: 1, display: 'flex' }}>
-          <button className="kb-back-btn" onClick={() => navigate('/')} style={{ padding: '5px 10px' }}>
+      <div className="kb-topbar h-[50px] px-5 flex items-center">
+        <div className="flex-1 flex">
+          <button className="kb-back-btn py-[5px] px-[10px]" onClick={() => navigate('/')}>
             <ArrowLeft size={16} /> Quay về trang chủ
           </button>
         </div>
-        <div className="kb-topbar-title" style={styles.topbarTitle}>
-          <UserPlus size={18} style={{ marginRight: '6px' }} />
+        <div className="kb-topbar-title flex-1 flex justify-center text-[15px]">
+          <UserPlus size={18} className="mr-1.5" />
           <strong>Tiếp đón & Tiếp nhận Bệnh nhân mới</strong>
         </div>
-        <div style={{ flex: 1 }}></div>
+        <div className="flex-1"></div>
       </div>
 
       {/* Vùng thân chính chứa biểu mẫu */}
-      <div className="kb-body" style={styles.body}>
+      <div className="kb-body p-4 bg-[var(--bg-main)] h-[calc(100vh-118px)] overflow-y-auto block">
         {notification && (
-          <div style={styles.alertSuccess}>
+          <div className="bg-[#dcfce7] border-l-4 border-l-[#22c55e] text-[#15803d] py-2 px-3 rounded-[6px] mb-3 flex items-center gap-2 text-[13px] animate-[fadeIn_0.2s_ease-in-out]">
             <CheckCircle size={16} />
-            <span style={{ fontWeight: '500' }}>{notification.message}</span>
+            <span className="font-medium">{notification.message}</span>
           </div>
         )}
 
-        <div style={styles.gridContainer}>
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(400px,1fr))] gap-4 h-full">
           {/* CỘT TRÁI: NHẬP THÔNG TIN CÁ NHÂN */}
-          <div style={styles.column}>
+          <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius-lg)] py-4 px-5 shadow-[var(--shadow-sm)] flex flex-col justify-between">
             <div>
-              <div style={styles.columnHeader}>
-                <User size={16} style={{ color: 'var(--primary)' }} />
-                <h3 style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-main)' }}>Thông tin cá nhân (Hành chính)</h3>
+              <div className="flex items-center gap-1.5 border-b border-[var(--border-color)] pb-2 mb-3">
+                <User size={16} className="text-[var(--primary)]" />
+                <h3 className="text-[14px] font-semibold text-[var(--text-main)]">Thông tin cá nhân (Hành chính)</h3>
               </div>
 
-              <div style={styles.formGrid}>
+              <div className="grid grid-cols-2 gap-x-[14px] gap-y-[10px]">
                 {/* Số điện thoại & nút F2 điền nhanh */}
-                <div className="form-group" style={{ gridColumn: 'span 2', marginBottom: 0 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <label className="form-label" style={{ fontWeight: '600', fontSize: '13px' }}>
-                      Số điện thoại <span style={{ color: 'red' }}>*</span>
+                <div className="form-group col-span-2 mb-0">
+                  <div className="flex justify-between items-center">
+                    <label className="form-label font-semibold text-[13px]">
+                      Số điện thoại <span className="text-red-500">*</span>
                     </label>
                     {foundPatient && (
-                      <button onClick={handleAutoFill} style={styles.autoFillBtn}>
+                      <button onClick={handleAutoFill} className="bg-[#0ea5e9] text-white border-none rounded-[4px] py-0.5 px-2 text-[11px] font-semibold cursor-pointer flex items-center gap-1 animate-[pulse_1.5s_infinite]">
                         <AlertCircle size={10} /> BN cũ: Điền nhanh [F2]
                       </button>
                     )}
                   </div>
                   <input
-                    type="text" className="form-input" style={{ paddingLeft: '12px', height: '36px' }}
+                    type="text" className="form-input pl-3 h-9"
                     placeholder="Nhập SĐT để tra cứu hoặc tiếp đón mới..."
                     value={formData.sdt} onChange={e => handleSdtChange(e.target.value)}
                   />
                 </div>
 
                 {/* Họ và tên (Tự động in hoa) */}
-                <div className="form-group" style={{ gridColumn: 'span 2', marginBottom: 0 }}>
-                  <label className="form-label" style={{ fontWeight: '600', fontSize: '13px' }}>
-                    Họ và tên bệnh nhân <span style={{ color: 'red' }}>*</span>
+                <div className="form-group col-span-2 mb-0">
+                  <label className="form-label font-semibold text-[13px]">
+                    Họ và tên bệnh nhân <span className="text-red-500">*</span>
                   </label>
                   <input
-                    type="text" className="form-input" style={{ paddingLeft: '12px', height: '36px' }}
+                    type="text" className="form-input pl-3 h-9"
                     placeholder="NHẬP HỌ VÀ TÊN (CHỮ HOA)..."
                     value={formData.hoTen}
                     onChange={e => setFormData({ ...formData, hoTen: e.target.value.toUpperCase() })}
@@ -336,10 +336,10 @@ function TiepDon() {
                 </div>
 
                 {/* Giới tính */}
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label" style={{ fontWeight: '600', fontSize: '13px' }}>Giới tính *</label>
+                <div className="form-group mb-0">
+                  <label className="form-label font-semibold text-[13px]">Giới tính *</label>
                   <select
-                    className="form-input" style={{ paddingLeft: '12px', height: '36px' }}
+                    className="form-input pl-3 h-9"
                     value={formData.gioiTinh} onChange={e => setFormData({ ...formData, gioiTinh: e.target.value })}
                   >
                     <option value="Nam">Nam</option>
@@ -349,40 +349,40 @@ function TiepDon() {
                 </div>
 
                 {/* Ngày sinh */}
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label" style={{ fontWeight: '600', fontSize: '13px' }}>Ngày sinh (DD/MM/YYYY) *</label>
+                <div className="form-group mb-0">
+                  <label className="form-label font-semibold text-[13px]">Ngày sinh (DD/MM/YYYY) *</label>
                   <input
-                    type="text" className={`form-input ${dateWarning ? 'form-input-warning' : ''}`}
-                    style={{ paddingLeft: '12px', height: '36px' }} placeholder="VD: 15/03/1980" maxLength={10}
+                    type="text" className={`form-input pl-3 h-9 ${dateWarning ? 'form-input-warning' : ''}`}
+                    placeholder="VD: 15/03/1980" maxLength={10}
                     value={formData.ngaySinh} onChange={handleNgaySinhChange} onBlur={handleNgaySinhBlur}
                   />
                   {dateWarning && <span className="form-warning">{dateWarning}</span>}
                 </div>
 
                 {/* Tuổi (tự động tính) */}
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label" style={{ fontSize: '13px' }}>Tuổi (tự động)</label>
+                <div className="form-group mb-0">
+                  <label className="form-label text-[13px]">Tuổi (tự động)</label>
                   <input
-                    type="text" className="form-input" style={styles.disabledInput}
+                    type="text" className="form-input pl-3 h-9 bg-[#f1f5f9] font-bold"
                     disabled value={getAge()}
                   />
                 </div>
 
                 {/* Địa chỉ */}
-                <div className="form-group" style={{ gridColumn: 'span 2', marginBottom: 0 }}>
-                  <label className="form-label" style={{ fontSize: '13px' }}>Địa chỉ thường trú</label>
+                <div className="form-group col-span-2 mb-0">
+                  <label className="form-label text-[13px]">Địa chỉ thường trú</label>
                   <input
-                    type="text" className="form-input" style={{ paddingLeft: '12px', height: '36px' }}
+                    type="text" className="form-input pl-3 h-9"
                     placeholder="Số nhà, đường, xã, huyện, tỉnh/thành..."
                     value={formData.diaChi} onChange={e => setFormData({ ...formData, diaChi: e.target.value })}
                   />
                 </div>
 
                 {/* Tiền sử bệnh */}
-                <div className="form-group" style={{ gridColumn: 'span 2', marginBottom: 0 }}>
-                  <label className="form-label" style={{ fontSize: '13px' }}>Tiền sử bệnh án</label>
+                <div className="form-group col-span-2 mb-0">
+                  <label className="form-label text-[13px]">Tiền sử bệnh án</label>
                   <textarea
-                    className="form-input" style={styles.textareaMini}
+                    className="form-input pl-3 min-h-[44px] h-[44px] resize-none py-1.5 px-3"
                     placeholder="Tiền sử dị ứng, tim mạch, huyết áp..."
                     value={formData.tienSuBenh} onChange={e => setFormData({ ...formData, tienSuBenh: e.target.value })}
                   />
@@ -392,28 +392,28 @@ function TiepDon() {
           </div>
 
           {/* CỘT PHẢI: CHỈ ĐỊNH PHÒNG KHÁM & BÁC SĨ */}
-          <div style={styles.column}>
+          <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius-lg)] py-4 px-5 shadow-[var(--shadow-sm)] flex flex-col justify-between">
             <div>
-              <div style={styles.columnHeader}>
-                <Stethoscope size={16} style={{ color: 'var(--primary)' }} />
-                <h3 style={{ fontSize: '14px', fontWeight: '600', color: 'var(--text-main)' }}>Chỉ định khám & Phân phòng</h3>
+              <div className="flex items-center gap-1.5 border-b border-[var(--border-color)] pb-2 mb-3">
+                <Stethoscope size={16} className="text-[var(--primary)]" />
+                <h3 className="text-[14px] font-semibold text-[var(--text-main)]">Chỉ định khám & Phân phòng</h3>
               </div>
 
-              <div className="form-group" style={{ marginBottom: '12px' }}>
-                <label className="form-label" style={{ fontWeight: '600', fontSize: '13px' }}>
-                  Lý do đến khám <span style={{ color: 'red' }}>*</span>
+              <div className="form-group mb-3">
+                <label className="form-label font-semibold text-[13px]">
+                  Lý do đến khám <span className="text-red-500">*</span>
                 </label>
                 <textarea
-                  className="form-input" style={styles.textareaBig}
+                  className="form-input pl-3 min-h-[120px] resize-none py-2 px-3"
                   placeholder="Nhập lý do đến khám bệnh hoặc triệu chứng lâm sàng..."
                   value={formData.lyDoKham} onChange={e => setFormData({ ...formData, lyDoKham: e.target.value })}
                 />
               </div>
 
-              <div className="form-group" style={{ marginBottom: '12px' }}>
-                <label className="form-label" style={{ fontWeight: '600', fontSize: '13px' }}>Bác sĩ khám (Phòng khám chỉ định)</label>
+              <div className="form-group mb-3">
+                <label className="form-label font-semibold text-[13px]">Bác sĩ khám (Phòng khám chỉ định)</label>
                 <select
-                  className="form-input" style={{ paddingLeft: '12px', height: '36px' }}
+                  className="form-input pl-3 h-9"
                   value={formData.maBacSi} onChange={e => setFormData({ ...formData, maBacSi: e.target.value })}
                 >
                   <option value="">-- Chọn Bác sĩ khám / Tự động phân phòng --</option>
@@ -424,11 +424,11 @@ function TiepDon() {
               </div>
 
               {/* Nhập mã ICD gợi ý */}
-              <div className="form-group" style={{ marginBottom: 0, position: 'relative' }}>
-                <label className="form-label" style={{ fontWeight: '600', fontSize: '13px' }}>Mã bệnh & Chẩn đoán ban đầu (ICD)</label>
-                <div style={{ display: 'flex', gap: '8px' }}>
+              <div className="form-group mb-0 relative">
+                <label className="form-label font-semibold text-[13px]">Mã bệnh & Chẩn đoán ban đầu (ICD)</label>
+                <div className="flex gap-2">
                   <input
-                    type="text" className="form-input" style={styles.icdCodeInput}
+                    type="text" className="form-input pl-2.5 h-9 flex-[0.3] uppercase"
                     placeholder="Mã bệnh" value={formData.maICD}
                     onChange={e => {
                       const val = e.target.value.toUpperCase();
@@ -439,7 +439,7 @@ function TiepDon() {
                     }}
                   />
                   <input
-                    type="text" className="form-input" style={{ paddingLeft: '10px', height: '36px', flex: 0.7 }}
+                    type="text" className="form-input pl-2.5 h-9 flex-[0.7]"
                     placeholder="Tìm chẩn đoán bệnh lý hoặc nhập tay..."
                     value={icdQuery || formData.tenBenhICD}
                     onFocus={() => setShowIcdDropdown(true)}
@@ -455,11 +455,11 @@ function TiepDon() {
                 {/* Dropdown danh sách gợi ý ICD */}
                 {showIcdDropdown && (
                   <>
-                    <div onClick={() => setShowIcdDropdown(false)} style={styles.backdrop} />
-                    <div style={styles.dropdownList}>
+                    <div onClick={() => setShowIcdDropdown(false)} className="fixed inset-0 z-[998]" />
+                    <div className="absolute bottom-10 left-0 right-0 bg-white border border-[var(--border-color)] rounded-[var(--radius-md)] shadow-[var(--shadow-md)] max-h-[180px] overflow-y-auto z-[999]">
                       {filteredICDs.map(item => (
                         <div 
-                          key={item.maICD} style={styles.dropdownItem}
+                          key={item.maICD} className="py-2 px-3 cursor-pointer text-[12.5px] border-b border-[var(--border-color)] text-left text-[var(--text-main)]"
                           onClick={() => {
                             setFormData(prev => ({ ...prev, maICD: item.maICD, tenBenhICD: item.tenBenh }));
                             setIcdQuery('');
@@ -468,11 +468,11 @@ function TiepDon() {
                           onMouseEnter={e => e.target.style.backgroundColor = 'var(--bg-main)'}
                           onMouseLeave={e => e.target.style.backgroundColor = 'transparent'}
                         >
-                          <strong style={{ color: 'var(--primary)' }}>{item.maICD}</strong> - {item.tenBenh}
+                          <strong className="text-[var(--primary)]">{item.maICD}</strong> - {item.tenBenh}
                         </div>
                       ))}
                       {filteredICDs.length === 0 && (
-                        <div style={styles.dropdownEmpty}>Không tìm thấy bệnh lý khớp. Bạn tự gõ tự do.</div>
+                        <div className="py-2 px-3 text-[12.5px] text-[var(--text-muted)] italic text-left">Không tìm thấy bệnh lý khớp. Bạn tự gõ tự do.</div>
                       )}
                     </div>
                   </>
@@ -480,7 +480,7 @@ function TiepDon() {
               </div>
             </div>
 
-            <div style={styles.guideBox}>
+            <div className="bg-[var(--bg-main)] border border-[var(--border-color)] rounded-[var(--radius-md)] py-2.5 px-3 mt-4 text-[12px] text-[var(--text-muted)] leading-[1.4]">
               <strong>Hướng dẫn nhanh:</strong> Nhấn <strong>F4</strong> để lưu tiếp nhận hiện tại, nhấn <strong>F2</strong> để tự động điền thông tin khi phát hiện số điện thoại bệnh nhân cũ.
             </div>
           </div>
@@ -488,88 +488,16 @@ function TiepDon() {
       </div>
 
       {/* THANH THAO TÁC CỐ ĐỊNH Ở DƯỚI */}
-      <div style={styles.bottomBar}>
-        <button className="btn-outline" onClick={handleCancel} style={styles.cancelBtn}>
+      <div className="fixed bottom-0 left-0 right-0 h-[68px] bg-white border-t border-[var(--border-color)] flex items-center justify-end px-6 gap-3 z-[100] shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+        <button className="btn-outline w-auto py-2.5 px-5 m-0" onClick={handleCancel}>
           Hủy tiếp nhận
         </button>
-        <button className="btn-primary" onClick={handleSave} style={styles.saveBtn}>
+        <button className="btn-primary w-auto py-2.5 px-6 m-0 flex items-center gap-2 bg-[#22c55e] border-[#22c55e]" onClick={handleSave}>
           <Save size={16} /> Lưu tiếp đón [F4]
         </button>
       </div>
     </div>
   );
 }
-
-// Tập hợp các đối tượng CSS Styles tập trung giúp JSX gọn gàng, thẩm mỹ
-const styles = {
-  wrapper: { height: '100vh', overflow: 'hidden' },
-  topbar: { height: '50px', padding: '0 20px' },
-  topbarTitle: { flex: 1, display: 'flex', justifyContent: 'center', fontSize: '15px' },
-  body: {
-    padding: '16px',
-    backgroundColor: 'var(--bg-main)',
-    height: 'calc(100vh - 118px)',
-    overflowY: 'auto',
-    display: 'block'
-  },
-  alertSuccess: {
-    backgroundColor: '#dcfce7', borderLeft: '4px solid #22c55e', color: '#15803d',
-    padding: '8px 12px', borderRadius: '6px', marginBottom: '12px',
-    display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px',
-    animation: 'fadeIn 0.2s ease-in-out'
-  },
-  gridContainer: {
-    display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
-    gap: '16px', height: '100%'
-  },
-  column: {
-    backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)',
-    borderRadius: 'var(--radius-lg)', padding: '16px 20px', boxShadow: 'var(--shadow-sm)',
-    display: 'flex', flexDirection: 'column', justifyContent: 'space-between'
-  },
-  columnHeader: {
-    display: 'flex', alignItems: 'center', gap: '6px',
-    borderBottom: '1px solid var(--border-color)', paddingBottom: '8px', marginBottom: '12px'
-  },
-  formGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px 14px' },
-  disabledInput: { paddingLeft: '12px', height: '36px', backgroundColor: '#f1f5f9', fontWeight: 'bold' },
-  textareaMini: { paddingLeft: '12px', minHeight: '44px', height: '44px', resize: 'none', padding: '6px 12px' },
-  textareaBig: { paddingLeft: '12px', minHeight: '120px', resize: 'none', padding: '8px 12px' },
-  icdCodeInput: { paddingLeft: '10px', height: '36px', flex: 0.3, textTransform: 'uppercase' },
-  autoFillBtn: {
-    backgroundColor: '#0ea5e9', color: 'white', border: 'none', borderRadius: '4px',
-    padding: '2px 8px', fontSize: '11px', fontWeight: '600', cursor: 'pointer',
-    display: 'flex', alignItems: 'center', gap: '4px', animation: 'pulse 1.5s infinite'
-  },
-  backdrop: { position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 998 },
-  dropdownList: {
-    position: 'absolute', bottom: '40px', left: 0, right: 0,
-    backgroundColor: '#ffffff', border: '1px solid var(--border-color)',
-    borderRadius: 'var(--radius-md)', boxShadow: 'var(--shadow-md)',
-    maxHeight: '180px', overflowY: 'auto', zIndex: 999
-  },
-  dropdownItem: {
-    padding: '8px 12px', cursor: 'pointer', fontSize: '12.5px',
-    borderBottom: '1px solid var(--border-color)', textAlign: 'left', color: 'var(--text-main)'
-  },
-  dropdownEmpty: { padding: '8px 12px', fontSize: '12.5px', color: 'var(--text-muted)', fontStyle: 'italic', textAlign: 'left' },
-  guideBox: {
-    backgroundColor: 'var(--bg-main)', border: '1px solid var(--border-color)',
-    borderRadius: 'var(--radius-md)', padding: '10px 12px', marginTop: '16px',
-    fontSize: '12px', color: 'var(--text-muted)', lineHeight: '1.4'
-  },
-  bottomBar: {
-    position: 'fixed', bottom: 0, left: 0, right: 0, height: '68px',
-    backgroundColor: '#ffffff', borderTop: '1px solid var(--border-color)',
-    display: 'flex', alignItems: 'center', justifyContent: 'flex-end',
-    padding: '0 24px', gap: '12px', zIndex: 100, boxShadow: '0 -2px 10px rgba(0,0,0,0.05)'
-  },
-  cancelBtn: { width: 'auto', padding: '10px 20px', margin: 0 },
-  saveBtn: {
-    width: 'auto', padding: '10px 24px', margin: 0,
-    display: 'flex', alignItems: 'center', gap: '8px',
-    backgroundColor: '#22c55e', borderColor: '#22c55e'
-  }
-};
 
 export default TiepDon;

@@ -84,44 +84,44 @@ function DanhSachTiepNhan() {
   };
 
   return (
-    <div className="kb-wrapper" style={styles.wrapper}>
+    <div className="kb-wrapper h-screen overflow-hidden">
       {/* Topbar điều hướng */}
-      <div className="kb-topbar" style={styles.topbar}>
-        <div style={{ flex: 1, display: 'flex' }}>
-          <button className="kb-back-btn" onClick={() => navigate('/')} style={{ padding: '5px 10px' }}>
+      <div className="kb-topbar h-[50px] px-5">
+        <div className="flex-1 flex">
+          <button className="kb-back-btn py-[5px] px-[10px]" onClick={() => navigate('/')}>
             <ArrowLeft size={16} /> Quay về trang chủ
           </button>
         </div>
-        <div className="kb-topbar-title" style={styles.topTitle}>
-          <ClipboardList size={18} style={{ marginRight: '6px' }} />
+        <div className="kb-topbar-title flex-1 flex justify-center text-[15px]">
+          <ClipboardList size={18} className="mr-[6px]" />
           <strong>Danh sách bệnh nhân đã tiếp đón</strong>
         </div>
-        <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
-          <button className="kb-back-btn" onClick={fetchDanhSachTiepNhan} style={styles.reloadBtn}>
+        <div className="flex-1 flex justify-end">
+          <button className="kb-back-btn py-[5px] px-[10px] flex items-center gap-1" onClick={fetchDanhSachTiepNhan}>
             <RefreshCw size={14} className={loading ? 'spin-animation' : ''} /> Làm mới
           </button>
         </div>
       </div>
 
       {/* Main body chứa danh sách */}
-      <div className="kb-body" style={styles.body}>
+      <div className="kb-body py-4 px-6 bg-[var(--bg-main)] h-[calc(100vh-50px)] overflow-y-auto flex flex-col gap-4">
         
         {/* Bộ lọc nâng cao */}
-        <div style={styles.filterBar}>
+        <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius-lg)] py-3 px-4 flex gap-4 items-center flex-wrap shadow-[var(--shadow-sm)]">
           {/* Ô tìm kiếm thông tin */}
-          <div style={styles.searchContainer}>
-            <Search size={16} style={styles.searchIcon} />
+          <div className="flex items-center gap-2 flex-[2] min-w-[240px] relative">
+            <Search size={16} className="absolute left-3 text-[var(--text-muted)]" />
             <input
-              type="text" className="form-input" style={{ paddingLeft: '34px', height: '36px' }}
+              type="text" className="form-input pl-[34px] h-9"
               placeholder="Tìm họ tên, SĐT, mã bệnh nhân..."
               value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
             />
           </div>
 
           {/* Lọc theo bác sĩ */}
-          <div style={{ flex: 1, minWidth: '180px' }}>
+          <div className="flex-1 min-w-[180px]">
             <select
-              className="form-input" style={{ paddingLeft: '12px', height: '36px' }}
+              className="form-input pl-3 h-9"
               value={selectedDoctor} onChange={e => setSelectedDoctor(e.target.value)}
             >
               <option value="">-- Lọc theo Bác sĩ chỉ định --</option>
@@ -132,18 +132,18 @@ function DanhSachTiepNhan() {
           </div>
 
           {/* Lọc theo ngày tiếp đón */}
-          <div style={styles.dateFilterContainer}>
-            <Calendar size={16} style={styles.calendarIcon} />
+          <div className="flex-1 min-w-[160px] flex items-center gap-2 relative">
+            <Calendar size={16} className="absolute left-3 text-[var(--text-muted)]" />
             <input
-              type="date" className="form-input" style={{ paddingLeft: '34px', height: '36px' }}
+              type="date" className="form-input pl-[34px] h-9"
               value={selectedDate} onChange={e => setSelectedDate(e.target.value)}
             />
           </div>
 
           {/* Lọc theo trạng thái khám */}
-          <div style={{ flex: 1, minWidth: '160px' }}>
+          <div className="flex-1 min-w-[160px]">
             <select
-              className="form-input" style={{ paddingLeft: '12px', height: '36px' }}
+              className="form-input pl-3 h-9"
               value={selectedStatus} onChange={e => setSelectedStatus(e.target.value)}
             >
               <option value="">-- Tất cả trạng thái --</option>
@@ -156,18 +156,18 @@ function DanhSachTiepNhan() {
         </div>
 
         {/* Bảng hiển thị dữ liệu */}
-        <div style={styles.tableCard}>
+        <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius-lg)] overflow-hidden shadow-[var(--shadow-sm)] flex-1 flex flex-col">
           {dsPhieuKham.length === 0 ? (
-            <div style={styles.emptyContainer}>
-              <User size={48} style={{ margin: '0 auto 16px', display: 'block', opacity: 0.3 }} />
-              <p style={{ fontSize: '15px', fontWeight: '500' }}>Không tìm thấy bệnh nhân nào khớp với bộ lọc</p>
+            <div className="p-16 text-center text-[var(--text-muted)]">
+              <User size={48} className="mx-auto mb-4 block opacity-30" />
+              <p className="text-[15px] font-medium">Không tìm thấy bệnh nhân nào khớp với bộ lọc</p>
             </div>
           ) : (
-            <div style={{ overflowX: 'auto', flex: 1 }}>
-              <table className="kb-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <div className="overflow-x-auto flex-1">
+              <table className="kb-table w-full border-collapse">
                 <thead>
-                  <tr style={styles.tableHeaderRow}>
-                    <th style={{ width: '50px', textAlign: 'center' }}>STT</th>
+                  <tr className="sticky top-0 z-10 bg-[var(--bg-main)]">
+                    <th className="w-[50px] text-center">STT</th>
                     <th>Thời gian tiếp nhận</th>
                     <th>Mã Bệnh Nhân</th>
                     <th>Họ và Tên</th>
@@ -177,19 +177,19 @@ function DanhSachTiepNhan() {
                     <th>Địa chỉ</th>
                     <th>Bác sĩ chỉ định</th>
                     <th>Trạng thái khám</th>
-                    <th style={{ width: '80px', textAlign: 'center' }}>Thao tác</th>
+                    <th className="w-[80px] text-center">Thao tác</th>
                   </tr>
                 </thead>
                 <tbody>
                   {dsPhieuKham.map((item, index) => {
                     const status = trangThaiLabel[item.trangThaiKham] || trangThaiLabel[0];
                     return (
-                      <tr key={item.maPhieu} className="kb-table-row" style={{ transition: 'background 0.2s' }}>
-                        <td style={styles.centerMutedCell}>{index + 1}</td>
-                        <td style={styles.timeCell}>{formatTime(item.ngayKham)}</td>
-                        <td style={styles.maBnCell}>{item.maBN}</td>
+                      <tr key={item.maPhieu} className="kb-table-row transition-colors duration-200">
+                        <td className="text-center font-medium text-[var(--text-muted)]">{index + 1}</td>
+                        <td className="text-[13px] text-[var(--text-muted)]">{formatTime(item.ngayKham)}</td>
+                        <td className="font-semibold text-[var(--primary)]">{item.maBN}</td>
                         <td 
-                          className="kb-patient-name-link" style={{ fontWeight: '600' }}
+                          className="kb-patient-name-link font-semibold"
                           onClick={() => navigate(`/ho-so-chi-tiet/${item.maPhieu}`)} title="Xem chi tiết bệnh án"
                         >
                           {item.hoTen}
@@ -197,17 +197,17 @@ function DanhSachTiepNhan() {
                         <td>{formatNgaySinh(item.ngaySinh)}</td>
                         <td>{item.gioiTinh}</td>
                         <td>{item.sdt}</td>
-                        <td style={styles.addressCell} title={item.diaChi}>
+                        <td className="max-w-[240px] overflow-hidden text-ellipsis whitespace-nowrap" title={item.diaChi}>
                           {item.diaChi || '—'}
                         </td>
-                        <td style={{ fontWeight: '500' }}>{item.tenBacSi || 'Chưa chỉ định'}</td>
+                        <td className="font-medium">{item.tenBacSi || 'Chưa chỉ định'}</td>
                         <td>
-                          <span className="kb-status-badge" style={{ color: status.color, backgroundColor: status.bg, fontSize: '11px' }}>
+                          <span className="kb-status-badge text-[11px]" style={{ color: status.color, backgroundColor: status.bg }}>
                             {status.label}
                           </span>
                         </td>
                         <td>
-                          <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+                          <div className="flex gap-2 justify-center">
                             <button 
                               className="kb-icon-btn kb-icon-btn--primary" title="Xem chi tiết bệnh án"
                               onClick={() => navigate(`/ho-so-chi-tiet/${item.maPhieu}`)} 
@@ -225,7 +225,7 @@ function DanhSachTiepNhan() {
           )}
 
           {/* Footer đếm số lượng */}
-          <div style={styles.tableFooter}>
+          <div className="border-t border-[var(--border-color)] py-3 px-5 flex justify-between items-center text-[13px] text-[var(--text-muted)] font-medium bg-[var(--bg-main)]">
             <span>Tổng cộng: {dsPhieuKham.length} lượt tiếp đón</span>
           </div>
         </div>
@@ -234,43 +234,5 @@ function DanhSachTiepNhan() {
     </div>
   );
 }
-
-// Tập hợp CSS style tập trung cho trang Danh sách tiếp nhận
-const styles = {
-  wrapper: { height: '100vh', overflow: 'hidden' },
-  topbar: { height: '50px', padding: '0 20px' },
-  topTitle: { flex: 1, display: 'flex', justifyContent: 'center', fontSize: '15px' },
-  reloadBtn: { padding: '5px 10px', display: 'flex', alignItems: 'center', gap: '4px' },
-  body: {
-    padding: '16px 24px', backgroundColor: 'var(--bg-main)',
-    height: 'calc(100vh - 50px)', overflowY: 'auto',
-    display: 'flex', flexDirection: 'column', gap: '16px'
-  },
-  filterBar: {
-    backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)',
-    borderRadius: 'var(--radius-lg)', padding: '12px 16px', display: 'flex',
-    gap: '16px', alignItems: 'center', flexWrap: 'wrap', boxShadow: 'var(--shadow-sm)'
-  },
-  searchContainer: { display: 'flex', alignItems: 'center', gap: '8px', flex: 2, minWidth: '240px', position: 'relative' },
-  searchIcon: { position: 'absolute', left: '12px', color: 'var(--text-muted)' },
-  dateFilterContainer: { flex: 1, minWidth: '160px', display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' },
-  calendarIcon: { position: 'absolute', left: '12px', color: 'var(--text-muted)' },
-  tableCard: {
-    backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)',
-    borderRadius: 'var(--radius-lg)', overflow: 'hidden', boxShadow: 'var(--shadow-sm)',
-    flex: 1, display: 'flex', flexDirection: 'column'
-  },
-  emptyContainer: { padding: '64px', textAlign: 'center', color: 'var(--text-muted)' },
-  tableHeaderRow: { position: 'sticky', top: 0, zIndex: 10, background: 'var(--bg-main)' },
-  centerMutedCell: { textAlign: 'center', fontWeight: '500', color: 'var(--text-muted)' },
-  timeCell: { fontSize: '13px', color: 'var(--text-muted)' },
-  maBnCell: { fontWeight: '600', color: 'var(--primary)' },
-  addressCell: { maxWidth: '240px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
-  tableFooter: {
-    borderTop: '1px solid var(--border-color)', padding: '12px 20px',
-    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-    fontSize: '13px', color: 'var(--text-muted)', fontWeight: '500', backgroundColor: 'var(--bg-main)'
-  }
-};
 
 export default DanhSachTiepNhan;

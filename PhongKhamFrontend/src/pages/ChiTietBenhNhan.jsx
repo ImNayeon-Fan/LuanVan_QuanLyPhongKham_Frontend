@@ -99,12 +99,12 @@ function ChiTietBenhNhan() {
   // Nếu không thấy hồ sơ bệnh nhân, hiển thị thông báo lỗi
   if (!patient) {
     return (
-      <div className="kb-wrapper" style={{ height: '100vh', justifyContent: 'center', alignItems: 'center' }}>
-        <div style={styles.errorCard}>
-          <AlertCircle size={48} style={{ color: 'var(--error)', margin: '0 auto 16px', display: 'block' }} />
-          <h2 style={{ marginBottom: '8px', fontSize: '18px', fontWeight: 600 }}>Không tìm thấy bệnh nhân!</h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '24px' }}>Hồ sơ bệnh án không tồn tại hoặc đã bị xóa khỏi hệ thống.</p>
-          <button className="btn-primary" onClick={() => navigate('/danh-sach-tiep-nhan')} style={{ padding: '10px 20px', width: '100%' }}>
+      <div className="kb-wrapper h-screen flex justify-center items-center">
+        <div className="text-center p-10 bg-[var(--bg-card)] rounded-[var(--radius-lg)] border border-[var(--border-color)] shadow-[var(--shadow-lg)] max-w-[400px]">
+          <AlertCircle size={48} className="text-[var(--error)] mx-auto mb-4 block" />
+          <h2 className="mb-2 text-[18px] font-semibold">Không tìm thấy bệnh nhân!</h2>
+          <p className="text-[var(--text-muted)] text-sm mb-6">Hồ sơ bệnh án không tồn tại hoặc đã bị xóa khỏi hệ thống.</p>
+          <button className="btn-primary py-2.5 px-5 w-full" onClick={() => navigate('/danh-sach-tiep-nhan')}>
             Quay lại danh sách
           </button>
         </div>
@@ -126,47 +126,47 @@ function ChiTietBenhNhan() {
   const hasVitalSigns = patient.mach || patient.nhietDo || patient.huyetAp || patient.canNang || patient.chieuCao || patient.spo2 || patient.nhipTho;
 
   return (
-    <div className="kb-wrapper" style={styles.wrapper}>
+    <div className="kb-wrapper h-screen overflow-hidden">
       {/* Topbar điều hướng */}
-      <div className="kb-topbar" style={styles.topbar}>
-        <div style={{ flex: 1, display: 'flex', gap: '8px' }}>
-          <button className="kb-back-btn" onClick={() => navigate(-1)} style={{ padding: '5px 10px' }}>
+      <div className="kb-topbar h-[50px] px-5">
+        <div className="flex-1 flex gap-2">
+          <button className="kb-back-btn py-[5px] px-[10px]" onClick={() => navigate(-1)}>
             <ArrowLeft size={16} /> Quay lại
           </button>
-          <button className="kb-back-btn" onClick={() => navigate('/')} style={{ padding: '5px 10px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+          <button className="kb-back-btn py-[5px] px-[10px] flex items-center gap-1" onClick={() => navigate('/')}>
             <Home size={14} /> Trang chủ
           </button>
         </div>
-        <div className="kb-topbar-title" style={styles.topTitle}>
-          <FileText size={18} style={{ marginRight: '6px' }} />
+        <div className="kb-topbar-title flex-1 flex justify-center text-[15px]">
+          <FileText size={18} className="mr-1.5" />
           <strong>Hồ sơ chi tiết người bệnh</strong>
         </div>
-        <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
-          <button className="kb-back-btn" onClick={() => window.print()} style={{ padding: '5px 10px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+        <div className="flex-1 flex justify-end">
+          <button className="kb-back-btn py-[5px] px-[10px] flex items-center gap-1" onClick={() => window.print()}>
             <Printer size={14} /> In bệnh án
           </button>
         </div>
       </div>
 
       {/* Vùng thân hiển thị thông tin chi tiết */}
-      <div className="kb-body" style={styles.body}>
+      <div className="kb-body p-5 px-6 bg-[var(--bg-main)] h-[calc(100vh-50px)] overflow-y-auto flex flex-col gap-5">
         
         {/* Banner bệnh nhân dạng Gradient cao cấp */}
-        <div style={styles.patientBanner}>
-          <div style={styles.decor1} />
-          <div style={styles.decor2} />
+        <div className="bg-[linear-gradient(135deg,#0ea5e9_0%,#0284c7_60%,#0369a1_100%)] rounded-[var(--radius-lg)] p-6 text-white shadow-[var(--shadow-md)] flex flex-col gap-4 relative overflow-hidden">
+          <div className="absolute -right-5 -top-5 w-[150px] h-[150px] rounded-full bg-white/5 pointer-events-none" />
+          <div className="absolute right-10 -bottom-10 w-[100px] h-[100px] rounded-full bg-white/[0.08] pointer-events-none" />
 
-          <div style={{ display: 'flex', gap: '20px', alignItems: 'center', flexWrap: 'wrap' }}>
-            <div style={styles.avatar}>{initials}</div>
+          <div className="flex gap-5 items-center flex-wrap">
+            <div className="w-[72px] h-[72px] rounded-full bg-white/20 backdrop-blur-[10px] flex items-center justify-center text-[28px] font-bold border-[2.5px] border-white/40 shadow-[0_8px_16px_rgba(0,0,0,0.1)] [text-shadow:0_2px_4px_rgba(0,0,0,0.1)]">{initials}</div>
 
-            <div style={{ flex: 1, minWidth: '220px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '6px', flexWrap: 'wrap' }}>
-                <h1 style={styles.patientName}>{patient.hoTen}</h1>
-                <span style={{ ...styles.badge, color: status.color, backgroundColor: status.bg }}>
+            <div className="flex-1 min-w-[220px]">
+              <div className="flex items-center gap-3 mb-1.5 flex-wrap">
+                <h1 className="text-[22px] font-bold m-0 uppercase tracking-[0.5px]">{patient.hoTen}</h1>
+                <span className="text-[12px] font-semibold py-1 px-2.5 rounded-[12px] inline-flex items-center gap-1 shadow-[0_2px_4px_rgba(0,0,0,0.05)] border border-black/5" style={{ color: status.color, backgroundColor: status.bg }}>
                   {status.icon} {status.label}
                 </span>
               </div>
-              <div style={styles.patientMeta}>
+              <div className="flex flex-wrap gap-4 opacity-95 text-[13.5px]">
                 <span><strong>Mã hồ sơ:</strong> {patient.maPhieu}</span>
                 <span>•</span>
                 <span><strong>Mã BN:</strong> {patient.maBN || 'Chưa tạo'}</span>
@@ -178,61 +178,61 @@ function ChiTietBenhNhan() {
             </div>
           </div>
 
-          <div style={styles.bannerContact}>
-            <span><Phone size={14} /> <strong>Điện thoại:</strong> {patient.sdt}</span>
-            <span><MapPin size={14} /> <strong>Địa chỉ:</strong> {patient.diaChi || '—'}</span>
-            <span><Calendar size={14} /> <strong>Thời gian tiếp nhận:</strong> {formatTime(patient.ngayKham)}</span>
+          <div className="border-t border-white/15 pt-3.5 flex justify-between flex-wrap gap-3 text-[13px] opacity-90">
+            <span><Phone size={14} className="inline mr-1" /> <strong>Điện thoại:</strong> {patient.sdt}</span>
+            <span><MapPin size={14} className="inline mr-1" /> <strong>Địa chỉ:</strong> {patient.diaChi || '—'}</span>
+            <span><Calendar size={14} className="inline mr-1" /> <strong>Thời gian tiếp nhận:</strong> {formatTime(patient.ngayKham)}</span>
           </div>
         </div>
 
         {/* Bố cục Grid 2 cột */}
-        <div style={styles.gridContainer}>
+        <div className="grid grid-cols-[repeat(auto-fit,minmax(360px,1fr))] gap-5 items-start">
           
           {/* CỘT TRÁI: Chi tiết lâm sàng & Sinh hiệu */}
-          <div style={styles.flexColumn}>
+          <div className="flex flex-col gap-5">
             
             {/* Card Chi tiết tiếp nhận */}
-            <div style={styles.card}>
-              <div style={styles.cardHeader}>
+            <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius-lg)] p-4 px-5 shadow-[var(--shadow-sm)]">
+              <div className="flex items-center gap-2 text-[15px] font-semibold text-[var(--primary)] border-b border-[var(--border-color)] pb-2.5 mb-3.5">
                 <User size={16} />
                 <span>Chi tiết tiếp nhận</span>
               </div>
-              <div style={styles.cardBody}>
+              <div className="flex flex-col gap-3 text-sm">
                 <div>
-                  <span style={styles.fieldLabel}>Bác sĩ khám phụ trách:</span>
-                  <span style={{ fontWeight: '600', color: 'var(--text-main)' }}>{patient.tenBacSi || 'Chưa phân công'}</span>
+                  <span className="text-[var(--text-muted)] block text-[12px] font-medium mb-0.5">Bác sĩ khám phụ trách:</span>
+                  <span className="font-semibold text-[var(--text-main)]">{patient.tenBacSi || 'Chưa phân công'}</span>
                 </div>
                 <div>
-                  <span style={styles.fieldLabel}>Lý do đến khám:</span>
-                  <p style={styles.reasonBox}>{patient.lyDoKham || 'Chưa nhập'}</p>
+                  <span className="text-[var(--text-muted)] block text-[12px] font-medium mb-0.5">Lý do đến khám:</span>
+                  <p className="font-medium text-[var(--text-main)] m-0 p-2 px-3 bg-[var(--bg-main)] rounded-[var(--radius-md)]">{patient.lyDoKham || 'Chưa nhập'}</p>
                 </div>
                 <div>
-                  <span style={styles.fieldLabel}>Tiền sử bệnh lý:</span>
+                  <span className="text-[var(--text-muted)] block text-[12px] font-medium mb-0.5">Tiền sử bệnh lý:</span>
                   {patient.tienSuBenh ? (
-                    <div style={styles.historyWarning}>
-                      <AlertTriangle size={16} style={{ flexShrink: 0, marginTop: '2px' }} />
+                    <div className="flex gap-2 items-start p-2 px-3 bg-[#fef3c7] rounded-[var(--radius-md)] text-[#b45309] border border-[#fde68a] font-medium">
+                      <AlertTriangle size={16} className="shrink-0 mt-0.5" />
                       <span>{patient.tienSuBenh}</span>
                     </div>
                   ) : (
-                    <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Không có tiền sử bệnh lý</span>
+                    <span className="text-[var(--text-muted)] italic">Không có tiền sử bệnh lý</span>
                   )}
                 </div>
               </div>
             </div>
 
             {/* Card Chỉ số sinh hiệu */}
-            <div style={styles.card}>
-              <div style={styles.cardHeader}>
+            <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius-lg)] p-4 px-5 shadow-[var(--shadow-sm)]">
+              <div className="flex items-center gap-2 text-[15px] font-semibold text-[var(--primary)] border-b border-[var(--border-color)] pb-2.5 mb-3.5">
                 <Activity size={16} />
                 <span>Các chỉ số sinh hiệu đo được</span>
               </div>
               {!hasVitalSigns ? (
-                <div style={styles.emptyCardBody}>
-                  <Info size={24} style={{ margin: '0 auto 8px', display: 'block', opacity: 0.4 }} />
-                  <p style={{ fontSize: '13.5px', fontStyle: 'italic' }}>Chưa cập nhật sinh hiệu bên màn hình khám bệnh.</p>
+                <div className="text-center p-6 text-[var(--text-muted)]">
+                  <Info size={24} className="mx-auto mb-2 block opacity-40" />
+                  <p className="text-[13.5px] italic">Chưa cập nhật sinh hiệu bên màn hình khám bệnh.</p>
                 </div>
               ) : (
-                <div style={styles.vitalsGrid}>
+                <div className="grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-3">
                   {[
                     { label: 'Mạch', val: patient.mach, unit: 'lần/phút', icon: <Activity size={16} color="#ef4444" />, key: 'mach' },
                     { label: 'Nhiệt độ', val: patient.nhietDo, unit: '°C', icon: <Thermometer size={16} color="#f97316" />, key: 'nhietDo' },
@@ -244,16 +244,16 @@ function ChiTietBenhNhan() {
                   ].map(item => {
                     const vitalState = getVitalStatus(item.key, item.val);
                     return (
-                      <div key={item.key} style={styles.vitalItem}>
-                        <div style={styles.vitalHeader}>
+                      <div key={item.key} className="p-2.5 px-3 bg-[var(--bg-main)] border border-[var(--border-color)] rounded-[var(--radius-md)] flex flex-col justify-between gap-1.5">
+                        <div className="flex items-center gap-1.5 text-[11px] text-[var(--text-muted)] font-medium">
                           {item.icon} <span>{item.label}</span>
                         </div>
                         <div>
-                          <strong style={{ fontSize: '16px', color: 'var(--text-main)' }}>{item.val || '—'}</strong>
-                          {item.val && <span style={{ fontSize: '11px', color: 'var(--text-muted)', marginLeft: '4px' }}>{item.unit}</span>}
+                          <strong className="text-[16px] text-[var(--text-main)]">{item.val || '—'}</strong>
+                          {item.val && <span className="text-[11px] text-[var(--text-muted)] ml-1">{item.unit}</span>}
                         </div>
                         {item.val && (
-                          <div style={{ ...styles.vitalBadge, color: vitalState.color, backgroundColor: vitalState.bg }}>
+                          <div className="text-[9.5px] font-semibold py-0.5 px-1.5 rounded-[8px] inline-block w-fit" style={{ color: vitalState.color, backgroundColor: vitalState.bg }}>
                             {vitalState.text}
                           </div>
                         )}
@@ -266,49 +266,49 @@ function ChiTietBenhNhan() {
           </div>
 
           {/* CỘT PHẢI: Chẩn đoán, Cận lâm sàng & Đơn thuốc */}
-          <div style={styles.flexColumn}>
+          <div className="flex flex-col gap-5">
             
             {/* Card Chẩn đoán */}
-            <div style={styles.card}>
-              <div style={styles.cardHeader}>
+            <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius-lg)] p-4 px-5 shadow-[var(--shadow-sm)]">
+              <div className="flex items-center gap-2 text-[15px] font-semibold text-[var(--primary)] border-b border-[var(--border-color)] pb-2.5 mb-3.5">
                 <ClipboardCheck size={16} />
                 <span>Chẩn đoán & Lời dặn bệnh án</span>
               </div>
-              <div style={styles.cardBody}>
+              <div className="flex flex-col gap-3 text-sm">
                 <div>
-                  <span style={styles.fieldLabel}>Chẩn đoán xác định:</span>
+                  <span className="text-[var(--text-muted)] block text-[12px] font-medium mb-0.5">Chẩn đoán xác định:</span>
                   {patient.chanDoan ? (
-                    <div style={styles.diagnosisBox}>{patient.chanDoan}</div>
+                    <div className="font-semibold text-[var(--text-main)] p-2.5 px-3.5 bg-[rgba(14,165,233,0.05)] border-l-4 border-[var(--primary)] rounded-r-[var(--radius-md)]">{patient.chanDoan}</div>
                   ) : (
-                    <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Chưa cập nhật chẩn đoán.</span>
+                    <span className="text-[var(--text-muted)] italic">Chưa cập nhật chẩn đoán.</span>
                   )}
                 </div>
                 <div>
-                  <span style={styles.fieldLabel}>Lời dặn bác sĩ / Hướng điều trị:</span>
+                  <span className="text-[var(--text-muted)] block text-[12px] font-medium mb-0.5">Lời dặn bác sĩ / Hướng điều trị:</span>
                   {patient.loiDan ? (
-                    <div style={styles.instructionsBox}>{patient.loiDan}</div>
+                    <div className="p-2.5 px-3.5 bg-[var(--bg-main)] rounded-[var(--radius-md)] text-[var(--text-main)] whitespace-pre-line leading-[1.5]">{patient.loiDan}</div>
                   ) : (
-                    <span style={{ color: 'var(--text-muted)', fontStyle: 'italic' }}>Chưa có lời dặn/hướng dẫn điều trị.</span>
+                    <span className="text-[var(--text-muted)] italic">Chưa có lời dặn/hướng dẫn điều trị.</span>
                   )}
                 </div>
               </div>
             </div>
 
             {/* Card Cận lâm sàng */}
-            <div style={styles.card}>
-              <div style={styles.cardHeader}>
+            <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius-lg)] p-4 px-5 shadow-[var(--shadow-sm)]">
+              <div className="flex items-center gap-2 text-[15px] font-semibold text-[var(--primary)] border-b border-[var(--border-color)] pb-2.5 mb-3.5">
                 <FlaskConical size={16} />
                 <span>Chỉ định cận lâm sàng / Dịch vụ kỹ thuật</span>
               </div>
               {!patient.chiDinh || patient.chiDinh.length === 0 ? (
-                <p style={styles.emptyText}>Bác sĩ không kê chỉ định cận lâm sàng nào.</p>
+                <p className="text-[var(--text-muted)] italic text-[13.5px] m-0 py-2.5">Bác sĩ không kê chỉ định cận lâm sàng nào.</p>
               ) : (
-                <div style={styles.clsList}>
+                <div className="flex flex-col gap-2">
                   {patient.chiDinh.map((c, i) => (
-                    <div key={c.id} style={styles.clsItem}>
-                      <span style={styles.clsNumber}>{i + 1}</span>
-                      <strong style={{ color: 'var(--text-main)', flex: 1 }}>{c.tenXN}</strong>
-                      <span style={styles.clsBadge}>Đã chỉ định</span>
+                    <div key={c.id} className="flex items-center gap-2.5 p-2 px-3 bg-[var(--bg-main)] border border-[var(--border-color)] rounded-[var(--radius-md)] text-[13.5px]">
+                      <span className="w-5 h-5 rounded-full bg-[var(--primary-light)] text-[var(--primary)] flex items-center justify-center text-[11px] font-semibold">{i + 1}</span>
+                      <strong className="text-[var(--text-main)] flex-1">{c.tenXN}</strong>
+                      <span className="text-[11.5px] text-[#10b981] bg-[#d1fae5] py-0.5 px-2 rounded-[10px] font-medium">Đã chỉ định</span>
                     </div>
                   ))}
                 </div>
@@ -316,44 +316,44 @@ function ChiTietBenhNhan() {
             </div>
 
             {/* Card Đơn thuốc */}
-            <div style={styles.prescriptionCard}>
-              <div style={styles.cardHeader}>
+            <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius-lg)] p-5 shadow-[var(--shadow-sm)] bg-[radial-gradient(var(--border-color)_0.5px,transparent_0.5px)] bg-[size:12px_12px] relative">
+              <div className="flex items-center gap-2 text-[15px] font-semibold text-[var(--primary)] border-b border-[var(--border-color)] pb-2.5 mb-3.5">
                 <Pill size={16} />
                 <span>Đơn thuốc đã kê</span>
               </div>
               {!patient.donThuoc || patient.donThuoc.length === 0 ? (
-                <p style={styles.emptyText}>Bác sĩ chưa kê đơn thuốc nào cho lượt khám này.</p>
+                <p className="text-[var(--text-muted)] italic text-[13.5px] m-0 py-2.5">Bác sĩ chưa kê đơn thuốc nào cho lượt khám này.</p>
               ) : (
                 <div>
-                  <table className="kb-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13.5px' }}>
+                  <table className="kb-table w-full border-collapse text-[13.5px]">
                     <thead>
                       <tr>
-                        <th style={styles.tableHeaderCol}>STT</th>
-                        <th style={styles.tableHeaderCol}>Tên thuốc</th>
-                        <th style={{ ...styles.tableHeaderCol, textAlign: 'center' }}>Số ngày</th>
-                        <th style={styles.tableHeaderCol}>Liều dùng & Cách dùng</th>
+                        <th className="pb-2 border-b-2 border-[var(--border-color)] text-[var(--text-muted)] text-left">STT</th>
+                        <th className="pb-2 border-b-2 border-[var(--border-color)] text-[var(--text-muted)] text-left">Tên thuốc</th>
+                        <th className="pb-2 border-b-2 border-[var(--border-color)] text-[var(--text-muted)] text-center">Số ngày</th>
+                        <th className="pb-2 border-b-2 border-[var(--border-color)] text-[var(--text-muted)] text-left">Liều dùng & Cách dùng</th>
                       </tr>
                     </thead>
                     <tbody>
                       {patient.donThuoc.map((t, i) => (
-                        <tr key={t.id} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                          <td style={{ padding: '10px 4px', color: 'var(--text-muted)', fontWeight: '500' }}>{i + 1}</td>
-                          <td style={{ padding: '10px 4px' }}><strong style={{ color: 'var(--text-main)' }}>{t.tenThuoc}</strong></td>
-                          <td style={{ padding: '10px 4px', textAlign: 'center', fontWeight: '500' }}>{t.soNgay} ngày</td>
-                          <td style={{ padding: '10px 4px', color: 'var(--text-muted)', fontSize: '13px' }}>{t.soLuong}</td>
+                        <tr key={t.id} className="border-b border-[var(--border-color)]">
+                          <td className="py-2.5 px-1 text-[var(--text-muted)] font-medium">{i + 1}</td>
+                          <td className="py-2.5 px-1"><strong className="text-[var(--text-main)]">{t.tenThuoc}</strong></td>
+                          <td className="py-2.5 px-1 text-center font-medium">{t.soNgay} ngày</td>
+                          <td className="py-2.5 px-1 text-[var(--text-muted)] text-[13px]">{t.soLuong}</td>
                         </tr>
                       ))}
                     </tbody>
                   </table>
                   
                   {/* Chữ ký bác sĩ */}
-                  <div style={styles.signatureContainer}>
-                    <div style={{ textAlign: 'center', width: '200px' }}>
-                      <p style={{ fontStyle: 'italic', marginBottom: '40px', fontSize: '12px' }}>Ngày ..... tháng ..... năm 2026</p>
-                      <p style={{ fontWeight: '600', color: 'var(--text-main)', marginBottom: '4px' }}>Bác sĩ khám điều trị</p>
-                      <p style={{ fontSize: '11px', opacity: 0.8 }}>(Ký và ghi rõ họ tên)</p>
+                  <div className="mt-6 flex justify-end text-[13px] text-[var(--text-muted)]">
+                    <div className="text-center w-[200px]">
+                      <p className="italic mb-10 text-[12px]">Ngày ..... tháng ..... năm 2026</p>
+                      <p className="font-semibold text-[var(--text-main)] mb-1">Bác sĩ khám điều trị</p>
+                      <p className="text-[11px] opacity-80">(Ký và ghi rõ họ tên)</p>
                       {patient.tenBacSi && (
-                        <p style={styles.doctorSignature}>{patient.tenBacSi.split(' (')[0]}</p>
+                        <p className="mt-6 font-semibold text-[var(--primary)] italic">{patient.tenBacSi.split(' (')[0]}</p>
                       )}
                     </div>
                   </div>
@@ -367,75 +367,5 @@ function ChiTietBenhNhan() {
     </div>
   );
 }
-
-// Tập hợp kiểu dáng CSS (inline stylesheet) giúp thu gọn hàm render JSX
-const styles = {
-  wrapper: { height: '100vh', overflow: 'hidden' },
-  topbar: { height: '50px', padding: '0 20px' },
-  topTitle: { flex: 1, display: 'flex', justifyContent: 'center', fontSize: '15px' },
-  body: {
-    padding: '20px 24px', backgroundColor: 'var(--bg-main)',
-    height: 'calc(100vh - 50px)', overflowY: 'auto',
-    display: 'flex', flexDirection: 'column', gap: '20px'
-  },
-  errorCard: {
-    textAlign: 'center', padding: '40px', backgroundColor: 'var(--bg-card)',
-    borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)',
-    boxShadow: 'var(--shadow-lg)', maxWidth: '400px'
-  },
-  patientBanner: {
-    background: 'linear-gradient(135deg, #0ea5e9 0%, #0284c7 60%, #0369a1 100%)',
-    borderRadius: 'var(--radius-lg)', padding: '24px', color: 'white',
-    boxShadow: 'var(--shadow-md)', display: 'flex', flexDirection: 'column',
-    gap: '16px', position: 'relative', overflow: 'hidden'
-  },
-  decor1: { position: 'absolute', right: '-20px', top: '-20px', width: '150px', height: '150px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.05)', pointerEvents: 'none' },
-  decor2: { position: 'absolute', right: '40px', bottom: '-40px', width: '100px', height: '100px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.08)', pointerEvents: 'none' },
-  avatar: {
-    width: '72px', height: '72px', borderRadius: '50%', background: 'rgba(255, 255, 255, 0.2)',
-    backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center',
-    fontSize: '28px', fontWeight: '700', border: '2.5px solid rgba(255, 255, 255, 0.4)',
-    boxShadow: '0 8px 16px rgba(0, 0, 0, 0.1)', textShadow: '0 2px 4px rgba(0,0,0,0.1)'
-  },
-  patientName: { fontSize: '22px', fontWeight: '700', margin: 0, textTransform: 'uppercase', letterSpacing: '0.5px' },
-  badge: {
-    fontSize: '12px', fontWeight: '600', padding: '4px 10px', borderRadius: '12px',
-    display: 'inline-flex', alignItems: 'center', gap: '4px',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.05)', border: '1px solid rgba(0,0,0,0.05)'
-  },
-  patientMeta: { display: 'flex', flexWrap: 'wrap', gap: '16px', opacity: 0.95, fontSize: '13.5px' },
-  bannerContact: {
-    borderTop: '1px solid rgba(255, 255, 255, 0.15)', paddingTop: '14px',
-    display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px',
-    fontSize: '13px', opacity: 0.9
-  },
-  gridContainer: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '20px', alignItems: 'start' },
-  flexColumn: { display: 'flex', flexDirection: 'column', gap: '20px' },
-  card: { backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', padding: '16px 20px', boxShadow: 'var(--shadow-sm)' },
-  cardHeader: { display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px', fontWeight: '600', color: 'var(--primary)', borderBottom: '1px solid var(--border-color)', paddingBottom: '10px', marginBottom: '14px' },
-  cardBody: { display: 'flex', flexType: 'column', flexDirection: 'column', gap: '12px', fontSize: '14px' },
-  emptyCardBody: { textAlign: 'center', padding: '24px', color: 'var(--text-muted)' },
-  fieldLabel: { color: 'var(--text-muted)', display: 'block', fontSize: '12px', fontWeight: '500', marginBottom: '2px' },
-  reasonBox: { fontWeight: '500', color: 'var(--text-main)', margin: 0, padding: '8px 12px', backgroundColor: 'var(--bg-main)', borderRadius: 'var(--radius-md)' },
-  historyWarning: { display: 'flex', gap: '8px', alignItems: 'flex-start', padding: '8px 12px', backgroundColor: '#fef3c7', borderRadius: 'var(--radius-md)', color: '#b45309', border: '1px solid #fde68a', fontWeight: '500' },
-  vitalsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px' },
-  vitalItem: { padding: '10px 12px', backgroundColor: 'var(--bg-main)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', gap: '6px' },
-  vitalHeader: { display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: 'var(--text-muted)', fontWeight: '500' },
-  vitalBadge: { fontSize: '9.5px', fontWeight: '600', padding: '1.5px 6px', borderRadius: '8px', display: 'inline-block', width: 'fit-content' },
-  diagnosisBox: { fontWeight: '600', color: 'var(--text-main)', padding: '10px 14px', backgroundColor: 'rgba(14, 165, 233, 0.05)', borderLeft: '4px solid var(--primary)', borderRadius: '0 var(--radius-md) var(--radius-md) 0' },
-  instructionsBox: { padding: '10px 14px', backgroundColor: 'var(--bg-main)', borderRadius: 'var(--radius-md)', color: 'var(--text-main)', whiteSpace: 'pre-line', lineHeight: '1.5' },
-  emptyText: { color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '13.5px', margin: 0, padding: '10px 0' },
-  clsList: { display: 'flex', flexDirection: 'column', gap: '8px' },
-  clsItem: { display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', backgroundColor: 'var(--bg-main)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)', fontSize: '13.5px' },
-  clsNumber: { width: '20px', height: '20px', borderRadius: '50%', backgroundColor: 'var(--primary-light)', color: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: '600' },
-  clsBadge: { fontSize: '11.5px', color: '#10b981', backgroundColor: '#d1fae5', padding: '2px 8px', borderRadius: '10px', fontWeight: '500' },
-  prescriptionCard: {
-    backgroundColor: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-lg)', padding: '20px', boxShadow: 'var(--shadow-sm)',
-    backgroundImage: 'radial-gradient(var(--border-color) 0.5px, transparent 0.5px)', backgroundSize: '12px 12px', position: 'relative'
-  },
-  tableHeaderCol: { paddingBottom: '8px', borderBottom: '2px solid var(--border-color)', color: 'var(--text-muted)' },
-  signatureContainer: { marginTop: '24px', display: 'flex', justifyContent: 'flex-end', fontSize: '13px', color: 'var(--text-muted)' },
-  doctorSignature: { marginTop: '24px', fontWeight: '600', color: 'var(--primary)', fontStyle: 'italic' }
-};
 
 export default ChiTietBenhNhan;

@@ -6,7 +6,8 @@ import {
 } from 'lucide-react';
 import { useToast } from '../utils/ToastContext';
 
-// Khớp với PhieuKham.TrangThaiKham trong C# SQL Database
+// Khớp với PhieuKham.TrangThaiKham trong C# SQL Database:
+// 0: Chờ khám, 1: Đang khám, 2: Chờ CLS, 3: Hoàn thành
 const trangThaiLabel = {
   0: { label: 'Chờ khám',   color: '#f59e0b', bg: '#fef3c7' },
   1: { label: 'Đang khám',  color: '#0ea5e9', bg: '#e0f2fe' },
@@ -14,7 +15,15 @@ const trangThaiLabel = {
   3: { label: 'Hoàn thành', color: '#22c55e', bg: '#dcfce7' },
 };
 
-// Hàm cảnh báo chỉ số sinh hiệu bất thường phục vụ việc chăm sóc bệnh nhân
+/**
+ * Hàm kiểm tra và cảnh báo chỉ số sinh hiệu bất thường lâm sàng
+ * giúp nhân viên y tế và bác sĩ theo dõi tình trạng sức khỏe bệnh nhân:
+ * - Huyết áp: Bình thường quanh 120/80 mmHg, cảnh báo cao (≥ 140/90) hoặc thấp (< 90/60).
+ * - Mạch: Bình thường 60 - 100 lần/phút.
+ * - Thân nhiệt: Bình thường 36 - 37.5°C.
+ * - SpO2: Bình thường ≥ 95%.
+ * - Nhịp thở: Bình thường 12 - 20 lần/phút.
+ */
 const getSinhHieuWarning = (key, value) => {
   if (!value) return '';
   
@@ -63,7 +72,7 @@ const getSinhHieuWarning = (key, value) => {
   return '';
 };
 
-// Danh mục menu điều hướng cột phải
+// Danh mục menu điều hướng cột phải dùng để chuyển đổi giữa các phân hệ khám bệnh
 const MENU_ITEMS = [
   { key: 'sinhHieu',  label: 'Thông tin khám cơ bản',     icon: <Stethoscope size={18} /> },
   { key: 'chiDinh',   label: 'Chỉ định cận lâm sàng',     icon: <FlaskConical size={18} /> },
@@ -73,6 +82,7 @@ const MENU_ITEMS = [
 
 /**
  * Component Khám bệnh dành cho bác sĩ tại phòng khám
+ * Quản lý toàn bộ quy trình từ kiểm tra sinh hiệu, chỉ định xét nghiệm/CLS, kê đơn thuốc và kết luận bệnh
  */
 function KhamBenh() {
   const navigate = useNavigate();
@@ -88,6 +98,7 @@ function KhamBenh() {
       list = [];
     }
     if (list.length === 0) {
+      // Dữ liệu mẫu ban đầu nếu localStorage chưa có dữ liệu phiếu khám nào
       const defaultData = [
         {
           maPhieu: 'PK_250525_001',
@@ -150,7 +161,7 @@ function KhamBenh() {
     }
   }, [selectedBN]);
 
-  // Lưu thông tin khám bệnh (đồng bộ với danh sách bệnh nhân)
+  // Lưu thông tin khám bệnh (đồng bộ với danh sách bệnh nhân và lưu vào LocalStorage)
   const luuPhieuKham = (updatedTrangThai = null) => {
     if (!selectedBN) return;
 
@@ -175,32 +186,38 @@ function KhamBenh() {
     showSuccess('Đã lưu thông tin khám bệnh thành công!');
   };
 
-  // Bộ lọc tìm kiếm bệnh nhân trong danh sách chờ
+  // Bộ lọc tìm kiếm bệnh nhân trong danh sách chờ theo Tên, Mã BN, Mã Phiếu
   const dsBNFilter = dsBenhNhan.filter(bn =>
     bn.hoTen.toLowerCase().includes(search.toLowerCase()) ||
     bn.maBN?.includes(search) ||
     bn.maPhieu?.includes(search)
   );
 
+  // Thêm một chỉ định cận lâm sàng mới vào danh sách
   const themChiDinh = () => {
     if (!chiDinhMoi.trim()) return;
     setChiDinh([...chiDinh, { id: Date.now(), tenXN: chiDinhMoi }]);
     setChiDinhMoi('');
   };
+  
+  // Xóa chỉ định cận lâm sàng khỏi danh sách
   const xoaChiDinh = (id) => setChiDinh(chiDinh.filter(c => c.id !== id));
 
+  // Thêm thuốc mới kê toa vào đơn thuốc của bệnh nhân
   const themThuoc = () => {
     if (!thuocMoi.tenThuoc.trim()) return;
     setDonThuoc([...donThuoc, { id: Date.now(), ...thuocMoi }]);
     setThuocMoi({ tenThuoc: '', soLuong: '', soNgay: '' });
   };
+  
+  // Xóa thuốc đã kê khỏi đơn thuốc
   const xoaThuoc = (id) => setDonThuoc(donThuoc.filter(t => t.id !== id));
 
-  // Render giao diện theo menu bác sĩ đang chọn
+  // Render giao diện nghiệp vụ theo menu bác sĩ đang chọn
   const renderContent = () => {
     if (!selectedBN) return (
       <div className="kb-empty">
-        <User size={48} style={{ color: 'var(--border-color)' }} />
+        <User size={48} className="text-[var(--border-color)]" />
         <p>Chọn bệnh nhân để bắt đầu khám</p>
       </div>
     );
@@ -214,15 +231,15 @@ function KhamBenh() {
             </div>
 
             {selectedBN.maICD ? (
-              <div style={styles.icdAlertBox}>
-                <span style={{ fontWeight: '600', color: '#1e40af' }}>Mã bệnh & Chẩn đoán sơ bộ (Tiếp đón):</span>
-                <span style={styles.icdCodeBadge}>
+              <div className="bg-[#eff6ff] border border-[#bfdbfe] rounded-[6px] py-[10px] px-[14px] mb-4 flex items-center gap-2 text-[13px]">
+                <span className="font-semibold text-[#1e40af]">Mã bệnh & Chẩn đoán sơ bộ (Tiếp đón):</span>
+                <span className="text-[#1e3a8a] bg-[#dbeafe] py-[2px] px-2 rounded font-bold">
                   {selectedBN.maICD}
                 </span>
-                <span style={{ fontWeight: '500', color: '#1e40af' }}>{selectedBN.tenBenhICD}</span>
+                <span className="font-medium text-[#1e40af]">{selectedBN.tenBenhICD}</span>
               </div>
             ) : (
-              <div style={styles.icdEmptyBox}>
+              <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[6px] py-[10px] px-[14px] mb-4 text-[13px] text-[var(--text-muted)] italic text-left">
                 Chưa có thông tin mã bệnh ICD / Chẩn đoán sơ bộ từ khâu Tiếp đón.
               </div>
             )}
@@ -243,8 +260,7 @@ function KhamBenh() {
                     <label className="form-label">{f.label}</label>
                     <input
                       type="text"
-                      className={`form-input ${warning ? 'form-input-warning' : ''}`}
-                      style={{ paddingLeft: 12 }}
+                      className={`form-input pl-3 ${warning ? 'form-input-warning' : ''}`}
                       placeholder={f.placeholder}
                       value={sinhHieu[f.key]}
                       onChange={e => setSinhHieu({ ...sinhHieu, [f.key]: e.target.value })}
@@ -255,7 +271,7 @@ function KhamBenh() {
               })}
             </div>
             <div className="kb-action-row">
-              <button className="btn-primary" onClick={() => luuPhieuKham(1)} style={styles.saveBtnCenter}>
+              <button className="btn-primary w-auto py-[10px] px-6 flex items-center gap-2" onClick={() => luuPhieuKham(1)}>
                 <Save size={16} /> Lưu sinh hiệu
               </button>
             </div>
@@ -283,11 +299,10 @@ function KhamBenh() {
                 ))}
               </div>
             )}
-            <div className="kb-add-row" style={{ marginTop: 12 }}>
+            <div className="kb-add-row mt-3">
               <input
                 type="text"
-                className="form-input"
-                style={{ paddingLeft: 12, flex: 1 }}
+                className="form-input pl-3 flex-1"
                 placeholder="Nhập tên xét nghiệm / dịch vụ CLS..."
                 value={chiDinhMoi}
                 onChange={e => setChiDinhMoi(e.target.value)}
@@ -336,14 +351,14 @@ function KhamBenh() {
                 </tbody>
               </table>
             )}
-            <div className="kb-add-row" style={styles.addMedRow}>
-              <input type="text" className="form-input" style={styles.medInputText}
+            <div className="kb-add-row flex-wrap gap-2 mt-3">
+              <input type="text" className="form-input pl-3 flex-[2] min-w-[160px]"
                 placeholder="Tên thuốc..." value={thuocMoi.tenThuoc}
                 onChange={e => setThuocMoi({ ...thuocMoi, tenThuoc: e.target.value })} />
-              <input type="text" className="form-input" style={styles.medInputQty}
+              <input type="text" className="form-input pl-3 flex-[2] min-w-[140px]"
                 placeholder="Cách dùng (VD: 1 viên x 3 lần)" value={thuocMoi.soLuong}
                 onChange={e => setThuocMoi({ ...thuocMoi, soLuong: e.target.value })} />
-              <input type="number" className="form-input" style={styles.medInputDays}
+              <input type="number" className="form-input pl-3 flex-1 min-w-[80px]"
                 placeholder="Số ngày" value={thuocMoi.soNgay}
                 onChange={e => setThuocMoi({ ...thuocMoi, soNgay: e.target.value })} />
               <button className="kb-add-btn" onClick={themThuoc}><Plus size={16} /> Thêm</button>
@@ -358,13 +373,13 @@ function KhamBenh() {
               <ClipboardCheck size={18} /> Kết luận khám
             </div>
             <div className="form-group">
-              <div style={styles.diagnosisLabelRow}>
-                <label className="form-label" style={{ margin: 0 }}>Chẩn đoán</label>
+              <div className="flex justify-between items-center mb-1">
+                <label className="form-label !m-0">Chẩn đoán</label>
                 {selectedBN.maICD && (
                   <button 
                     type="button"
                     onClick={() => setKetLuan({ ...ketLuan, chanDoan: `${selectedBN.maICD} - ${selectedBN.tenBenhICD}` })}
-                    style={styles.btnTakeIcd}
+                    className="border-none bg-transparent text-[var(--primary)] text-xs font-semibold cursor-pointer underline p-0"
                   >
                     Lấy chẩn đoán tiếp đón ({selectedBN.maICD})
                   </button>
@@ -380,7 +395,7 @@ function KhamBenh() {
             </div>
             <div className="kb-action-row">
               <button className="btn-outline" onClick={() => setSelectedBN(null)}>Hủy</button>
-              <button className="btn-primary" onClick={() => luuPhieuKham(3)} style={styles.saveBtnCenter}>
+              <button className="btn-primary w-auto py-[10px] px-6 flex items-center gap-2" onClick={() => luuPhieuKham(3)}>
                 <Save size={16} /> Hoàn thành khám
               </button>
             </div>
@@ -419,8 +434,8 @@ function KhamBenh() {
           <p className="kb-section-label">Danh sách chờ khám</p>
           <div className="kb-patient-list">
             {dsBNFilter.length === 0 ? (
-              <div style={styles.emptyPatientsBox}>
-                <User size={32} style={styles.emptyPatientsIcon} />
+              <div className="py-8 px-4 text-center text-[var(--text-muted)] text-[14px]">
+                <User size={32} className="mx-auto mb-3 block opacity-30 text-[var(--text-muted)]" />
                 Chưa có bệnh nhân chờ khám
               </div>
             ) : (
@@ -439,7 +454,7 @@ function KhamBenh() {
                     </div>
                     <div>
                       <span className="kb-status-badge" style={{ color: ts.color, backgroundColor: ts.bg }}>{ts.label}</span>
-                      {isSelected && <ChevronRight size={16} style={styles.arrowActive} />}
+                      {isSelected && <ChevronRight size={16} className="text-[var(--primary)] mt-1" />}
                     </div>
                   </div>
                 );
@@ -456,7 +471,7 @@ function KhamBenh() {
               <div>
                 <h2>{selectedBN.hoTen}</h2>
                 <p>{selectedBN.maBN} · {selectedBN.gioiTinh}</p>
-                <p style={styles.patientReasonSub}>Lý do khám: {selectedBN.lyDoKham || '—'}</p>
+                <p className="text-[#6b7280] text-[13px]">Lý do khám: {selectedBN.lyDoKham || '—'}</p>
               </div>
             </div>
           )}
@@ -465,7 +480,7 @@ function KhamBenh() {
 
         {/* CỘT PHẢI: Menu các chức năng khám */}
         <div className="kb-right-menu">
-          <p className="kb-section-label" style={{ padding: '16px 14px 8px' }}>Chức năng</p>
+          <p className="kb-section-label pt-4 px-[14px] pb-2">Chức năng</p>
           {MENU_ITEMS.map(item => (
             <button
               key={item.key}
@@ -474,7 +489,7 @@ function KhamBenh() {
             >
               <span className="kb-menu-icon">{item.icon}</span>
               <span className="kb-menu-label">{item.label}</span>
-              {activeMenu === item.key && <ChevronRight size={16} style={{ marginLeft: 'auto' }} />}
+              {activeMenu === item.key && <ChevronRight size={16} className="ml-auto" />}
             </button>
           ))}
         </div>
@@ -483,52 +498,5 @@ function KhamBenh() {
     </div>
   );
 }
-
-// Bảng cấu hình CSS Inline tối ưu hóa dung lượng của file KhamBenh
-const styles = {
-  icdAlertBox: {
-    backgroundColor: '#eff6ff',
-    border: '1px solid #bfdbfe',
-    borderRadius: '6px',
-    padding: '10px 14px',
-    marginBottom: '16px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    fontSize: '13px'
-  },
-  icdCodeBadge: { color: '#1e3a8a', backgroundColor: '#dbeafe', padding: '2px 8px', borderRadius: '4px', fontWeight: 'bold' },
-  icdEmptyBox: {
-    backgroundColor: '#f8fafc',
-    border: '1px solid #e2e8f0',
-    borderRadius: '6px',
-    padding: '10px 14px',
-    marginBottom: '16px',
-    fontSize: '13px',
-    color: 'var(--text-muted)',
-    fontStyle: 'italic',
-    textAlign: 'left'
-  },
-  saveBtnCenter: { width: 'auto', padding: '10px 24px', display: 'flex', alignItems: 'center', gap: 8 },
-  addMedRow: { flexWrap: 'wrap', gap: 8, marginTop: 12 },
-  medInputText: { paddingLeft: 12, flex: 2, minWidth: 160 },
-  medInputQty: { paddingLeft: 12, flex: 2, minWidth: 140 },
-  medInputDays: { paddingLeft: 12, flex: 1, minWidth: 80 },
-  diagnosisLabelRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' },
-  btnTakeIcd: {
-    border: 'none',
-    background: 'none',
-    color: 'var(--primary)',
-    fontSize: '12px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    textDecoration: 'underline',
-    padding: 0
-  },
-  emptyPatientsBox: { padding: '32px 16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 14 },
-  emptyPatientsIcon: { margin: '0 auto 12px', display: 'block', opacity: 0.3 },
-  arrowActive: { color: 'var(--primary)', marginTop: 4 },
-  patientReasonSub: { color: '#6b7280', fontSize: 13 }
-};
 
 export default KhamBenh;

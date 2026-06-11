@@ -178,94 +178,89 @@ function KhoDanhMucVatTu() {
   };
 
   return (
-    <div className="kb-wrapper" style={styles.wrapper}>
+    <div className="kb-wrapper h-screen overflow-hidden">
       {/* Topbar điều hướng */}
-      <div className="kb-topbar" style={styles.topbar}>
-        <div style={styles.topbarLeft}>
-          <button className="kb-back-btn" onClick={() => navigate('/')} style={styles.backBtn}>
+      <div className="kb-topbar h-[50px] px-5">
+        <div className="flex-1 flex justify-start">
+          <button className="kb-back-btn py-[5px] px-[10px]" onClick={() => navigate('/')}>
             <ArrowLeft size={16} /> Quay về trang chủ
           </button>
         </div>
-        <div className="kb-topbar-title" style={styles.topbarTitle}>
-          <ClipboardList size={18} style={{ marginRight: '6px' }} />
+        <div className="kb-topbar-title flex-1 flex justify-center text-[15px]">
+          <ClipboardList size={18} className="mr-[6px]" />
           <strong>Quản lý danh mục vật tư y tế</strong>
         </div>
-        <div style={styles.topbarRight}>
+        <div className="flex-1 flex justify-end text-[12px] opacity-[0.85]">
           <span>Trang chủ / Kho dược / Danh mục vật tư</span>
         </div>
       </div>
 
       {/* Vùng làm việc chính */}
-      <div className="kb-body" style={styles.body}>
+      <div className="kb-body flex h-[calc(100vh-50px)] bg-[var(--bg-main)] overflow-hidden">
         
         {/* CỘT TRÁI: Bảng danh sách vật tư */}
-        <div style={styles.leftCol}>
+        <div className="flex-[1.2] flex flex-col border-r border-[var(--border-color)] h-full bg-white">
           {/* Tiêu đề & nút Thêm mới */}
-          <div style={styles.panelHeader}>
-            <div style={styles.panelTitleContainer}>
-              <ClipboardList size={16} style={{ color: 'var(--primary)' }} />
-              <h3 style={styles.panelTitleText}>
+          <div className="flex justify-between items-center py-3 px-4 border-b border-[var(--border-color)] bg-[var(--bg-main)]">
+            <div className="flex items-center gap-[6px]">
+              <ClipboardList size={16} className="text-[var(--primary)]" />
+              <h3 className="text-[14.5px] font-[750] text-[var(--text-main)]">
                 Danh mục vật tư tiêu hao hiện có
               </h3>
             </div>
             <button 
               onClick={handleAddNew}
-              className="btn-primary" 
-              style={styles.addBtn}
+              className="btn-primary h-8 text-[12.5px] px-3 flex items-center gap-1"
             >
               <Plus size={14} /> Thêm vật tư mới
             </button>
           </div>
 
           {/* Bảng dữ liệu vật tư */}
-          <div style={styles.tableContainer}>
-            <table className="kb-table" style={styles.table}>
+          <div className="flex-1 overflow-y-auto">
+            <table className="kb-table w-full border-collapse text-[13px]">
               <thead>
-                <tr style={styles.tableHeaderRow}>
-                  <th style={styles.thStt}>STT</th>
-                  <th style={styles.thMa}>Mã vật tư</th>
-                  <th style={styles.thTen}>Tên vật tư</th>
-                  <th style={{ padding: '8px' }}>Quy cách đóng gói</th>
-                  <th style={styles.thDvt}>Đơn vị tính</th>
-                  <th style={styles.thXoa}>Xóa</th>
+                <tr className="sticky top-0 z-10 bg-[var(--bg-main)] border-b-2 border-[var(--border-color)]">
+                  <th className="w-[50px] text-center p-2">STT</th>
+                  <th className="w-[100px] p-2">Mã vật tư</th>
+                  <th className="w-[220px] p-2">Tên vật tư</th>
+                  <th className="p-2">Quy cách đóng gói</th>
+                  <th className="w-[100px] p-2">Đơn vị tính</th>
+                  <th className="w-[60px] p-2 text-center">Xóa</th>
                 </tr>
                 {/* Lọc tìm kiếm */}
-                <tr style={styles.filterRow}>
+                <tr className="bg-[var(--bg-main)] border-b border-[var(--border-color)]">
                   <td></td>
-                  <td style={styles.tdPadding4}>
+                  <td className="p-1">
                     <input 
                       type="text" 
                       placeholder="Lọc..." 
-                      className="form-input" 
-                      style={styles.filterInput}
+                      className="form-input h-[26px] text-[12px] py-0.5 px-1.5" 
                       value={filters.maVT}
                       onChange={e => handleFilterChange('maVT', e.target.value)}
                     />
                   </td>
-                  <td style={styles.tdPadding4}>
+                  <td className="p-1">
                     <input 
                       type="text" 
                       placeholder="Lọc..." 
-                      className="form-input" 
-                      style={styles.filterInput}
+                      className="form-input h-[26px] text-[12px] py-0.5 px-1.5" 
                       value={filters.tenVT}
                       onChange={e => handleFilterChange('tenVT', e.target.value)}
                     />
                   </td>
-                  <td style={styles.tdPadding4}>
+                  <td className="p-1">
                     <input 
                       type="text" 
                       placeholder="Lọc..." 
-                      className="form-input" 
-                      style={styles.filterInput}
+                      className="form-input h-[26px] text-[12px] py-0.5 px-1.5" 
                       value={filters.quyCach}
                       onChange={e => handleFilterChange('quyCach', e.target.value)}
                     />
                   </td>
-                  <td style={styles.tdPadding4}>
+                  <td className="p-1">
                     <select 
-                      className="form-input" 
-                      style={styles.filterSelect}
+                      className="form-input h-[26px] text-[12px] px-1" 
                       value={filters.donViTinh}
                       onChange={e => handleFilterChange('donViTinh', e.target.value)}
                     >
@@ -284,34 +279,28 @@ function KhoDanhMucVatTu() {
                   return (
                     <tr 
                       key={item.maVT}
-                      className="kb-table-row"
-                      style={{ 
-                        backgroundColor: isSelected ? 'var(--primary-light)' : 'transparent',
-                        cursor: 'pointer',
-                        transition: 'background-color 0.15s'
-                      }}
+                      className={`kb-table-row cursor-pointer transition-colors duration-150 ${isSelected ? 'bg-[var(--primary-light)]' : 'bg-transparent'}`}
                       onClick={() => setSelectedSupply(item)}
                     >
-                      <td style={styles.tdStt}>
+                      <td className="text-center py-2.5 px-2 text-[var(--text-muted)]">
                         {startIndex + idx + 1}
                       </td>
-                      <td style={{ fontWeight: '600', color: isSelected ? 'var(--primary-hover)' : 'var(--text-main)', padding: '10px 8px' }}>
+                      <td className={`font-semibold py-2.5 px-2 ${isSelected ? 'text-[var(--primary-hover)]' : 'text-[var(--text-main)]'}`}>
                         {item.maVT}
                       </td>
-                      <td style={{ fontWeight: '650', padding: '10px 8px' }}>{item.tenVT}</td>
-                      <td style={{ padding: '10px 8px', fontStyle: item.quyCach ? 'normal' : 'italic', color: item.quyCach ? 'var(--text-main)' : 'var(--text-muted)' }}>
+                      <td className="font-[650] py-2.5 px-2">{item.tenVT}</td>
+                      <td className={`py-2.5 px-2 ${item.quyCach ? 'not-italic text-[var(--text-main)]' : 'italic text-[var(--text-muted)]'}`}>
                         {item.quyCach || '—'}
                       </td>
-                      <td style={{ padding: '10px 8px', fontWeight: '500' }}>{item.donViTinh}</td>
-                      <td style={styles.tdXoa}>
+                      <td className="py-2.5 px-2 font-medium">{item.donViTinh}</td>
+                      <td className="py-2.5 px-2 text-center">
                         <button 
-                          className="kb-icon-btn kb-icon-btn--danger"
+                          className="kb-icon-btn kb-icon-btn--danger mx-auto"
                           onClick={(e) => {
                             e.stopPropagation();
                             handleDeleteSupply(item.maVT, item.tenVT);
                           }}
                           title="Xóa vật tư"
-                          style={styles.deleteBtnIcon}
                         >
                           <Trash2 size={13} />
                         </button>
@@ -321,7 +310,7 @@ function KhoDanhMucVatTu() {
                 })}
                 {filteredSupplies.length === 0 && (
                   <tr>
-                    <td colSpan={6} style={styles.noDataTd}>
+                    <td colSpan={6} className="text-center p-10 text-[var(--text-muted)]">
                       Không tìm thấy vật tư trùng khớp với bộ lọc tìm kiếm
                     </td>
                   </tr>
@@ -331,13 +320,12 @@ function KhoDanhMucVatTu() {
           </div>
 
           {/* Phân trang dưới bảng */}
-          <div style={styles.pagination}>
-            <div style={styles.pageBtnGroup}>
+          <div className="border-t border-[var(--border-color)] py-2 px-4 flex justify-between items-center text-[12.5px] text-[var(--text-muted)] bg-[var(--bg-main)]">
+            <div className="flex gap-1 items-center">
               <button 
                 disabled={activePage === 1} 
                 onClick={() => setCurrentPage(activePage - 1)}
-                className="btn-outline" 
-                style={{ ...styles.pageNavBtn, cursor: activePage === 1 ? 'not-allowed' : 'pointer' }}
+                className={`btn-outline h-6 w-6 p-0 flex items-center justify-center ${activePage === 1 ? 'cursor-not-allowed' : 'cursor-pointer'}`}
               >
                 &lt;
               </button>
@@ -345,8 +333,7 @@ function KhoDanhMucVatTu() {
                 <button
                   key={p}
                   onClick={() => setCurrentPage(p)}
-                  className={p === activePage ? "btn-primary" : "btn-outline"}
-                  style={styles.pageNumberBtn}
+                  className={`${p === activePage ? "btn-primary" : "btn-outline"} h-6 w-6 p-0 flex items-center justify-center text-[11px] font-bold cursor-pointer`}
                 >
                   {p}
                 </button>
@@ -354,8 +341,7 @@ function KhoDanhMucVatTu() {
               <button 
                 disabled={activePage === totalPages} 
                 onClick={() => setCurrentPage(activePage + 1)}
-                className="btn-outline" 
-                style={{ ...styles.pageNavBtn, cursor: activePage === totalPages ? 'not-allowed' : 'pointer' }}
+                className={`btn-outline h-6 w-6 p-0 flex items-center justify-center ${activePage === totalPages ? 'cursor-not-allowed' : 'cursor-pointer'}`}
               >
                 &gt;
               </button>
@@ -365,77 +351,73 @@ function KhoDanhMucVatTu() {
         </div>
 
         {/* CỘT PHẢI: Form chi tiết */}
-        <div style={styles.rightCol}>
-          <div style={styles.formHeader}>
+        <div className="flex-[0.8] flex flex-col h-full bg-white">
+          <div className="flex bg-[#10b981] py-3 px-[18px] h-[42px] items-center text-white text-[13px] font-bold gap-2">
             <Database size={16} />
             <span>CHI TIẾT DANH MỤC VẬT TƯ TIÊU HAO</span>
           </div>
 
-          <div style={styles.formArea}>
+          <div className="flex-1 overflow-y-auto p-6 bg-white">
             {selectedSupply === null ? (
-              <div style={styles.noSelected}>
-                <ClipboardList size={48} style={styles.noSelectedIcon} />
+              <div className="h-full flex flex-col items-center justify-center text-[var(--text-muted)] text-center gap-3">
+                <ClipboardList size={48} className="opacity-25 text-[#10b981]" />
                 <div>
-                  <h4 style={{ fontWeight: '600', color: 'var(--text-main)' }}>Chưa chọn vật tư</h4>
-                  <p style={{ fontSize: '13px', marginTop: '4px' }}>Chọn một loại vật tư bên trái hoặc click "Thêm vật tư mới" để nhập thông tin vật tư tiêu hao.</p>
+                  <h4 className="font-semibold text-[var(--text-main)]">Chưa chọn vật tư</h4>
+                  <p className="text-[13px] mt-1">Chọn một loại vật tư bên trái hoặc click "Thêm vật tư mới" để nhập thông tin vật tư tiêu hao.</p>
                 </div>
               </div>
             ) : (
-              <form onSubmit={handleSave} style={styles.form}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-                  <div style={styles.formSection}>
-                    <h4 style={styles.formSectionTitle}>
+              <form onSubmit={handleSave} className="h-full flex flex-col justify-between">
+                <div className="flex flex-col gap-[18px]">
+                  <div className="border-b border-dashed border-[var(--border-color)] pb-4">
+                    <h4 className="text-[13px] font-bold text-[#10b981] mb-4 flex items-center gap-[6px]">
                       <ClipboardList size={14} /> THÔNG TIN VẬT TƯ Y TẾ
                     </h4>
                     
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                      <div className="form-group" style={{ margin: 0 }}>
-                        <label className="form-label" style={{ fontSize: '12.5px' }}>Mã vật tư <span style={{ color: 'red' }}>*</span></label>
+                    <div className="flex flex-col gap-[14px]">
+                      <div className="form-group m-0">
+                        <label className="form-label text-[12.5px]">Mã vật tư <span className="text-red-500">*</span></label>
                         <input 
                           type="text" 
-                          className="form-input" 
+                          className="form-input h-9 text-[13px] uppercase" 
                           placeholder="Mã vật tư (VD: VT001)"
                           value={formData.maVT}
                           onChange={e => handleInputChange('maVT', e.target.value)}
                           required
                           disabled={!selectedSupply.isNew}
-                          style={styles.maInput}
                         />
                       </div>
 
-                      <div className="form-group" style={{ margin: 0 }}>
-                        <label className="form-label" style={{ fontSize: '12.5px' }}>Tên vật tư y tế <span style={{ color: 'red' }}>*</span></label>
+                      <div className="form-group m-0">
+                        <label className="form-label text-[12.5px]">Tên vật tư y tế <span className="text-red-500">*</span></label>
                         <input 
                           type="text" 
-                          className="form-input" 
+                          className="form-input h-9 text-[13px]" 
                           placeholder="Nhập tên vật tư tiêu hao..."
                           value={formData.tenVT}
                           onChange={e => handleInputChange('tenVT', e.target.value)}
                           required
-                          style={styles.formInputCommon}
                         />
                       </div>
 
-                      <div className="form-group" style={{ margin: 0 }}>
-                        <label className="form-label" style={{ fontSize: '12.5px' }}>Quy cách đóng gói</label>
+                      <div className="form-group m-0">
+                        <label className="form-label text-[12.5px]">Quy cách đóng gói</label>
                         <input 
                           type="text" 
-                          className="form-input" 
+                          className="form-input h-9 text-[13px]" 
                           placeholder="Quy cách đóng gói (VD: Hộp 100 cái)..."
                           value={formData.quyCach}
                           onChange={e => handleInputChange('quyCach', e.target.value)}
-                          style={styles.formInputCommon}
                         />
                       </div>
 
-                      <div className="form-group" style={{ margin: 0 }}>
-                        <label className="form-label" style={{ fontSize: '12.5px' }}>Đơn vị tính <span style={{ color: 'red' }}>*</span></label>
+                      <div className="form-group m-0">
+                        <label className="form-label text-[12.5px]">Đơn vị tính <span className="text-red-500">*</span></label>
                         <select 
-                          className="form-input" 
+                          className="form-input h-9 text-[13px] px-2" 
                           value={formData.donViTinh}
                           onChange={e => handleInputChange('donViTinh', e.target.value)}
                           required
-                          style={styles.formSelectCommon}
                         >
                           {DON_VI_OPTIONS.map(opt => (
                             <option key={opt} value={opt}>{opt}</option>
@@ -447,19 +429,17 @@ function KhoDanhMucVatTu() {
                 </div>
 
                 {/* Các nút Hủy/Lưu */}
-                <div style={styles.formActionGroup}>
+                <div className="flex justify-end gap-2.5 border-t border-[var(--border-color)] pt-4 mt-6">
                   <button 
                     type="button" 
-                    className="btn-outline" 
+                    className="btn-outline w-[100px] h-9 flex items-center justify-center p-0 m-0" 
                     onClick={() => setSelectedSupply(null)}
-                    style={styles.cancelBtn}
                   >
                     Hủy
                   </button>
                   <button 
                     type="submit" 
-                    className="btn-primary" 
-                    style={styles.saveBtn}
+                    className="btn-primary w-[120px] h-9 flex items-center justify-center gap-1.5 bg-[#10b981] p-0 m-0" 
                   >
                     <Save size={16} /> Lưu
                   </button>
@@ -473,120 +453,5 @@ function KhoDanhMucVatTu() {
     </div>
   );
 }
-
-// Bảng cấu hình CSS inline cho giao diện KhoDanhMucVatTu
-const styles = {
-  wrapper: { height: '100vh', overflow: 'hidden' },
-  topbar: { height: '50px', padding: '0 20px' },
-  topbarLeft: { flex: 1, display: 'flex', justifyContent: 'flex-start' },
-  backBtn: { padding: '5px 10px' },
-  topbarTitle: { flex: 1, display: 'flex', justifyContent: 'center', fontSize: '15px' },
-  topbarRight: { flex: 1, display: 'flex', justifyContent: 'flex-end', fontSize: '12px', opacity: 0.85 },
-  body: {
-    display: 'flex',
-    height: 'calc(100vh - 50px)',
-    backgroundColor: 'var(--bg-main)',
-    overflow: 'hidden'
-  },
-  leftCol: {
-    flex: 1.2,
-    display: 'flex',
-    flexDirection: 'column',
-    borderRight: '1px solid var(--border-color)',
-    height: '100%',
-    backgroundColor: '#ffffff'
-  },
-  panelHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '12px 16px',
-    borderBottom: '1px solid var(--border-color)',
-    backgroundColor: 'var(--bg-main)'
-  },
-  panelTitleContainer: { display: 'flex', alignItems: 'center', gap: '6px' },
-  panelTitleText: { fontSize: '14.5px', fontWeight: '750', color: 'var(--text-main)' },
-  addBtn: { height: '32px', fontSize: '12.5px', padding: '0 12px', display: 'flex', alignItems: 'center', gap: '4px' },
-  tableContainer: { flex: 1, overflowY: 'auto' },
-  table: { width: '100%', borderCollapse: 'collapse', fontSize: '13px' },
-  tableHeaderRow: { position: 'sticky', top: 0, zIndex: 10, background: 'var(--bg-main)', borderBottom: '2px solid var(--border-color)' },
-  thStt: { width: '50px', textAlign: 'center', padding: '8px' },
-  thMa: { width: '100px', padding: '8px' },
-  thTen: { width: '220px', padding: '8px' },
-  thDvt: { width: '100px', padding: '8px' },
-  thXoa: { width: '60px', padding: '8px', textAlign: 'center' },
-  filterRow: { backgroundColor: 'var(--bg-main)', borderBottom: '1px solid var(--border-color)' },
-  tdPadding4: { padding: '4px' },
-  filterInput: { height: '26px', fontSize: '12px', padding: '2px 6px' },
-  filterSelect: { height: '26px', fontSize: '12px', padding: '0 4px' },
-  tdStt: { textAlign: 'center', padding: '10px 8px', color: 'var(--text-muted)' },
-  tdXoa: { padding: '10px 8px', textAlign: 'center' },
-  deleteBtnIcon: { margin: '0 auto' },
-  noDataTd: { textAlign: 'center', padding: '40px', color: 'var(--text-muted)' },
-  pagination: {
-    borderTop: '1px solid var(--border-color)',
-    padding: '8px 16px',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    fontSize: '12.5px',
-    color: 'var(--text-muted)',
-    backgroundColor: 'var(--bg-main)'
-  },
-  pageBtnGroup: { display: 'flex', gap: '4px', alignItems: 'center' },
-  pageNavBtn: { height: '24px', width: '24px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' },
-  pageNumberBtn: { height: '24px', width: '24px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' },
-  rightCol: {
-    flex: 0.8,
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-    backgroundColor: '#ffffff'
-  },
-  formHeader: {
-    display: 'flex',
-    backgroundColor: '#10b981',
-    padding: '12px 18px',
-    height: '42px',
-    alignItems: 'center',
-    color: '#ffffff',
-    fontSize: '13px',
-    fontWeight: '700',
-    gap: '8px'
-  },
-  formArea: {
-    flex: 1,
-    overflowY: 'auto',
-    padding: '24px',
-    backgroundColor: '#ffffff'
-  },
-  noSelected: {
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    color: 'var(--text-muted)',
-    textAlign: 'center',
-    gap: '12px'
-  },
-  noSelectedIcon: { opacity: 0.25, color: '#10b981' },
-  form: { height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' },
-  formSection: { borderBottom: '1px dashed var(--border-color)', paddingBottom: '16px' },
-  formSectionTitle: { fontSize: '13px', fontWeight: '700', color: '#10b981', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '6px' },
-  maInput: { height: '36px', fontSize: '13px', textTransform: 'uppercase' },
-  formInputCommon: { height: '36px', fontSize: '13px' },
-  formSelectCommon: { height: '36px', fontSize: '13px', padding: '0 8px' },
-  formActionGroup: {
-    display: 'flex',
-    justifyContent: 'flex-end',
-    gap: '10px',
-    borderTop: '1px solid var(--border-color)',
-    paddingTop: '16px',
-    marginTop: '24px'
-  },
-  cancelBtn: { width: '100px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, margin: 0 },
-  saveBtn: { width: '120px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', backgroundColor: '#10b981', padding: 0, margin: 0 }
-};
 
 export default KhoDanhMucVatTu;

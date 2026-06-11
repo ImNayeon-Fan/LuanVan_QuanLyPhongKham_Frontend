@@ -324,84 +324,84 @@ function KhoNhapKho() {
   };
 
   return (
-    <div className="kb-wrapper" style={styles.wrapper}>
+    <div className="kb-wrapper h-screen overflow-hidden relative">
       {/* Topbar điều hướng */}
-      <div className="kb-topbar" style={styles.topbar}>
-        <div style={styles.topbarLeft}>
-          <button className="kb-back-btn" onClick={() => navigate('/')} style={styles.backBtn}>
+      <div className="kb-topbar h-[50px] px-5 flex items-center justify-between">
+        <div className="flex-1 flex justify-start items-center">
+          <button className="kb-back-btn py-[5px] px-[10px]" onClick={() => navigate('/')}>
             <ArrowLeft size={16} /> Quay về trang chủ
           </button>
         </div>
-        <div className="kb-topbar-title" style={styles.topbarTitle}>
-          <Database size={18} style={{ marginRight: '6px' }} />
+        <div className="kb-topbar-title flex-1 flex justify-center items-center text-[15px]">
+          <Database size={18} className="mr-[6px]" />
           <strong>Quản lý Nhập kho thuốc & Lô thuốc</strong>
         </div>
-        <div style={styles.topbarRight}>
+        <div className="flex-1 flex justify-end items-center text-[12px] opacity-85">
           <span>Trang chủ / Kho dược / Nhập kho thuốc</span>
         </div>
       </div>
 
       {/* Vùng làm việc chính */}
-      <div className="kb-body" style={styles.body}>
+      <div className="kb-body flex h-[calc(100vh-50px)] bg-[var(--bg-main)] overflow-hidden">
         
         {/* CỘT TRÁI: Bảng danh sách lô thuốc nhập */}
-        <div style={styles.leftCol}>
-          <div style={styles.panelHeader}>
-            <div style={styles.panelTitleContainer}>
-              <Database size={16} style={{ color: 'var(--primary)' }} />
-              <h3 style={styles.panelTitleText}>Danh sách Lô thuốc nhập kho</h3>
+        <div className="flex-[1.3] flex flex-col border-r border-[var(--border-color)] h-full bg-white">
+          <div className="flex justify-between items-center py-3 px-4 border-b border-[var(--border-color)] bg-[var(--bg-main)]">
+            <div className="flex items-center gap-1.5">
+              <Database size={16} className="text-[var(--primary)]" />
+              <h3 className="text-[14.5px] font-[750] text-[var(--text-main)]">Danh sách Lô thuốc nhập kho</h3>
             </div>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <button onClick={openSupplierModal} className="btn-outline" style={styles.btnNcc}>
+            <div className="flex gap-2">
+              <button onClick={openSupplierModal} className="btn-outline h-8 text-[12.5px] px-3 flex items-center gap-1 border border-[var(--primary)] text-[var(--primary)]">
                 <Users size={14} /> Nhà cung cấp
               </button>
-              <button onClick={handleAddNew} className="btn-primary" style={styles.addBtn}>
+              <button onClick={handleAddNew} className="btn-primary h-8 text-[12.5px] px-3 flex items-center gap-1">
                 <Plus size={14} /> Nhập kho lô mới
               </button>
             </div>
           </div>
 
           {/* Bảng dữ liệu lô thuốc */}
-          <div style={styles.tableContainer}>
-            <table className="kb-table" style={styles.table}>
+          <div className="flex-1 overflow-y-auto">
+            <table className="kb-table w-full border-collapse text-[13px]">
               <thead>
-                <tr style={styles.tableHeaderRow}>
-                  <th style={styles.thStt}>STT</th>
-                  <th style={styles.thMaLo}>Mã lô</th>
-                  <th style={styles.thDuoCPhan}>Dược phẩm</th>
-                  <th style={styles.thNCC}>Nhà cung cấp</th>
-                  <th style={styles.thNum}>SL Nhập</th>
-                  <th style={styles.thNum}>SL Tồn</th>
-                  <th style={styles.thGia}>Giá bán</th>
-                  <th style={styles.thHsd}>Trạng thái HSD</th>
-                  <th style={styles.thXoa}>Xóa</th>
+                <tr className="sticky top-0 z-10 bg-[var(--bg-main)] border-b-2 border-[var(--border-color)]">
+                  <th className="w-[50px] text-center p-2">STT</th>
+                  <th className="w-[80px] p-2">Mã lô</th>
+                  <th className="w-[160px] p-2">Dược phẩm</th>
+                  <th className="w-[160px] p-2">Nhà cung cấp</th>
+                  <th className="w-[80px] p-2 text-right">SL Nhập</th>
+                  <th className="w-[80px] p-2 text-right">SL Tồn</th>
+                  <th className="w-[100px] p-2 text-right">Giá bán</th>
+                  <th className="w-[120px] p-2 text-center">Trạng thái HSD</th>
+                  <th className="w-[60px] p-2 text-center">Xóa</th>
                 </tr>
                 {/* Các ô tìm kiếm bộ lọc */}
-                <tr style={styles.filterRow}>
+                <tr className="bg-[var(--bg-main)] border-b border-[var(--border-color)]">
                   <td></td>
-                  <td style={styles.tdPadding4}>
+                  <td className="p-1">
                     <input 
-                      type="text" placeholder="Mã..." className="form-input" style={styles.filterInputMa}
+                      type="text" placeholder="Mã..." className="form-input h-[26px] text-[12px] py-[2px] px-[4px]"
                       value={filters.maLo} onChange={e => handleFilterChange('maLo', e.target.value)}
                     />
                   </td>
-                  <td style={styles.tdPadding4}>
+                  <td className="p-1">
                     <input 
-                      type="text" placeholder="Tên thuốc..." className="form-input" style={styles.filterInputCommon}
+                      type="text" placeholder="Tên thuốc..." className="form-input h-[26px] text-[12px] py-[2px] px-[6px]"
                       value={filters.tenThuoc} onChange={e => handleFilterChange('tenThuoc', e.target.value)}
                     />
                   </td>
-                  <td style={styles.tdPadding4}>
+                  <td className="p-1">
                     <input 
-                      type="text" placeholder="Tên NCC..." className="form-input" style={styles.filterInputCommon}
+                      type="text" placeholder="Tên NCC..." className="form-input h-[26px] text-[12px] py-[2px] px-[6px]"
                       value={filters.tenNCC} onChange={e => handleFilterChange('tenNCC', e.target.value)}
                     />
                   </td>
                   <td></td>
                   <td></td>
                   <td></td>
-                  <td style={styles.tdPadding4}>
-                    <select className="form-input" style={styles.filterSelect} value={filters.expiryStatus} onChange={e => handleFilterChange('expiryStatus', e.target.value)}>
+                  <td className="p-1">
+                    <select className="form-input h-[26px] text-[12px] py-0 px-1" value={filters.expiryStatus} onChange={e => handleFilterChange('expiryStatus', e.target.value)}>
                       <option value="All">Tất cả HSD</option>
                       <option value="Safe">An toàn</option>
                       <option value="Expiring">Hạn ngắn (&lt;6 th)</option>
@@ -420,35 +420,30 @@ function KhoNhapKho() {
                   
                   return (
                     <tr 
-                      key={item.maLo} className="kb-table-row"
-                      style={{ 
-                        backgroundColor: isSelected ? 'var(--primary-light)' : 'transparent',
-                        cursor: 'pointer', transition: 'background-color 0.15s'
-                      }}
+                      key={item.maLo} 
+                      className={`kb-table-row cursor-pointer transition-colors duration-150 ${isSelected ? 'bg-[var(--primary-light)]' : 'bg-transparent'}`}
                       onClick={() => setSelectedLot(item)}
                     >
-                      <td style={styles.tdStt}>{startIndex + idx + 1}</td>
-                      <td style={{ fontWeight: '600', color: isSelected ? 'var(--primary-hover)' : 'var(--text-main)', padding: '10px 8px' }}>{item.maLo}</td>
-                      <td style={{ fontWeight: '650', padding: '10px 8px' }}>
+                      <td className="text-center py-2.5 px-2 text-[var(--text-muted)]">{startIndex + idx + 1}</td>
+                      <td className={`font-semibold py-2.5 px-2 ${isSelected ? 'text-[var(--primary-hover)]' : 'text-[var(--text-main)]'}`}>{item.maLo}</td>
+                      <td className="font-[650] py-2.5 px-2">
                         {drug.tenThuoc || 'Thuốc không xác định'}
-                        <div style={{ fontSize: '11px', fontWeight: 'normal', color: 'var(--text-muted)' }}>{drug.hoatChat}</div>
+                        <div className="text-[11px] font-normal text-[var(--text-muted)]">{drug.hoatChat}</div>
                       </td>
-                      <td style={{ padding: '10px 8px', fontSize: '12px' }}>{sup.tenNCC || 'NCC không xác định'}</td>
-                      <td style={{ padding: '10px 8px', textAlign: 'right', fontWeight: '500' }}>{item.soLuongNhap}</td>
-                      <td style={{ padding: '10px 8px', textAlign: 'right', fontWeight: '600', color: item.soLuongTon === 0 ? '#ef4444' : 'var(--text-main)' }}>{item.soLuongTon}</td>
-                      <td style={{ padding: '10px 8px', textAlign: 'right', fontWeight: '600', color: 'var(--primary)' }}>{(item.giaBan || 0).toLocaleString()}đ</td>
-                      <td style={{ padding: '10px 8px', textAlign: 'center' }}>
-                        <span style={{ 
-                          fontSize: '11px', fontWeight: '600', padding: '2px 8px', borderRadius: '10px',
-                          backgroundColor: expInfo.class === 'expired' ? '#fee2e2' : expInfo.class === 'expiring' ? '#ffedd5' : '#dcfce7',
-                          color: expInfo.class === 'expired' ? '#ef4444' : expInfo.class === 'expiring' ? '#ea580c' : '#16a34a'
-                        }}>{expInfo.label}</span>
+                      <td className="py-2.5 px-2 text-[12px]">{sup.tenNCC || 'NCC không xác định'}</td>
+                      <td className="py-2.5 px-2 text-right font-medium">{item.soLuongNhap}</td>
+                      <td className={`py-2.5 px-2 text-right font-semibold ${item.soLuongTon === 0 ? 'text-[#ef4444]' : 'text-[var(--text-main)]'}`}>{item.soLuongTon}</td>
+                      <td className="py-2.5 px-2 text-right font-semibold text-[var(--primary)]">{(item.giaBan || 0).toLocaleString()}đ</td>
+                      <td className="py-2.5 px-2 text-center">
+                        <span className={`text-[11px] font-semibold py-0.5 px-2 rounded-[10px] ${
+                          expInfo.class === 'expired' ? 'bg-[#fee2e2] text-[#ef4444]' : expInfo.class === 'expiring' ? 'bg-[#ffedd5] text-[#ea580c]' : 'bg-[#dcfce7] text-[#16a34a]'
+                        }`}>{expInfo.label}</span>
                       </td>
-                      <td style={{ padding: '10px 8px', textAlign: 'center' }}>
+                      <td className="py-2.5 px-2 text-center">
                         <button 
-                          className="kb-icon-btn kb-icon-btn--danger"
+                          className="kb-icon-btn kb-icon-btn--danger mx-auto"
                           onClick={(e) => { e.stopPropagation(); handleDeleteLot(item.maLo); }}
-                          title="Xóa lô thuốc" style={styles.deleteBtnIcon}
+                          title="Xóa lô thuốc"
                         >
                           <Trash2 size={13} />
                         </button>
@@ -458,7 +453,7 @@ function KhoNhapKho() {
                 })}
                 {filteredLots.length === 0 && (
                   <tr>
-                    <td colSpan={9} style={styles.noDataTd}>Không tìm thấy lô thuốc trùng khớp với bộ lọc tìm kiếm</td>
+                    <td colSpan={9} className="text-center p-10 text-[var(--text-muted)]">Không tìm thấy lô thuốc trùng khớp với bộ lọc tìm kiếm</td>
                   </tr>
                 )}
               </tbody>
@@ -466,20 +461,28 @@ function KhoNhapKho() {
           </div>
 
           {/* Phân trang danh sách */}
-          <div style={styles.pagination}>
-            <div style={styles.pageBtnGroup}>
+          <div className="border-t border-[var(--border-color)] py-2 px-4 flex justify-between items-center text-[12.5px] text-[var(--text-muted)] bg-[var(--bg-main)]">
+            <div className="flex gap-1 items-center">
               <button 
-                disabled={activePage === 1} onClick={() => setCurrentPage(activePage - 1)} className="btn-outline" 
-                style={{ ...styles.pageNavBtn, cursor: activePage === 1 ? 'not-allowed' : 'pointer' }}
+                disabled={activePage === 1} 
+                onClick={() => setCurrentPage(activePage - 1)} 
+                className={`btn-outline h-6 w-6 p-0 flex items-center justify-center ${activePage === 1 ? 'cursor-not-allowed' : 'cursor-pointer'}`}
               >
                 &lt;
               </button>
               {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-                <button key={p} onClick={() => setCurrentPage(p)} className={p === activePage ? "btn-primary" : "btn-outline"} style={styles.pageNumberBtn}>{p}</button>
+                <button 
+                  key={p} 
+                  onClick={() => setCurrentPage(p)} 
+                  className={`${p === activePage ? "btn-primary" : "btn-outline"} h-6 w-6 p-0 flex items-center justify-center text-[11px] font-bold cursor-pointer`}
+                >
+                  {p}
+                </button>
               ))}
               <button 
-                disabled={activePage === totalPages} onClick={() => setCurrentPage(activePage + 1)} className="btn-outline" 
-                style={{ ...styles.pageNavBtn, cursor: activePage === totalPages ? 'not-allowed' : 'pointer' }}
+                disabled={activePage === totalPages} 
+                onClick={() => setCurrentPage(activePage + 1)} 
+                className={`btn-outline h-6 w-6 p-0 flex items-center justify-center ${activePage === totalPages ? 'cursor-not-allowed' : 'cursor-pointer'}`}
               >
                 &gt;
               </button>
@@ -489,41 +492,39 @@ function KhoNhapKho() {
         </div>
 
         {/* CỘT PHẢI: Form chi tiết & chỉnh sửa */}
-        <div style={styles.rightCol}>
-          <div style={styles.formHeader}>
+        <div className="flex-[0.7] flex flex-col h-full bg-white">
+          <div className="flex bg-[#0284c7] py-3 px-[18px] h-[42px] items-center text-white text-[13px] font-bold gap-2">
             <Database size={16} />
             <span>NHẬP KHO VÀ ĐỊNH GIÁ LÔ THUỐC</span>
           </div>
 
-          <div style={styles.formArea}>
+          <div className="flex-1 overflow-y-auto p-5 bg-white">
             {selectedLot === null ? (
-              <div style={styles.noSelected}>
-                <Database size={48} style={styles.noSelectedIcon} />
+              <div className="h-full flex flex-col items-center justify-center text-[var(--text-muted)] text-center gap-3">
+                <Database size={48} className="opacity-25 text-[var(--primary)]" />
                 <div>
-                  <h4 style={{ fontWeight: '600', color: 'var(--text-main)' }}>Chưa chọn lô thuốc</h4>
-                  <p style={{ fontSize: '13px', marginTop: '4px' }}>Chọn một lô thuốc bên trái hoặc bấm "Nhập kho lô mới" để khai báo lô nhập dược phẩm.</p>
+                  <h4 className="font-semibold text-[var(--text-main)]">Chưa chọn lô thuốc</h4>
+                  <p className="text-[13px] mt-1">Chọn một lô thuốc bên trái hoặc bấm "Nhập kho lô mới" để khai báo lô nhập dược phẩm.</p>
                 </div>
               </div>
             ) : (
-              <form onSubmit={handleSave} style={styles.form}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <form onSubmit={handleSave} className="h-full flex flex-col justify-between">
+                <div className="flex flex-col gap-3.5">
                   
                   {/* Mã Lô & Dược Phẩm */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '12px' }}>
-                    <div className="form-group" style={{ margin: 0 }}>
-                      <label className="form-label" style={{ fontSize: '12.5px' }}>Mã lô thuốc <span style={{ color: 'red' }}>*</span></label>
+                  <div className="grid grid-cols-[1fr_1.2fr] gap-3">
+                    <div className="form-group m-0">
+                      <label className="form-label text-[12.5px]">Mã lô thuốc <span className="text-red-500">*</span></label>
                       <input 
-                        type="text" className="form-input" placeholder="VD: L26001" value={formData.maLo}
+                        type="text" className="form-input h-9 text-[13px] uppercase" placeholder="VD: L26001" value={formData.maLo}
                         onChange={e => handleInputChange('maLo', e.target.value)} required disabled={!selectedLot.isNew}
-                        style={styles.formMaLoInput}
                       />
                     </div>
                     
-                    <div className="form-group" style={{ margin: 0 }}>
-                      <label className="form-label" style={{ fontSize: '12.5px' }}>Chọn Thuốc <span style={{ color: 'red' }}>*</span></label>
+                    <div className="form-group m-0">
+                      <label className="form-label text-[12.5px]">Chọn Thuốc <span className="text-red-500">*</span></label>
                       <select 
-                        className="form-input" value={formData.maThuoc} onChange={e => handleInputChange('maThuoc', e.target.value)} required
-                        style={styles.formSelectCommon}
+                        className="form-input h-9 text-[13px] px-2" value={formData.maThuoc} onChange={e => handleInputChange('maThuoc', e.target.value)} required
                       >
                         <option value="">-- Chọn thuốc y tế --</option>
                         {drugs.map(d => (
@@ -534,11 +535,10 @@ function KhoNhapKho() {
                   </div>
 
                   {/* Nhà cung cấp */}
-                  <div className="form-group" style={{ margin: 0 }}>
-                    <label className="form-label" style={{ fontSize: '12.5px' }}>Nhà cung cấp <span style={{ color: 'red' }}>*</span></label>
+                  <div className="form-group m-0">
+                    <label className="form-label text-[12.5px]">Nhà cung cấp <span className="text-red-500">*</span></label>
                     <select 
-                      className="form-input" value={formData.maNCC} onChange={e => handleInputChange('maNCC', e.target.value)} required
-                      style={styles.formSelectCommon}
+                      className="form-input h-9 text-[13px] px-2" value={formData.maNCC} onChange={e => handleInputChange('maNCC', e.target.value)} required
                     >
                       <option value="">-- Chọn nhà cung cấp sản phẩm --</option>
                       {suppliers.map(s => (
@@ -548,67 +548,67 @@ function KhoNhapKho() {
                   </div>
 
                   {/* Số lượng */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                    <div className="form-group" style={{ margin: 0 }}>
-                      <label className="form-label" style={{ fontSize: '12.5px' }}>Số lượng nhập <span style={{ color: 'red' }}>*</span></label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="form-group m-0">
+                      <label className="form-label text-[12.5px]">Số lượng nhập <span className="text-red-500">*</span></label>
                       <input 
-                        type="number" min="0" className="form-input" placeholder="Số lượng" value={formData.soLuongNhap}
-                        onChange={e => handleInputChange('soLuongNhap', e.target.value)} required style={styles.formNumInput}
+                        type="number" min="0" className="form-input h-9 text-[13px]" placeholder="Số lượng" value={formData.soLuongNhap}
+                        onChange={e => handleInputChange('soLuongNhap', e.target.value)} required
                       />
                     </div>
                     
-                    <div className="form-group" style={{ margin: 0 }}>
-                      <label className="form-label" style={{ fontSize: '12.5px' }}>Số lượng tồn kho <span style={{ color: 'red' }}>*</span></label>
+                    <div className="form-group m-0">
+                      <label className="form-label text-[12.5px]">Số lượng tồn kho <span className="text-red-500">*</span></label>
                       <input 
-                        type="number" min="0" className="form-input" placeholder="Số lượng tồn" value={formData.soLuongTon}
-                        onChange={e => handleInputChange('soLuongTon', e.target.value)} required style={styles.formNumInput}
+                        type="number" min="0" className="form-input h-9 text-[13px]" placeholder="Số lượng tồn" value={formData.soLuongTon}
+                        onChange={e => handleInputChange('soLuongTon', e.target.value)} required
                       />
                     </div>
                   </div>
 
                   {/* Giá nhập & Giá bán */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                    <div className="form-group" style={{ margin: 0 }}>
-                      <label className="form-label" style={{ fontSize: '12.5px' }}>Giá nhập đơn vị (đ) <span style={{ color: 'red' }}>*</span></label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="form-group m-0">
+                      <label className="form-label text-[12.5px]">Giá nhập đơn vị (đ) <span className="text-red-500">*</span></label>
                       <input 
-                        type="number" min="0" className="form-input" placeholder="Giá nhập" value={formData.giaNhap}
-                        onChange={e => handleInputChange('giaNhap', e.target.value)} required style={styles.formNumInput}
+                        type="number" min="0" className="form-input h-9 text-[13px]" placeholder="Giá nhập" value={formData.giaNhap}
+                        onChange={e => handleInputChange('giaNhap', e.target.value)} required
                       />
                     </div>
                     
-                    <div className="form-group" style={{ margin: 0 }}>
-                      <label className="form-label" style={{ fontSize: '12.5px' }}>Giá bán niêm yết (đ) <span style={{ color: 'red' }}>*</span></label>
+                    <div className="form-group m-0">
+                      <label className="form-label text-[12.5px]">Giá bán niêm yết (đ) <span className="text-red-500">*</span></label>
                       <input 
-                        type="number" min="0" className="form-input" placeholder="Giá bán" value={formData.giaBan}
-                        onChange={e => handleInputChange('giaBan', e.target.value)} required style={styles.formNumInput}
+                        type="number" min="0" className="form-input h-9 text-[13px]" placeholder="Giá bán" value={formData.giaBan}
+                        onChange={e => handleInputChange('giaBan', e.target.value)} required
                       />
                     </div>
                   </div>
 
                   {/* Ngày sản xuất & Hạn sử dụng */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                    <div className="form-group" style={{ margin: 0 }}>
-                      <label className="form-label" style={{ fontSize: '12.5px' }}>Ngày sản xuất</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="form-group m-0">
+                      <label className="form-label text-[12.5px]">Ngày sản xuất</label>
                       <input 
-                        type="date" className="form-input" value={formData.ngaySanXuat}
-                        onChange={e => handleInputChange('ngaySanXuat', e.target.value)} style={styles.formNumInput}
+                        type="date" className="form-input h-9 text-[13px]" value={formData.ngaySanXuat}
+                        onChange={e => handleInputChange('ngaySanXuat', e.target.value)}
                       />
                     </div>
                     
-                    <div className="form-group" style={{ margin: 0 }}>
-                      <label className="form-label" style={{ fontSize: '12.5px' }}>Hạn sử dụng <span style={{ color: 'red' }}>*</span></label>
+                    <div className="form-group m-0">
+                      <label className="form-label text-[12.5px]">Hạn sử dụng <span className="text-red-500">*</span></label>
                       <input 
-                        type="date" className="form-input" value={formData.hanSuDung}
-                        onChange={e => handleInputChange('hanSuDung', e.target.value)} required style={styles.formNumInput}
+                        type="date" className="form-input h-9 text-[13px]" value={formData.hanSuDung}
+                        onChange={e => handleInputChange('hanSuDung', e.target.value)} required
                       />
                     </div>
                   </div>
                 </div>
 
                 {/* Các nút hành động Form */}
-                <div style={styles.formActionGroup}>
-                  <button type="button" className="btn-outline" onClick={() => setSelectedLot(null)} style={styles.cancelBtn}>Hủy</button>
-                  <button type="submit" className="btn-primary" style={styles.saveBtn}><Save size={16} /> Lưu</button>
+                <div className="flex justify-end gap-2.5 border-t border-[var(--border-color)] pt-4 mt-5">
+                  <button type="button" className="btn-outline w-[100px] h-9 flex items-center justify-center p-0 m-0" onClick={() => setSelectedLot(null)}>Hủy</button>
+                  <button type="submit" className="btn-primary w-[120px] h-9 flex items-center justify-center gap-1.5 p-0 m-0"><Save size={16} /> Lưu</button>
                 </div>
               </form>
             )}
@@ -619,84 +619,81 @@ function KhoNhapKho() {
 
       {/* POPUP THÀNH VIÊN: NHÀ CUNG CẤP */}
       {isSupplierModalOpen && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modalContainer}>
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-[200]">
+          <div className="w-[680px] max-h-[85vh] bg-white rounded-lg shadow-2xl overflow-hidden flex flex-col">
             {/* Modal Header */}
-            <div style={styles.modalHeader}>
-              <div style={styles.modalHeaderTitle}>
+            <div className="py-3 px-4.5 bg-[var(--primary)] text-white flex justify-between items-center">
+              <div className="flex items-center gap-1.5 text-[14.5px] font-bold">
                 <Users size={16} />
                 <span>Quản lý Nhà cung cấp dược phẩm</span>
               </div>
-              <button onClick={() => setIsSupplierModalOpen(false)} style={styles.modalCloseBtn}>
+              <button onClick={() => setIsSupplierModalOpen(false)} className="bg-none border-none text-white cursor-pointer">
                 <X size={18} />
               </button>
             </div>
 
             {/* Modal Body */}
-            <div style={styles.modalBody}>
+            <div className="p-5 overflow-y-auto flex flex-col gap-5">
               {/* Form thêm nhà cung cấp */}
-              <form onSubmit={handleSaveSupplier} style={styles.modalForm}>
-                <h4 style={styles.modalFormTitle}>THÊM MỚI NHÀ CUNG CẤP DƯỢC PHẨM</h4>
-                <div style={styles.modalFormGrid}>
-                  <div className="form-group" style={{ margin: 0 }}>
-                    <label className="form-label" style={{ fontSize: '12px' }}>Tên nhà cung cấp <span style={{ color: 'red' }}>*</span></label>
+              <form onSubmit={handleSaveSupplier} className="bg-[var(--bg-main)] p-4 rounded-md border border-dashed border-[var(--border-color)]">
+                <h4 className="text-[13px] font-[750] text-[var(--primary)] mb-3">THÊM MỚI NHÀ CUNG CẤP DƯỢC PHẨM</h4>
+                <div className="grid grid-cols-[1.2fr_1fr] gap-3 mb-3">
+                  <div className="form-group m-0">
+                    <label className="form-label text-[12px]">Tên nhà cung cấp <span className="text-red-500">*</span></label>
                     <input 
-                      type="text" placeholder="Nhập tên công ty/đại lý..." className="form-input"
+                      type="text" placeholder="Nhập tên công ty/đại lý..." className="form-input h-[34px] text-[12.5px]"
                       value={supFormData.tenNCC} onChange={e => setSupFormData({ ...supFormData, tenNCC: e.target.value })} required
-                      style={styles.modalInput}
                     />
                   </div>
-                  <div className="form-group" style={{ margin: 0 }}>
-                    <label className="form-label" style={{ fontSize: '12px' }}>Số điện thoại liên lạc</label>
+                  <div className="form-group m-0">
+                    <label className="form-label text-[12px]">Số điện thoại liên lạc</label>
                     <input 
-                      type="text" placeholder="Nhập số điện thoại..." className="form-input"
+                      type="text" placeholder="Nhập số điện thoại..." className="form-input h-[34px] text-[12.5px]"
                       value={supFormData.sdt} onChange={e => setSupFormData({ ...supFormData, sdt: e.target.value })}
-                      style={styles.modalInput}
                     />
                   </div>
                 </div>
-                <div className="form-group" style={{ margin: '0 0 12px 0' }}>
-                  <label className="form-label" style={{ fontSize: '12px' }}>Địa chỉ trụ sở</label>
+                <div className="form-group mb-3">
+                  <label className="form-label text-[12px]">Địa chỉ trụ sở</label>
                   <input 
-                    type="text" placeholder="Nhập số nhà, tên đường, khu vực..." className="form-input"
+                    type="text" placeholder="Nhập số nhà, tên đường, khu vực..." className="form-input h-[34px] text-[12.5px]"
                     value={supFormData.diaChi} onChange={e => setSupFormData({ ...supFormData, diaChi: e.target.value })}
-                    style={styles.modalInput}
                   />
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
-                  <button type="button" className="btn-outline" onClick={() => setSupFormData({ maNCC: supFormData.maNCC, tenNCC: '', sdt: '', diaChi: '' })} style={styles.modalResetBtn}>Reset Form</button>
-                  <button type="submit" className="btn-primary" style={styles.modalSubmitBtn}><Check size={14} /> Thêm & Chọn</button>
+                <div className="flex justify-end gap-2">
+                  <button type="button" className="btn-outline h-[30px] px-3 text-[12px]" onClick={() => setSupFormData({ maNCC: supFormData.maNCC, tenNCC: '', sdt: '', diaChi: '' })}>Reset Form</button>
+                  <button type="submit" className="btn-primary h-[30px] px-4 text-[12px] flex items-center gap-1"><Check size={14} /> Thêm & Chọn</button>
                 </div>
               </form>
 
               {/* Bảng danh sách nhà cung cấp */}
               <div>
-                <h4 style={styles.modalTableTitle}>Danh sách Nhà cung cấp hiện có</h4>
-                <div style={styles.modalTableWrapper}>
-                  <table className="kb-table" style={styles.modalTable}>
+                <h4 className="text-[13px] font-[750] text-[var(--text-main)] mb-2">Danh sách Nhà cung cấp hiện có</h4>
+                <div className="border border-[var(--border-color)] rounded overflow-hidden">
+                  <table className="kb-table w-full border-collapse text-[12.5px]">
                     <thead>
-                      <tr style={{ background: 'var(--bg-main)' }}>
-                        <th style={styles.modalThStt}>STT</th>
-                        <th style={styles.modalThMa}>Mã NCC</th>
-                        <th style={{ padding: '6px' }}>Tên nhà cung cấp</th>
-                        <th style={styles.modalThPhone}>Số điện thoại</th>
-                        <th style={styles.modalThXoa}>Xóa</th>
+                      <tr className="bg-[var(--bg-main)]">
+                        <th className="w-[50px] p-1.5 text-center">STT</th>
+                        <th className="w-[80px] p-1.5">Mã NCC</th>
+                        <th className="p-1.5">Tên nhà cung cấp</th>
+                        <th className="w-[110px] p-1.5">Số điện thoại</th>
+                        <th className="w-[50px] p-1.5 text-center">Xóa</th>
                       </tr>
                     </thead>
                     <tbody>
                       {suppliers.map((sup, sidx) => (
-                        <tr key={sup.maNCC} style={{ borderBottom: '1px solid var(--border-color)' }}>
-                          <td style={{ textAlign: 'center', padding: '8px 6px', color: 'var(--text-muted)' }}>{sidx + 1}</td>
-                          <td style={{ fontWeight: '600', padding: '8px 6px' }}>{sup.maNCC}</td>
-                          <td style={{ padding: '8px 6px', fontWeight: '500' }}>
+                        <tr key={sup.maNCC} className="border-b border-[var(--border-color)]">
+                          <td className="text-center py-2 px-1.5 text-[var(--text-muted)]">{sidx + 1}</td>
+                          <td className="font-semibold py-2 px-1.5">{sup.maNCC}</td>
+                          <td className="py-2 px-1.5 font-medium">
                             {sup.tenNCC}
-                            <div style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 'normal' }}>{sup.diaChi}</div>
+                            <div className="text-[11px] text-[var(--text-muted)] font-normal">{sup.diaChi}</div>
                           </td>
-                          <td style={{ padding: '8px 6px' }}>{sup.sdt || '—'}</td>
-                          <td style={{ padding: '8px 6px', textAlign: 'center' }}>
+                          <td className="py-2 px-1.5">{sup.sdt || '—'}</td>
+                          <td className="py-2 px-1.5 text-center">
                             <button
                               type="button" onClick={() => handleDeleteSupplier(sup.maNCC, sup.tenNCC)}
-                              className="kb-icon-btn kb-icon-btn--danger" style={{ margin: '0 auto' }}
+                              className="kb-icon-btn kb-icon-btn--danger mx-auto"
                             >
                               <Trash2 size={12} />
                             </button>
@@ -710,8 +707,8 @@ function KhoNhapKho() {
             </div>
 
             {/* Modal Footer */}
-            <div style={styles.modalFooter}>
-              <button onClick={() => setIsSupplierModalOpen(false)} className="btn-primary" style={styles.modalCloseFooterBtn}>Hoàn tất & Đóng</button>
+            <div className="py-2.5 px-5 bg-[var(--bg-main)] border-t border-[var(--border-color)] flex justify-end">
+              <button onClick={() => setIsSupplierModalOpen(false)} className="btn-primary h-8 px-5 text-[12.5px]">Hoàn tất & Đóng</button>
             </div>
           </div>
         </div>
@@ -720,165 +717,5 @@ function KhoNhapKho() {
     </div>
   );
 }
-
-// Bảng cấu hình CSS inline cho giao diện KhoNhapKho
-const styles = {
-  wrapper: { height: '100vh', overflow: 'hidden', position: 'relative' },
-  topbar: { height: '50px', padding: '0 20px' },
-  topbarLeft: { flex: 1, display: 'flex', justifyContent: 'flex-start' },
-  backBtn: { padding: '5px 10px' },
-  topbarTitle: { flex: 1, display: 'flex', justifyContent: 'center', fontSize: '15px' },
-  topbarRight: { flex: 1, display: 'flex', justifyContent: 'flex-end', fontSize: '12px', opacity: 0.85 },
-  body: {
-    display: 'flex',
-    height: 'calc(100vh - 50px)',
-    backgroundColor: 'var(--bg-main)',
-    overflow: 'hidden'
-  },
-  leftCol: {
-    flex: 1.3,
-    display: 'flex',
-    flexDirection: 'column',
-    borderRight: '1px solid var(--border-color)',
-    height: '100%',
-    backgroundColor: '#ffffff'
-  },
-  panelHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '12px 16px',
-    borderBottom: '1px solid var(--border-color)',
-    backgroundColor: 'var(--bg-main)'
-  },
-  panelTitleContainer: { display: 'flex', alignItems: 'center', gap: '6px' },
-  panelTitleText: { fontSize: '14.5px', fontWeight: '750', color: 'var(--text-main)' },
-  btnNcc: { height: '32px', fontSize: '12.5px', padding: '0 12px', display: 'flex', alignItems: 'center', gap: '4px', borderColor: 'var(--primary)', color: 'var(--primary)' },
-  addBtn: { height: '32px', fontSize: '12.5px', padding: '0 12px', display: 'flex', alignItems: 'center', gap: '4px' },
-  tableContainer: { flex: 1, overflowY: 'auto' },
-  table: { width: '100%', borderCollapse: 'collapse', fontSize: '13px' },
-  tableHeaderRow: { position: 'sticky', top: 0, zIndex: 10, background: 'var(--bg-main)', borderBottom: '2px solid var(--border-color)' },
-  thStt: { width: '50px', textAlign: 'center', padding: '8px' },
-  thMaLo: { width: '80px', padding: '8px' },
-  thDuoCPhan: { width: '160px', padding: '8px' },
-  thNCC: { width: '160px', padding: '8px' },
-  thNum: { width: '80px', padding: '8px', textAlign: 'right' },
-  thGia: { width: '100px', padding: '8px', textAlign: 'right' },
-  thHsd: { width: '120px', padding: '8px', textAlign: 'center' },
-  thXoa: { width: '60px', padding: '8px', textAlign: 'center' },
-  filterRow: { backgroundColor: 'var(--bg-main)', borderBottom: '1px solid var(--border-color)' },
-  tdPadding4: { padding: '4px' },
-  filterInputMa: { height: '26px', fontSize: '12px', padding: '2px 4px' },
-  filterInputCommon: { height: '26px', fontSize: '12px', padding: '2px 6px' },
-  filterSelect: { height: '26px', fontSize: '12px', padding: '0 4px' },
-  tdStt: { textAlign: 'center', padding: '10px 8px', color: 'var(--text-muted)' },
-  deleteBtnIcon: { margin: '0 auto' },
-  noDataTd: { textAlign: 'center', padding: '40px', color: 'var(--text-muted)' },
-  pagination: {
-    borderTop: '1px solid var(--border-color)',
-    padding: '8px 16px',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    fontSize: '12.5px',
-    color: 'var(--text-muted)',
-    backgroundColor: 'var(--bg-main)'
-  },
-  pageBtnGroup: { display: 'flex', gap: '4px', alignItems: 'center' },
-  pageNavBtn: { height: '24px', width: '24px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' },
-  pageNumberBtn: { height: '24px', width: '24px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 'bold', cursor: 'pointer' },
-  rightCol: {
-    flex: 0.7,
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-    backgroundColor: '#ffffff'
-  },
-  formHeader: {
-    display: 'flex',
-    backgroundColor: '#0284c7',
-    padding: '12px 18px',
-    height: '42px',
-    alignItems: 'center',
-    color: '#ffffff',
-    fontSize: '13px',
-    fontWeight: '700',
-    gap: '8px'
-  },
-  formArea: {
-    flex: 1,
-    overflowY: 'auto',
-    padding: '20px',
-    backgroundColor: '#ffffff'
-  },
-  noSelected: {
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    color: 'var(--text-muted)',
-    textAlign: 'center',
-    gap: '12px'
-  },
-  noSelectedIcon: { opacity: 0.25, color: 'var(--primary)' },
-  form: { height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' },
-  formMaLoInput: { height: '36px', fontSize: '13px', textTransform: 'uppercase' },
-  formSelectCommon: { height: '36px', fontSize: '13px', padding: '0 8px' },
-  formNumInput: { height: '36px', fontSize: '13px' },
-  formActionGroup: {
-    display: 'flex',
-    justifyContent: 'flex-end',
-    gap: '10px',
-    borderTop: '1px solid var(--border-color)',
-    paddingTop: '16px',
-    marginTop: '20px'
-  },
-  cancelBtn: { width: '100px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, margin: 0 },
-  saveBtn: { width: '120px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: 0, margin: 0 },
-  
-  // MODAL CSS
-  modalOverlay: {
-    position: 'fixed',
-    top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    zIndex: 200
-  },
-  modalContainer: {
-    width: '680px', maxHeight: '85vh',
-    backgroundColor: '#ffffff', borderRadius: '8px',
-    boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)',
-    overflow: 'hidden', display: 'flex', flexDirection: 'column'
-  },
-  modalHeader: {
-    padding: '12px 18px', backgroundColor: 'var(--primary)', color: '#ffffff',
-    display: 'flex', justifyContent: 'space-between', alignItems: 'center'
-  },
-  modalHeaderTitle: { display: 'flex', alignItems: 'center', gap: '6px', fontSize: '14.5px', fontWeight: 'bold' },
-  modalCloseBtn: { background: 'none', border: 'none', color: '#ffffff', cursor: 'pointer' },
-  modalBody: { padding: '20px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '20px' },
-  modalForm: {
-    backgroundColor: 'var(--bg-main)', padding: '16px', borderRadius: '6px',
-    border: '1px dashed var(--border-color)'
-  },
-  modalFormTitle: { fontSize: '13px', fontWeight: '750', color: 'var(--primary)', marginBottom: '12px' },
-  modalFormGrid: { display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '12px', marginBottom: '12px' },
-  modalInput: { height: '34px', fontSize: '12.5px' },
-  modalResetBtn: { height: '30px', padding: '0 12px', fontSize: '12px' },
-  modalSubmitBtn: { height: '30px', padding: '0 16px', fontSize: '12px', display: 'flex', alignItems: 'center', gap: '4px' },
-  modalTableTitle: { fontSize: '13px', fontWeight: '750', color: 'var(--text-main)', marginBottom: '8px' },
-  modalTableWrapper: { border: '1px solid var(--border-color)', borderRadius: '4px', overflow: 'hidden' },
-  modalTable: { width: '100%', borderCollapse: 'collapse', fontSize: '12.5px' },
-  modalThStt: { width: '50px', padding: '6px', textAlign: 'center' },
-  modalThMa: { width: '80px', padding: '6px' },
-  modalThPhone: { width: '110px', padding: '6px' },
-  modalThXoa: { width: '50px', padding: '6px', textAlign: 'center' },
-  modalFooter: {
-    padding: '10px 20px', backgroundColor: 'var(--bg-main)',
-    borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'flex-end'
-  },
-  modalCloseFooterBtn: { height: '32px', padding: '0 20px', fontSize: '12.5px' }
-};
 
 export default KhoNhapKho;

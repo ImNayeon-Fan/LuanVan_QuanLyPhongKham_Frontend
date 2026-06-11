@@ -340,17 +340,20 @@ function PhanQuyenNhanSu() {
 
   if (!isAdmin) {
     return (
-      <div style={styles.restrictWrapper}>
-        <button onClick={() => navigate('/')} style={styles.restrictBackBtn} className="btn-outline">
+      <div className="h-screen bg-white flex flex-col items-center justify-center p-5 box-border relative">
+        <button
+          onClick={() => navigate('/')}
+          className="btn-outline absolute top-5 left-5 flex items-center gap-2 py-2 px-4 bg-transparent border border-[var(--border-color)] rounded-lg cursor-pointer text-sm text-[var(--text-main)] font-semibold transition-all duration-200 m-0"
+        >
           <ArrowLeft size={16} /> Quay về trang chủ
         </button>
-        <div style={styles.restrictContent}>
-          <div style={styles.restrictIconWrapper}>
+        <div className="text-center max-w-[500px] flex flex-col items-center gap-4">
+          <div className="w-16 h-16 rounded-full bg-[#fee2e2] text-[#ef4444] flex items-center justify-center">
             <ShieldCheck size={36} />
           </div>
           <div>
-            <h2 style={styles.restrictTitle}>Không có quyền truy cập</h2>
-            <p style={styles.restrictDesc}>Vai trò của bạn không có quyền truy cập vô chức năng này</p>
+            <h2 className="text-[18px] font-extrabold text-[#1e293b] mb-2">Không có quyền truy cập</h2>
+            <p className="text-[14.5px] text-[#475569] font-semibold leading-[1.6]">Vai trò của bạn không có quyền truy cập vô chức năng này</p>
           </div>
         </div>
       </div>
@@ -358,76 +361,76 @@ function PhanQuyenNhanSu() {
   }
 
   return (
-    <div className="kb-wrapper" style={styles.wrapper}>
+    <div className="kb-wrapper h-screen overflow-hidden">
       {/* Topbar điều hướng */}
-      <div className="kb-topbar" style={styles.topbar}>
-        <div style={styles.topbarLeft}>
-          <button className="kb-back-btn" onClick={() => navigate('/')} style={styles.backBtn}>
+      <div className="kb-topbar h-[50px] px-5 flex items-center justify-between">
+        <div className="flex-1 flex justify-start">
+          <button className="kb-back-btn py-[5px] px-[10px]" onClick={() => navigate('/')}>
             <ArrowLeft size={16} /> Quay về trang chủ
           </button>
         </div>
-        <div className="kb-topbar-title" style={styles.topbarTitle}>
-          <ShieldCheck size={18} style={{ marginRight: '6px' }} />
+        <div className="kb-topbar-title flex-1 flex justify-center text-[15px]">
+          <ShieldCheck size={18} className="mr-[6px]" />
           <strong>Phân quyền & Danh mục Nhân sự</strong>
         </div>
-        <div style={styles.topbarRight}>
+        <div className="flex-1 flex justify-end text-xs opacity-[0.85]">
           <span>Trang chủ / Quản lý hệ thống / Danh mục nhân viên</span>
         </div>
       </div>
 
       {/* Main split dashboard area */}
-      <div className="kb-body" style={styles.body}>
+      <div className="kb-body flex h-[calc(100vh-50px)] bg-[var(--bg-main)] overflow-hidden">
         
         {/* CỘT TRÁI: Bảng danh sách nhân viên */}
-        <div style={styles.leftCol}>
-          <div style={styles.panelHeader}>
-            <div style={styles.panelTitleContainer}>
-              <Users size={16} style={{ color: 'var(--primary)' }} />
-              <h3 style={styles.panelTitleText}>Danh mục nhân viên</h3>
+        <div className="flex-[1.2] flex flex-col border-r border-[var(--border-color)] h-full bg-white">
+          <div className="flex justify-between items-center py-3 px-4 border-b border-[var(--border-color)] bg-[var(--bg-main)]">
+            <div className="flex items-center gap-[6px]">
+              <Users size={16} className="text-[var(--primary)]" />
+              <h3 className="text-[14.5px] font-[750] text-[var(--text-main)]">Danh mục nhân viên</h3>
             </div>
             <div>
-              <button onClick={handleAddNew} className="btn-primary" style={styles.addBtn}>
+              <button onClick={handleAddNew} className="btn-primary h-8 text-[12.5px] px-3 flex items-center gap-1">
                 <Plus size={14} /> Thêm mới [F1]
               </button>
             </div>
           </div>
 
           {/* Table Container - Scrollable */}
-          <div style={styles.tableContainer}>
-            <table className="kb-table" style={styles.table}>
+          <div className="flex-1 overflow-y-auto">
+            <table className="kb-table w-full border-collapse text-[13px]">
               <thead>
-                <tr style={styles.tableHeaderRow}>
-                  <th style={styles.thStt}>STT</th>
-                  <th style={styles.thMaNV}>Mã NV</th>
-                  <th style={styles.thUsername}>Tên đăng nhập</th>
-                  <th style={styles.thHoTen}>Họ tên</th>
-                  <th style={styles.thVaiTro}>Vai trò</th>
-                  <th style={styles.thTrangThai}>Trạng thái</th>
+                <tr className="sticky top-0 z-10 bg-[var(--bg-main)] border-b-2 border-[var(--border-color)]">
+                  <th className="w-[45px] text-center p-2">STT</th>
+                  <th className="w-[100px] p-2">Mã NV</th>
+                  <th className="w-[120px] p-2">Tên đăng nhập</th>
+                  <th className="w-[160px] p-2">Họ tên</th>
+                  <th className="w-[120px] p-2">Vai trò</th>
+                  <th className="w-[120px] p-2 text-center">Trạng thái</th>
                 </tr>
                 {/* Hàng ô nhập lọc tìm kiếm */}
-                <tr style={styles.filterRow}>
+                <tr className="bg-[var(--bg-main)] border-b border-[var(--border-color)]">
                   <td></td>
-                  <td style={styles.tdPadding4}>
+                  <td className="p-1">
                     <input
-                      type="text" placeholder="Lọc..." className="form-input" style={styles.filterInput}
+                      type="text" placeholder="Lọc..." className="form-input h-[26px] text-xs py-0.5 px-1.5"
                       value={filters.maNV} onChange={e => handleFilterChange('maNV', e.target.value)}
                     />
                   </td>
-                  <td style={styles.tdPadding4}>
+                  <td className="p-1">
                     <input
-                      type="text" placeholder="Lọc..." className="form-input" style={styles.filterInput}
+                      type="text" placeholder="Lọc..." className="form-input h-[26px] text-xs py-0.5 px-1.5"
                       value={filters.username} onChange={e => handleFilterChange('username', e.target.value)}
                     />
                   </td>
-                  <td style={styles.tdPadding4}>
+                  <td className="p-1">
                     <input
-                      type="text" placeholder="Lọc..." className="form-input" style={styles.filterInput}
+                      type="text" placeholder="Lọc..." className="form-input h-[26px] text-xs py-0.5 px-1.5"
                       value={filters.hoTen} onChange={e => handleFilterChange('hoTen', e.target.value)}
                     />
                   </td>
-                  <td style={styles.tdPadding4}>
+                  <td className="p-1">
                     <select
-                      className="form-input" style={styles.filterSelect}
+                      className="form-input h-[26px] text-xs px-1"
                       value={filters.roleName} onChange={e => handleFilterChange('roleName', e.target.value)}
                     >
                       <option value="">Tất cả</option>
@@ -438,9 +441,9 @@ function PhanQuyenNhanSu() {
                       <option value="QuanLyKho">QuanLyKho</option>
                     </select>
                   </td>
-                  <td style={styles.tdPadding4}>
+                  <td className="p-1">
                     <select
-                      className="form-input" style={styles.statusFilterSelect}
+                      className="form-input h-[26px] text-xs px-0.5 font-semibold"
                       value={activeStatusFilter}
                       onChange={e => {
                         setActiveStatusFilter(e.target.value);
@@ -462,36 +465,36 @@ function PhanQuyenNhanSu() {
                   
                   return (
                     <tr
-                      key={staff.maNV} className="kb-table-row"
-                      style={{
-                        backgroundColor: isSelected ? 'var(--primary-light)' : 'transparent',
-                        cursor: 'pointer', transition: 'background-color 0.15s'
-                      }}
+                      key={staff.maNV}
+                      className={`kb-table-row cursor-pointer transition-[background-color] duration-150 ${
+                        isSelected ? 'bg-[var(--primary-light)]' : 'bg-transparent'
+                      }`}
                       onClick={() => setSelectedStaff(staff)}
                     >
-                      <td style={styles.tdStt}>{startIndex + idx + 1}</td>
-                      <td style={{ fontWeight: '600', color: isSelected ? 'var(--primary-hover)' : 'var(--text-main)', padding: '10px 8px' }}>
+                      <td className="text-center py-2.5 px-2 font-medium text-[var(--text-muted)]">{startIndex + idx + 1}</td>
+                      <td className={`font-semibold py-2.5 px-2 ${isSelected ? 'text-[var(--primary-hover)]' : 'text-[var(--text-main)]'}`}>
                         {staff.maNV}
                       </td>
-                      <td style={{ padding: '10px 8px' }}>{staff.username || '—'}</td>
-                      <td style={{ fontWeight: '600', padding: '10px 8px' }}>{staff.hoTen}</td>
-                      <td style={{ padding: '10px 8px', fontWeight: '600' }}>
-                        <span style={{
-                          fontSize: '11.5px',
-                          color: normalizedRoleName === 'Admin' ? '#ef4444' : normalizedRoleName === 'BacSi' ? '#0ea5e9' : '#10b981',
-                          backgroundColor: normalizedRoleName === 'Admin' ? '#fee2e2' : normalizedRoleName === 'BacSi' ? '#e0f2fe' : '#d1fae5',
-                          padding: '2px 8px', borderRadius: '10px'
-                        }}>
+                      <td className="py-2.5 px-2">{staff.username || '—'}</td>
+                      <td className="font-semibold py-2.5 px-2">{staff.hoTen}</td>
+                      <td className="py-2.5 px-2 font-semibold">
+                        <span className={`text-[11.5px] py-0.5 px-2 rounded-[10px] ${
+                          normalizedRoleName === 'Admin'
+                            ? 'text-[#ef4444] bg-[#fee2e2]'
+                            : normalizedRoleName === 'BacSi'
+                            ? 'text-[#0ea5e9] bg-[#e0f2fe]'
+                            : 'text-[#10b981] bg-[#d1fae5]'
+                        }`}>
                           {roleObj ? roleObj.value : normalizedRoleName}
                         </span>
                       </td>
-                      <td style={{ padding: '10px 8px', textAlign: 'center' }}>
+                      <td className="py-2.5 px-2 text-center">
                         {staff.isActive ? (
-                          <span style={styles.statusActive}>
+                          <span className="text-[#10b981] font-semibold text-xs inline-flex items-center gap-[3px]">
                             <Check size={14} /> Hoạt động
                           </span>
                         ) : (
-                          <span style={styles.statusLocked}>
+                          <span className="text-[var(--text-muted)] italic text-xs inline-flex items-center gap-[3px]">
                             <X size={14} /> Tạm khóa
                           </span>
                         )}
@@ -501,7 +504,7 @@ function PhanQuyenNhanSu() {
                 })}
                 {filteredStaff.length === 0 && (
                   <tr>
-                    <td colSpan={6} style={styles.noData}>Không tìm thấy nhân viên trùng khớp với bộ lọc</td>
+                    <td colSpan={6} className="text-center p-10 text-[var(--text-muted)]">Không tìm thấy nhân viên trùng khớp với bộ lọc</td>
                   </tr>
                 )}
               </tbody>
@@ -509,25 +512,32 @@ function PhanQuyenNhanSu() {
           </div>
 
           {/* Phân trang danh sách */}
-          <div style={styles.pagination}>
-            <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
+          <div className="border-t border-[var(--border-color)] py-2 px-4 flex justify-between items-center text-[12.5px] text-[var(--text-muted)] bg-[var(--bg-main)]">
+            <div className="flex gap-1 items-center">
               <button
-                disabled={activePage === 1} onClick={() => setCurrentPage(activePage - 1)} className="btn-outline"
-                style={{ ...styles.pageNavBtn, cursor: activePage === 1 ? 'not-allowed' : 'pointer' }}
+                disabled={activePage === 1}
+                onClick={() => setCurrentPage(activePage - 1)}
+                className={`btn-outline h-6 w-6 p-0 flex items-center justify-center ${
+                  activePage === 1 ? 'cursor-not-allowed' : 'cursor-pointer'
+                }`}
               >
                 &lt;
               </button>
               {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
                 <button
-                  key={p} onClick={() => setCurrentPage(p)} className={p === activePage ? "btn-primary" : "btn-outline"}
-                  style={styles.pageNumberBtn}
+                  key={p}
+                  onClick={() => setCurrentPage(p)}
+                  className={`${p === activePage ? "btn-primary" : "btn-outline"} h-6 w-6 p-0 flex items-center justify-center text-[11px] font-bold cursor-pointer`}
                 >
                   {p}
                 </button>
               ))}
               <button
-                disabled={activePage === totalPages} onClick={() => setCurrentPage(activePage + 1)} className="btn-outline"
-                style={{ ...styles.pageNavBtn, cursor: activePage === totalPages ? 'not-allowed' : 'pointer' }}
+                disabled={activePage === totalPages}
+                onClick={() => setCurrentPage(activePage + 1)}
+                className={`btn-outline h-6 w-6 p-0 flex items-center justify-center ${
+                  activePage === totalPages ? 'cursor-not-allowed' : 'cursor-pointer'
+                }`}
               >
                 &gt;
               </button>
@@ -537,65 +547,61 @@ function PhanQuyenNhanSu() {
         </div>
 
         {/* CỘT PHẢI: Form chi tiết */}
-        <div style={styles.rightCol}>
-          <div style={styles.formHeader}>
+        <div className="flex-[0.9] flex flex-col h-full bg-white">
+          <div className="flex bg-[#0052cc] py-3 px-[18px] h-[42px] items-center text-white text-[13px] font-bold gap-2">
             <Database size={16} />
             <span>THÔNG TIN NHÂN SỰ & TÀI KHOẢN</span>
           </div>
 
-          <div style={styles.formArea}>
+          <div className="flex-1 overflow-y-auto p-5 bg-white">
             {selectedStaff === null ? (
-              <div style={styles.noSelected}>
-                <User size={48} style={styles.noSelectedIcon} />
+              <div className="h-full flex flex-col items-center justify-center text-[var(--text-muted)] text-center gap-3">
+                <User size={48} className="opacity-25 text-[var(--primary)]" />
                 <div>
-                  <h4 style={{ fontWeight: '600', color: 'var(--text-main)' }}>Chưa chọn nhân sự</h4>
-                  <p style={{ fontSize: '13px', marginTop: '4px' }}>Chọn một nhân viên bên bảng danh mục hoặc bấm "Thêm mới [F1]" để quản trị tài khoản hệ thống.</p>
+                  <h4 className="font-semibold text-[var(--text-main)]">Chưa chọn nhân sự</h4>
+                  <p className="text-[13px] mt-1">Chọn một nhân viên bên bảng danh mục hoặc bấm "Thêm mới [F1]" để quản trị tài khoản hệ thống.</p>
                 </div>
               </div>
             ) : (
-              <form onSubmit={handleSave} style={styles.form}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <form onSubmit={handleSave} className="h-full flex flex-col justify-between">
+                <div className="flex flex-col gap-4">
 
                   {/* Nhóm 1: Thông tin nhân viên */}
-                  <div style={styles.formSection}>
-                    <h4 style={styles.formSectionTitle}>
+                  <div className="border-b border-dashed border-[var(--border-color)] pb-4">
+                    <h4 className="text-[13px] font-bold text-[var(--primary)] mb-3 flex items-center gap-1.5">
                       <User size={14} /> THÔNG TIN HỒ SƠ NHÂN VIÊN
                     </h4>
-                    <div style={styles.formGrid}>
-                      <div className="form-group" style={{ margin: 0 }}>
-                        <label className="form-label" style={{ fontSize: '12.5px' }}>Mã nhân viên <span style={{ color: 'red' }}>*</span></label>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                      <div className="form-group m-0">
+                        <label className="form-label text-[12.5px]">Mã nhân viên <span className="text-red-500">*</span></label>
                         <input
-                          type="text" className="form-input" placeholder="VD: NV001, BS001" value={formData.maNV}
+                          type="text" className="form-input h-[34px] text-[13px]" placeholder="VD: NV001, BS001" value={formData.maNV}
                           onChange={e => setFormData({ ...formData, maNV: e.target.value })} required
                           disabled={staffList.some(s => s.maNV === selectedStaff.maNV && selectedStaff.username !== '')}
-                          style={styles.formInputStyle}
                         />
                       </div>
 
-                      <div className="form-group" style={{ margin: 0 }}>
-                        <label className="form-label" style={{ fontSize: '12.5px' }}>Họ và tên <span style={{ color: 'red' }}>*</span></label>
+                      <div className="form-group m-0">
+                        <label className="form-label text-[12.5px]">Họ và tên <span className="text-red-500">*</span></label>
                         <input
-                          type="text" className="form-input" placeholder="Họ và tên" value={formData.hoTen}
+                          type="text" className="form-input h-[34px] text-[13px]" placeholder="Họ và tên" value={formData.hoTen}
                           onChange={e => setFormData({ ...formData, hoTen: e.target.value })} required
-                          style={styles.formInputStyle}
                         />
                       </div>
 
-                      <div className="form-group" style={{ margin: 0 }}>
-                        <label className="form-label" style={{ fontSize: '12.5px' }}>Số điện thoại <span style={{ color: 'red' }}>*</span></label>
+                      <div className="form-group m-0">
+                        <label className="form-label text-[12.5px]">Số điện thoại <span className="text-red-500">*</span></label>
                         <input
-                          type="text" className="form-input" placeholder="Số điện thoại" value={formData.sdt}
+                          type="text" className="form-input h-[34px] text-[13px]" placeholder="Số điện thoại" value={formData.sdt}
                           onChange={e => setFormData({ ...formData, sdt: e.target.value })} required
-                          style={styles.formInputStyle}
                         />
                       </div>
 
-                      <div className="form-group" style={{ margin: 0 }}>
-                        <label className="form-label" style={{ fontSize: '12.5px' }}>Khoa (Chuyên môn)</label>
+                      <div className="form-group m-0">
+                        <label className="form-label text-[12.5px]">Khoa (Chuyên môn)</label>
                         <select
-                          className="form-input" value={formData.chuyenMon || ''}
+                          className="form-input h-[34px] text-[13px] px-2" value={formData.chuyenMon || ''}
                           onChange={e => setFormData({ ...formData, chuyenMon: e.target.value })}
-                          style={styles.formSelectStyle}
                         >
                           <option value="">— Chọn khoa / chuyên môn —</option>
                           {danhMucKhoa.map(k => (
@@ -604,12 +610,11 @@ function PhanQuyenNhanSu() {
                         </select>
                       </div>
 
-                      <div className="form-group" style={{ margin: 0, gridColumn: '1 / -1' }}>
-                        <label className="form-label" style={{ fontSize: '12.5px' }}>Địa chỉ Email</label>
+                      <div className="form-group m-0 col-span-2">
+                        <label className="form-label text-[12.5px]">Địa chỉ Email</label>
                         <input
-                          type="email" className="form-input" placeholder="Email liên lạc" value={formData.email || ''}
+                          type="email" className="form-input h-[34px] text-[13px]" placeholder="Email liên lạc" value={formData.email || ''}
                           onChange={e => setFormData({ ...formData, email: e.target.value })}
-                          style={styles.formInputStyle}
                         />
                       </div>
                     </div>
@@ -617,44 +622,42 @@ function PhanQuyenNhanSu() {
 
                   {/* Nhóm 2: Tài khoản người dùng */}
                   <div>
-                    <h4 style={styles.formSectionTitle}>
+                    <h4 className="text-[13px] font-bold text-[var(--primary)] mb-3 flex items-center gap-1.5">
                       <Key size={14} /> TÀI KHOẢN HỆ THỐNG & PHÂN QUYỀN
                     </h4>
-                    <div style={styles.formGrid}>
-                      <div className="form-group" style={{ margin: 0 }}>
-                        <label className="form-label" style={{ fontSize: '12.5px' }}>Tên đăng nhập <span style={{ color: 'red' }}>*</span></label>
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                      <div className="form-group m-0">
+                        <label className="form-label text-[12.5px]">Tên đăng nhập <span className="text-red-500">*</span></label>
                         <input
-                          type="text" className="form-input" placeholder="Tên đăng nhập" value={formData.username}
+                          type="text" className="form-input h-[34px] text-[13px]" placeholder="Tên đăng nhập" value={formData.username}
                           onChange={e => setFormData({ ...formData, username: e.target.value })} required
-                          style={styles.formInputStyle}
                         />
                       </div>
 
-                      <div className="form-group" style={{ margin: 0 }}>
-                        <label className="form-label" style={{ fontSize: '12.5px' }}>
-                          Mật khẩu đăng nhập {!isEdit && <span style={{ color: 'red' }}>*</span>}
+                      <div className="form-group m-0">
+                        <label className="form-label text-[12.5px]">
+                          Mật khẩu đăng nhập {!isEdit && <span className="text-red-500">*</span>}
                         </label>
-                        <div style={{ display: 'flex', gap: '8px' }}>
+                        <div className="flex gap-2">
                           <input
-                            type="password" className="form-input" placeholder={isEdit ? "Bỏ trống nếu giữ nguyên" : "Nhập mật khẩu"}
+                            type="password" className="form-input h-[34px] text-[13px] flex-1" placeholder={isEdit ? "Bỏ trống nếu giữ nguyên" : "Nhập mật khẩu"}
                             value={formData.passwordHash} onChange={e => setFormData({ ...formData, passwordHash: e.target.value })}
-                            required={!isEdit} style={styles.formInputStyleFlex}
+                            required={!isEdit}
                           />
                           <button
-                            type="button" onClick={handleResetToDefaultPassword} className="btn-outline"
-                            style={styles.resetPasswordBtn}
+                            type="button" onClick={handleResetToDefaultPassword}
+                            className="btn-outline h-[34px] px-2.5 text-xs border-[#ef4444] text-[#ef4444] flex items-center gap-1 whitespace-nowrap"
                           >
                             Reset mặc định
                           </button>
                         </div>
                       </div>
 
-                      <div className="form-group" style={{ margin: 0 }}>
-                        <label className="form-label" style={{ fontSize: '12.5px' }}>Vai trò <span style={{ color: 'red' }}>*</span></label>
+                      <div className="form-group m-0">
+                        <label className="form-label text-[12.5px]">Vai trò <span className="text-red-500">*</span></label>
                         <select
-                          className="form-input" value={formData.roleName}
+                          className="form-input h-[34px] text-[13px] px-2" value={formData.roleName}
                           onChange={e => setFormData({ ...formData, roleName: e.target.value })} required
-                          style={styles.formSelectStyle}
                         >
                           {ROLE_OPTIONS.map(opt => (
                             <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -662,12 +665,11 @@ function PhanQuyenNhanSu() {
                         </select>
                       </div>
 
-                      <div className="form-group" style={{ margin: 0 }}>
-                        <label className="form-label" style={{ fontSize: '12.5px' }}>Trạng thái tài khoản <span style={{ color: 'red' }}>*</span></label>
+                      <div className="form-group m-0">
+                        <label className="form-label text-[12.5px]">Trạng thái tài khoản <span className="text-red-500">*</span></label>
                         <select
-                          className="form-input" value={formData.isActive ? 'true' : 'false'}
+                          className="form-input h-[34px] text-[13px] px-2" value={formData.isActive ? 'true' : 'false'}
                           onChange={e => setFormData({ ...formData, isActive: e.target.value === 'true' })} required
-                          style={styles.formSelectStyle}
                         >
                           <option value="true">Cho phép hoạt động (Active)</option>
                           <option value="false">Tạm khóa tài khoản (Locked)</option>
@@ -678,9 +680,9 @@ function PhanQuyenNhanSu() {
                 </div>
 
                 {/* Bottom Action buttons */}
-                <div style={styles.formActionRow}>
-                  <button type="button" className="btn-outline" onClick={handleCancel} style={styles.cancelBtn}>Hủy</button>
-                  <button type="submit" className="btn-primary" style={styles.saveBtn}><Save size={16} /> Lưu [F4]</button>
+                <div className="flex justify-end gap-2.5 border-t border-[var(--border-color)] pt-4 mt-8">
+                  <button type="button" className="btn-outline w-[100px] h-9 flex items-center justify-center p-0 m-0" onClick={handleCancel}>Hủy</button>
+                  <button type="submit" className="btn-primary w-[120px] h-9 flex items-center justify-center gap-1.5 p-0 m-0"><Save size={16} /> Lưu [F4]</button>
                 </div>
               </form>
             )}
@@ -692,190 +694,4 @@ function PhanQuyenNhanSu() {
   );
 }
 
-// Bảng cấu hình CSS inline tập trung cho trang PhanQuyenNhanSu
-const styles = {
-  restrictWrapper: {
-    height: '100vh',
-    backgroundColor: '#ffffff',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '20px',
-    boxSizing: 'border-box',
-    position: 'relative'
-  },
-  restrictBackBtn: {
-    position: 'absolute',
-    top: '20px',
-    left: '20px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    padding: '8px 16px',
-    backgroundColor: 'transparent',
-    border: '1px solid var(--border-color)',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    fontSize: '14px',
-    color: 'var(--text-main)',
-    fontWeight: '600',
-    transition: 'all 0.2s ease',
-    margin: 0
-  },
-  restrictContent: {
-    textAlign: 'center',
-    maxWidth: '500px',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '16px'
-  },
-  restrictIconWrapper: {
-    width: '64px',
-    height: '64px',
-    borderRadius: '50%',
-    backgroundColor: '#fee2e2',
-    color: '#ef4444',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center'
-  },
-  restrictTitle: { fontSize: '18px', fontWeight: '800', color: '#1e293b', marginBottom: '8px' },
-  restrictDesc: { fontSize: '14.5px', color: '#475569', fontWeight: '600', lineHeight: '1.6' },
-
-  wrapper: { height: '100vh', overflow: 'hidden' },
-  topbar: { height: '50px', padding: '0 20px' },
-  topbarLeft: { flex: 1, display: 'flex', justifyContent: 'flex-start' },
-  backBtn: { padding: '5px 10px' },
-  topbarTitle: { flex: 1, display: 'flex', justifyContent: 'center', fontSize: '15px' },
-  topbarRight: { flex: 1, display: 'flex', justifyContent: 'flex-end', fontSize: '12px', opacity: 0.85 },
-
-  body: {
-    display: 'flex',
-    height: 'calc(100vh - 50px)',
-    backgroundColor: 'var(--bg-main)',
-    overflow: 'hidden'
-  },
-  leftCol: {
-    flex: 1.2,
-    display: 'flex',
-    flexDirection: 'column',
-    borderRight: '1px solid var(--border-color)',
-    height: '100%',
-    backgroundColor: '#ffffff'
-  },
-  panelHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '12px 16px',
-    borderBottom: '1px solid var(--border-color)',
-    backgroundColor: 'var(--bg-main)'
-  },
-  panelTitleContainer: { display: 'flex', alignItems: 'center', gap: '6px' },
-  panelTitleText: { fontSize: '14.5px', fontWeight: '750', color: 'var(--text-main)' },
-  addBtn: { height: '32px', fontSize: '12.5px', padding: '0 12px', display: 'flex', alignItems: 'center', gap: '4px' },
-  tableContainer: { flex: 1, overflowY: 'auto' },
-  table: { width: '100%', borderCollapse: 'collapse', fontSize: '13px' },
-  tableHeaderRow: { position: 'sticky', top: 0, zIndex: 10, background: 'var(--bg-main)', borderBottom: '2px solid var(--border-color)' },
-  thStt: { width: '45px', textAlign: 'center', padding: '8px' },
-  thMaNV: { width: '100px', padding: '8px' },
-  thUsername: { width: '120px', padding: '8px' },
-  thHoTen: { width: '160px', padding: '8px' },
-  thVaiTro: { width: '120px', padding: '8px' },
-  thTrangThai: { width: '120px', padding: '8px', textAlign: 'center' },
-  filterRow: { backgroundColor: 'var(--bg-main)', borderBottom: '1px solid var(--border-color)' },
-  tdPadding4: { padding: '4px' },
-  filterInput: { height: '26px', fontSize: '12px', padding: '2px 6px' },
-  filterSelect: { height: '26px', fontSize: '12px', padding: '0 4px' },
-  statusFilterSelect: { height: '26px', fontSize: '12px', padding: '0 2px', fontWeight: '600' },
-  tdStt: { textAlign: 'center', padding: '10px 8px', fontWeight: '500', color: 'var(--text-muted)' },
-  statusActive: { color: '#10b981', fontWeight: '600', fontSize: '12px', display: 'inline-flex', alignItems: 'center', gap: '3px' },
-  statusLocked: { color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '12px', display: 'inline-flex', alignItems: 'center', gap: '3px' },
-  noData: { textAlign: 'center', padding: '40px', color: 'var(--text-muted)' },
-
-  pagination: {
-    borderTop: '1px solid var(--border-color)',
-    padding: '8px 16px',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    fontSize: '12.5px',
-    color: 'var(--text-muted)',
-    backgroundColor: 'var(--bg-main)'
-  },
-  pageNavBtn: { height: '24px', width: '24px', padding: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' },
-  pageNumberBtn: {
-    height: '24px', width: '24px', padding: 0,
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    fontSize: '11px', fontWeight: 'bold', cursor: 'pointer'
-  },
-
-  rightCol: {
-    flex: 0.9,
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-    backgroundColor: '#ffffff'
-  },
-  formHeader: {
-    display: 'flex',
-    backgroundColor: '#0052cc',
-    padding: '12px 18px',
-    height: '42px',
-    alignItems: 'center',
-    color: '#ffffff',
-    fontSize: '13px',
-    fontWeight: '700',
-    gap: '8px'
-  },
-  formArea: {
-    flex: 1,
-    overflowY: 'auto',
-    padding: '20px',
-    backgroundColor: '#ffffff'
-  },
-  noSelected: {
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    color: 'var(--text-muted)',
-    textAlign: 'center',
-    gap: '12px'
-  },
-  noSelectedIcon: { opacity: 0.25, color: 'var(--primary)' },
-  form: { height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' },
-  formSection: { borderBottom: '1px dashed var(--border-color)', paddingBottom: '16px' },
-  formSectionTitle: { fontSize: '13px', fontWeight: '700', color: 'var(--primary)', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' },
-  formGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px 16px' },
-  formInputStyle: { height: '34px', fontSize: '13px' },
-  formInputStyleFlex: { height: '34px', fontSize: '13px', flex: 1 },
-  formSelectStyle: { height: '34px', fontSize: '13px', padding: '0 8px' },
-  resetPasswordBtn: {
-    height: '34px',
-    padding: '0 10px',
-    fontSize: '12px',
-    borderColor: '#ef4444',
-    color: '#ef4444',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '4px',
-    whiteSpace: 'nowrap'
-  },
-  formActionRow: {
-    display: 'flex',
-    justifyContent: 'flex-end',
-    gap: '10px',
-    borderTop: '1px solid var(--border-color)',
-    paddingTop: '16px',
-    marginTop: '32px'
-  },
-  cancelBtn: { width: '100px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, margin: 0 },
-  saveBtn: { width: '120px', height: '36px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: 0, margin: 0 }
-};
-
 export default PhanQuyenNhanSu;
-

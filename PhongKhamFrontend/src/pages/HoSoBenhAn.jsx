@@ -159,23 +159,22 @@ function HoSoBenhAn() {
   const recentPatients = getRecentPatients();
 
   return (
-    <div className="kb-wrapper" style={styles.wrapper}>
+    <div className="kb-wrapper h-screen overflow-hidden">
       {/* Topbar điều hướng */}
-      <div className="kb-topbar" style={styles.topbar}>
-        <div style={styles.topbarLeft}>
-          <button className="kb-back-btn" onClick={() => navigate('/')} style={{ padding: '5px 10px' }}>
+      <div className="kb-topbar h-[50px] px-5 flex items-center justify-between">
+        <div className="flex-1 flex justify-start items-center">
+          <button className="kb-back-btn py-[5px] px-[10px] flex items-center gap-1" onClick={() => navigate('/')}>
             <ArrowLeft size={16} /> Quay lại trang chủ
           </button>
         </div>
-        <div className="kb-topbar-title" style={styles.topbarTitle}>
-          <ClipboardList size={18} style={{ marginRight: '6px' }} />
+        <div className="kb-topbar-title flex-1 flex justify-center items-center text-[15px] font-semibold">
+          <ClipboardList size={18} className="mr-1.5" />
           <strong>Hồ sơ bệnh án & Lịch sử khám</strong>
         </div>
-        <div style={styles.topbarRight}>
+        <div className="flex-1 flex justify-end items-center">
           <button 
-            className="kb-back-btn" 
-            onClick={loadData} 
-            style={styles.refreshBtn}
+            className="kb-back-btn py-1.5 px-2.5 flex items-center gap-1" 
+            onClick={loadData}
           >
             <RefreshCw size={14} /> Làm mới
           </button>
@@ -183,34 +182,33 @@ function HoSoBenhAn() {
       </div>
 
       {/* Vùng thân chính */}
-      <div className="kb-body" style={styles.body}>
+      <div className="kb-body p-5 md:px-6 bg-[var(--bg-main)] h-[calc(100vh-50px)] overflow-y-auto flex flex-col gap-5">
 
         {/* Ô Tìm kiếm Bệnh nhân */}
-        <div style={styles.searchCard}>
-          <div style={{ textAlign: 'center', marginBottom: '8px' }}>
-            <h2 style={styles.searchHeaderTitle}>Tra cứu lịch sử khám bệnh</h2>
-            <p style={styles.searchHeaderSub}>Nhập mã bệnh nhân, mã hồ sơ khám bệnh để tra cứu toàn bộ lịch sử bệnh án</p>
+        <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius-lg)] p-6 shadow-[var(--shadow-sm)] max-w-[800px] w-full mx-auto flex flex-col gap-4">
+          <div className="text-center mb-2">
+            <h2 className="text-[18px] font-bold text-[var(--text-main)] mb-1.5">Tra cứu lịch sử khám bệnh</h2>
+            <p className="text-[var(--text-muted)] text-[13px]">Nhập mã bệnh nhân, mã hồ sơ khám bệnh để tra cứu toàn bộ lịch sử bệnh án</p>
           </div>
 
-          <form onSubmit={handleSearch} style={{ display: 'flex', gap: '10px' }}>
-            <div style={styles.searchInputWrapper}>
-              <Search size={18} style={styles.searchIcon} />
+          <form onSubmit={handleSearch} className="flex gap-2.5">
+            <div className="flex items-center gap-2 flex-1 relative">
+              <Search size={18} className="absolute left-3.5 text-[var(--text-muted)]" />
               <input
                 type="text"
-                className="form-input"
-                style={styles.searchInput}
+                className="form-input pl-10 h-[42px] text-[14px]"
                 placeholder="Nhập mã bệnh nhân (VD: BN260001) hoặc mã hồ sơ (VD: PK_...)"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
               />
             </div>
-            <button type="submit" className="btn-primary" style={styles.searchBtn}>
+            <button type="submit" className="btn-primary w-[120px] h-[42px] flex items-center justify-center gap-1.5">
               <Search size={16} /> Tìm kiếm
             </button>
           </form>
 
           {searchError && (
-            <div style={styles.errorBox}>
+            <div className="flex items-center gap-2 text-[var(--error)] text-[13.5px] bg-red-100 p-2.5 px-3.5 rounded-[var(--radius-md)] font-medium">
               <AlertCircle size={16} />
               <span>{searchError}</span>
             </div>
@@ -218,31 +216,21 @@ function HoSoBenhAn() {
 
           {/* Gợi ý bệnh nhân tiếp nhận gần đây */}
           {recentPatients.length > 0 && (
-            <div style={styles.recentPatientsSection}>
-              <span style={styles.recentLabel}>
+            <div className="border-t border-[var(--border-color)] pt-3.5">
+              <span className="text-[12.5px] font-semibold text-[var(--text-muted)] block mb-2">
                 Bệnh nhân vừa tiếp đón/khám gần đây:
               </span>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              <div className="flex flex-wrap gap-2">
                 {recentPatients.map(pat => (
                   <button
                     key={pat.maBN || pat.hoTen}
                     type="button"
                     onClick={() => handleSelectRecent(pat)}
-                    style={styles.recentBtn}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.borderColor = 'var(--primary)';
-                      e.currentTarget.style.backgroundColor = 'var(--primary-light)';
-                      e.currentTarget.style.color = 'var(--primary-hover)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.borderColor = 'var(--border-color)';
-                      e.currentTarget.style.backgroundColor = 'var(--bg-main)';
-                      e.currentTarget.style.color = 'var(--text-main)';
-                    }}
+                    className="py-1.5 px-3 bg-[var(--bg-main)] border border-[var(--border-color)] rounded-[16px] text-[12.5px] font-medium text-[var(--text-main)] cursor-pointer transition-all duration-200 flex items-center gap-1.5 hover:border-[var(--primary)] hover:bg-[var(--primary-light)] hover:text-[var(--primary-hover)]"
                   >
-                    <User size={13} style={{ color: 'var(--primary)' }} />
+                    <User size={13} className="text-[var(--primary)]" />
                     <span>{pat.hoTen}</span>
-                    <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>({pat.maBN || 'Chưa tạo'})</span>
+                    <span className="text-[11px] text-[var(--text-muted)]">({pat.maBN || 'Chưa tạo'})</span>
                   </button>
                 ))}
               </div>
@@ -252,43 +240,43 @@ function HoSoBenhAn() {
 
         {/* Kết quả truy vấn thông tin & lịch sử các lần khám */}
         {hasSearched && selectedPatient && (
-          <div style={styles.resultContainer}>
+          <div className="max-w-[800px] w-full mx-auto flex flex-col gap-5">
             {/* 1. Thẻ thông tin hành chính bệnh nhân */}
-            <div style={styles.infoCard}>
-              <div style={styles.infoCardHeader}>
+            <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius-lg)] p-5 shadow-[var(--shadow-sm)] relative">
+              <div className="flex items-center gap-2 text-[15px] font-semibold text-[var(--primary)] border-b border-[var(--border-color)] pb-2 mb-3.5">
                 <User size={16} />
                 <span>Thông tin hành chính bệnh nhân</span>
               </div>
 
-              <div style={styles.infoGrid}>
+              <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3.5 text-[13.5px]">
                 <div>
-                  <span style={styles.infoLabel}>Họ và tên:</span>
-                  <strong style={styles.infoValueName}>{selectedPatient.hoTen}</strong>
+                  <span className="text-[var(--text-muted)] block text-[12px]">Họ và tên:</span>
+                  <strong className="text-[15px] uppercase text-[var(--text-main)]">{selectedPatient.hoTen}</strong>
                 </div>
                 <div>
-                  <span style={styles.infoLabel}>Mã bệnh nhân:</span>
-                  <strong style={{ color: 'var(--primary)' }}>{selectedPatient.maBN || 'Chưa tạo'}</strong>
+                  <span className="text-[var(--text-muted)] block text-[12px]">Mã bệnh nhân:</span>
+                  <strong className="text-[var(--primary)]">{selectedPatient.maBN || 'Chưa tạo'}</strong>
                 </div>
                 <div>
-                  <span style={styles.infoLabel}>Ngày sinh:</span>
-                  <strong style={{ color: 'var(--text-main)' }}>{selectedPatient.ngaySinh}</strong>
+                  <span className="text-[var(--text-muted)] block text-[12px]">Ngày sinh:</span>
+                  <strong className="text-[var(--text-main)]">{selectedPatient.ngaySinh}</strong>
                 </div>
                 <div>
-                  <span style={styles.infoLabel}>Giới tính:</span>
-                  <strong style={{ color: 'var(--text-main)' }}>{selectedPatient.gioiTinh}</strong>
+                  <span className="text-[var(--text-muted)] block text-[12px]">Giới tính:</span>
+                  <strong className="text-[var(--text-main)]">{selectedPatient.gioiTinh}</strong>
                 </div>
                 <div>
-                  <span style={styles.infoLabel}>Số điện thoại:</span>
-                  <strong style={{ color: 'var(--text-main)' }}>{selectedPatient.sdt}</strong>
+                  <span className="text-[var(--text-muted)] block text-[12px]">Số điện thoại:</span>
+                  <strong className="text-[var(--text-main)]">{selectedPatient.sdt}</strong>
                 </div>
                 <div>
-                  <span style={styles.infoLabel}>Địa chỉ:</span>
-                  <strong style={{ color: 'var(--text-main)' }}>{selectedPatient.diaChi || '—'}</strong>
+                  <span className="text-[var(--text-muted)] block text-[12px]">Địa chỉ:</span>
+                  <strong className="text-[var(--text-main)]">{selectedPatient.diaChi || '—'}</strong>
                 </div>
                 {selectedPatient.tienSuBenh && (
-                  <div style={{ gridColumn: '1 / -1' }}>
-                    <span style={styles.infoLabel}>Tiền sử bệnh lý:</span>
-                    <span style={styles.historyBadge}>
+                  <div className="col-span-full">
+                    <span className="text-[var(--text-muted)] block text-[12px]">Tiền sử bệnh lý:</span>
+                    <span className="text-[#b45309] font-semibold bg-[#fef3c7] py-1 px-2 rounded inline-block mt-0.5 border border-[#fde68a]">
                       {selectedPatient.tienSuBenh}
                     </span>
                   </div>
@@ -297,69 +285,58 @@ function HoSoBenhAn() {
             </div>
 
             {/* 2. Danh sách lượt khám lịch sử */}
-            <div style={styles.historyCard}>
-              <div style={styles.historyCardHeader}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '15px', fontWeight: '600', color: 'var(--primary)' }}>
+            <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius-lg)] p-5 shadow-[var(--shadow-sm)]">
+              <div className="flex justify-between items-center border-b border-[var(--border-color)] pb-2.5 mb-4">
+                <div className="flex items-center gap-2 text-[15px] font-semibold text-[var(--primary)]">
                   <FileText size={16} />
                   <span>Lịch sử khám bệnh</span>
                 </div>
-                <span style={styles.historyCountBadge}>
+                <span className="text-[12.5px] text-[var(--text-muted)] font-semibold bg-[var(--bg-main)] py-1 px-2.5 rounded-[12px]">
                   Có {patientHistory.length} hồ sơ khám
                 </span>
               </div>
 
               {patientHistory.length === 0 ? (
-                <div style={styles.emptyHistory}>
+                <div className="text-center p-8 text-[var(--text-muted)]">
                   Chưa có lịch sử khám bệnh.
                 </div>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div className="flex flex-col gap-3">
                   {patientHistory.map((rec) => {
                     const st = trangThaiLabel[rec.trangThai] || trangThaiLabel[0];
                     return (
                       <div
                         key={rec.maPhieu}
                         onClick={() => navigate(`/ho-so-chi-tiet/${rec.maPhieu}`)}
-                        style={styles.historyItem}
-                        onMouseEnter={(e) => {
-                          e.currentTarget.style.borderColor = 'var(--primary)';
-                          e.currentTarget.style.transform = 'translateY(-1px)';
-                          e.currentTarget.style.boxShadow = 'var(--shadow-md)';
-                        }}
-                        onMouseLeave={(e) => {
-                          e.currentTarget.style.borderColor = 'var(--border-color)';
-                          e.currentTarget.style.transform = 'translateY(0)';
-                          e.currentTarget.style.boxShadow = 'none';
-                        }}
+                        className="border border-[var(--border-color)] rounded-[var(--radius-md)] py-3.5 px-4 cursor-pointer flex items-center justify-between gap-4 transition-all duration-200 bg-[var(--bg-card)] hover:border-[var(--primary)] hover:-translate-y-px hover:shadow-[var(--shadow-md)]"
                       >
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', flex: 1 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                            <span style={{ fontSize: '14px', fontWeight: '700', color: 'var(--primary)' }}>{rec.maPhieu}</span>
-                            <span style={styles.historyItemTime}>
+                        <div className="flex flex-col gap-1 flex-1">
+                          <div className="flex items-center gap-2.5 flex-wrap">
+                            <span className="text-[14px] font-bold text-[var(--primary)]">{rec.maPhieu}</span>
+                            <span className="flex items-center gap-1 text-[12px] text-[var(--text-muted)]">
                               <Clock size={12} />
                               {formatTime(rec.ngayKham)}
                             </span>
-                            <span style={{ 
-                              fontSize: '11px', 
-                              color: st.color, 
-                              backgroundColor: st.bg, 
-                              padding: '1.5px 6px', 
-                              borderRadius: '8px', 
-                              fontWeight: '600' 
-                            }}>
+                            <span 
+                              className="text-[11px] px-1.5 py-[1.5px] rounded-[8px] font-semibold"
+                              style={{ 
+                                color: st.color, 
+                                backgroundColor: st.bg, 
+                              }}
+                            >
                               {st.label}
                             </span>
                           </div>
-                          <div style={{ fontSize: '13px', marginTop: '2px' }}>
-                            <span style={{ color: 'var(--text-muted)' }}>Bác sĩ khám: </span>
-                            <strong style={{ color: 'var(--text-main)' }}>{rec.tenBacSi || 'Chưa phân công'}</strong>
+                          <div className="text-[13px] mt-0.5">
+                            <span className="text-[var(--text-muted)]">Bác sĩ khám: </span>
+                            <strong className="text-[var(--text-main)]">{rec.tenBacSi || 'Chưa phân công'}</strong>
                           </div>
-                          <div style={{ fontSize: '13px' }}>
-                            <span style={{ color: 'var(--text-muted)' }}>Chẩn đoán: </span>
-                            <strong style={{ color: 'var(--text-main)' }}>{rec.chanDoan || 'Chưa cập nhật'}</strong>
+                          <div className="text-[13px]">
+                            <span className="text-[var(--text-muted)]">Chẩn đoán: </span>
+                            <strong className="text-[var(--text-main)]">{rec.chanDoan || 'Chưa cập nhật'}</strong>
                           </div>
                         </div>
-                        <div style={{ color: 'var(--text-muted)', display: 'flex', alignItems: 'center' }}>
+                        <div className="text-[var(--text-muted)] flex items-center">
                           <ChevronRight size={18} />
                         </div>
                       </div>
@@ -373,10 +350,10 @@ function HoSoBenhAn() {
 
         {/* Trạng thái chưa nhập thông tin */}
         {!hasSearched && (
-          <div style={styles.guideBox}>
-            <FileText size={48} style={styles.guideIcon} />
-            <h3 style={styles.guideTitle}>Chưa có thông tin tra cứu</h3>
-            <p style={{ fontSize: '13.5px', lineHeight: '1.6' }}>Nhập mã bệnh nhân hoặc mã hồ sơ ở thanh tìm kiếm phía trên để hiển thị lịch sử bệnh án và các lượt khám tương ứng.</p>
+          <div className="text-center p-16 text-[var(--text-muted)] max-w-[500px] w-full mx-auto mt-10">
+            <FileText size={48} className="mx-auto mb-4 block opacity-30" />
+            <h3 className="text-[16px] font-semibold text-[var(--text-main)] mb-2">Chưa có thông tin tra cứu</h3>
+            <p className="text-[13.5px] leading-relaxed">Nhập mã bệnh nhân hoặc mã hồ sơ ở thanh tìm kiếm phía trên để hiển thị lịch sử bệnh án và các lượt khám tương ứng.</p>
           </div>
         )}
 
@@ -384,141 +361,5 @@ function HoSoBenhAn() {
     </div>
   );
 }
-
-// Cấu hình CSS inline cho giao diện HoSoBenhAn
-const styles = {
-  wrapper: { height: '100vh', overflow: 'hidden' },
-  topbar: { height: '50px', padding: '0 20px' },
-  topbarLeft: { flex: 1, display: 'flex', justifyContent: 'flex-start' },
-  topbarTitle: { flex: 1, display: 'flex', justifyContent: 'center', fontSize: '15px' },
-  topbarRight: { flex: 1, display: 'flex', justifyContent: 'flex-end' },
-  refreshBtn: { padding: '5px 10px', display: 'flex', alignItems: 'center', gap: '4px' },
-  body: {
-    padding: '20px 24px',
-    backgroundColor: 'var(--bg-main)',
-    height: 'calc(100vh - 50px)',
-    overflowY: 'auto',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '20px'
-  },
-  searchCard: {
-    backgroundColor: 'var(--bg-card)',
-    border: '1px solid var(--border-color)',
-    borderRadius: 'var(--radius-lg)',
-    padding: '24px',
-    boxShadow: 'var(--shadow-sm)',
-    maxWidth: '800px',
-    width: '100%',
-    margin: '0 auto',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '16px'
-  },
-  searchHeaderTitle: { fontSize: '18px', fontWeight: '700', color: 'var(--text-main)', marginBottom: '6px' },
-  searchHeaderSub: { color: 'var(--text-muted)', fontSize: '13px' },
-  searchInputWrapper: { display: 'flex', alignItems: 'center', gap: '8px', flex: 1, position: 'relative' },
-  searchIcon: { position: 'absolute', left: '14px', color: 'var(--text-muted)' },
-  searchInput: { paddingLeft: '40px', height: '42px', fontSize: '14px' },
-  searchBtn: { width: '120px', height: '42px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' },
-  errorBox: {
-    display: 'flex', 
-    alignItems: 'center', 
-    gap: '8px', 
-    color: 'var(--error)', 
-    fontSize: '13.5px', 
-    backgroundColor: '#fee2e2', 
-    padding: '10px 14px', 
-    borderRadius: 'var(--radius-md)',
-    fontWeight: '500'
-  },
-  recentPatientsSection: { borderTop: '1px solid var(--border-color)', paddingTop: '14px' },
-  recentLabel: { fontSize: '12.5px', fontWeight: '600', color: 'var(--text-muted)', display: 'block', marginBottom: '8px' },
-  recentBtn: {
-    padding: '6px 12px',
-    backgroundColor: 'var(--bg-main)',
-    border: '1px solid var(--border-color)',
-    borderRadius: '16px',
-    fontSize: '12.5px',
-    fontWeight: '500',
-    color: 'var(--text-main)',
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px'
-  },
-  resultContainer: {
-    maxWidth: '800px',
-    width: '100%',
-    margin: '0 auto',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '20px'
-  },
-  infoCard: {
-    backgroundColor: 'var(--bg-card)',
-    border: '1px solid var(--border-color)',
-    borderRadius: 'var(--radius-lg)',
-    padding: '20px',
-    boxShadow: 'var(--shadow-sm)',
-    position: 'relative'
-  },
-  infoCardHeader: { 
-    display: 'flex', 
-    alignItems: 'center', 
-    gap: '8px', 
-    fontSize: '15px', 
-    fontWeight: '600', 
-    color: 'var(--primary)',
-    borderBottom: '1px solid var(--border-color)',
-    paddingBottom: '8px',
-    marginBottom: '14px'
-  },
-  infoGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', fontSize: '13.5px' },
-  infoLabel: { color: 'var(--text-muted)', display: 'block', fontSize: '12px' },
-  infoValueName: { fontSize: '15px', textTransform: 'uppercase', color: 'var(--text-main)' },
-  historyBadge: { color: '#b45309', fontWeight: '600', backgroundColor: '#fef3c7', padding: '4px 8px', borderRadius: '4px', display: 'inline-block', marginTop: '2px', border: '1px solid #fde68a' },
-  historyCard: {
-    backgroundColor: 'var(--bg-card)',
-    border: '1px solid var(--border-color)',
-    borderRadius: 'var(--radius-lg)',
-    padding: '20px',
-    boxShadow: 'var(--shadow-sm)'
-  },
-  historyCardHeader: { 
-    display: 'flex', 
-    justifyContent: 'space-between', 
-    alignItems: 'center',
-    borderBottom: '1px solid var(--border-color)',
-    paddingBottom: '10px',
-    marginBottom: '16px'
-  },
-  historyCountBadge: { fontSize: '12.5px', color: 'var(--text-muted)', fontWeight: '600', backgroundColor: 'var(--bg-main)', padding: '4px 10px', borderRadius: '12px' },
-  emptyHistory: { textAlign: 'center', padding: '32px', color: 'var(--text-muted)' },
-  historyItem: {
-    border: '1px solid var(--border-color)',
-    borderRadius: 'var(--radius-md)',
-    padding: '14px 16px',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: '16px',
-    transition: 'all 0.2s',
-    backgroundColor: 'var(--bg-card)'
-  },
-  historyItemTime: { display: 'flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: 'var(--text-muted)' },
-  guideBox: {
-    textAlign: 'center',
-    padding: '64px',
-    color: 'var(--text-muted)',
-    maxWidth: '500px',
-    width: '100%',
-    margin: '40px auto 0'
-  },
-  guideIcon: { margin: '0 auto 16px', display: 'block', opacity: 0.3 },
-  guideTitle: { fontSize: '16px', fontWeight: '600', color: 'var(--text-main)', marginBottom: '8px' }
-};
 
 export default HoSoBenhAn;

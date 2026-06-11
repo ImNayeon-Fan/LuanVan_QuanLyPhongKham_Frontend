@@ -135,74 +135,71 @@ function DanhMucDichVu() {
   };
 
   return (
-    <div className="kb-wrapper" style={styles.wrapper}>
+    <div className="kb-wrapper h-screen overflow-hidden">
       {/* Topbar điều hướng */}
-      <div className="kb-topbar" style={styles.topbar}>
-        <div style={styles.topbarLeft}>
-          <button className="kb-back-btn" onClick={() => navigate('/')} style={styles.backBtn}>
+      <div className="kb-topbar h-[50px] px-5 flex items-center">
+        <div className="flex-1 flex justify-start">
+          <button className="kb-back-btn py-[5px] px-[10px]" onClick={() => navigate('/')}>
             <ArrowLeft size={16} /> Quay về trang chủ
           </button>
         </div>
-        <div className="kb-topbar-title" style={styles.topbarTitle}>
-          <Activity size={18} style={{ marginRight: '6px' }} />
+        <div className="kb-topbar-title flex-1 flex justify-center text-[15px]">
+          <Activity size={18} className="mr-1.5" />
           <strong>Danh mục dịch vụ y tế (CLS)</strong>
         </div>
-        <div style={styles.topbarRight}>
+        <div className="flex-1 flex justify-end text-[12px] opacity-85">
           <span>Trang chủ / Quản lý danh mục / Dịch vụ y tế (CLS)</span>
         </div>
       </div>
 
       {/* Vùng làm việc chính */}
-      <div className="kb-body" style={styles.body}>
+      <div className="kb-body flex h-[calc(100vh-50px)] bg-[var(--bg-main)] overflow-hidden">
         
         {/* CỘT TRÁI: Bảng danh sách dịch vụ */}
-        <div style={styles.leftCol}>
-          <div style={styles.panelHeader}>
-            <div style={styles.panelTitleContainer}>
-              <Activity size={16} style={{ color: 'var(--primary)' }} />
-              <h3 style={styles.panelTitleText}>
+        <div className="flex-[1.3] flex flex-col border-r border-[var(--border-color)] h-full bg-white">
+          <div className="flex justify-between items-center py-3 px-[18px] bg-[var(--bg-main)] border-b border-[var(--border-color)]">
+            <div className="flex items-center gap-[6px]">
+              <Activity size={16} className="text-[var(--primary)]" />
+              <h3 className="text-[14.5px] font-[750] text-[var(--text-main)]">
                 DANH SÁCH KỸ THUẬT & DỊCH VỤ CẬN LÂM SÀNG
               </h3>
             </div>
             <button 
               onClick={handleAddNewDv}
-              className="btn-primary" 
-              style={styles.addBtn}
+              className="btn-primary h-8 text-[12.5px] px-3 flex items-center gap-1"
             >
               <Plus size={14} /> Thêm danh mục
             </button>
           </div>
 
           {/* Container chứa bảng cuộn */}
-          <div style={styles.tableContainer}>
-            <table className="kb-table" style={styles.table}>
+          <div className="flex-1 overflow-y-auto">
+            <table className="kb-table w-full border-collapse text-[13px]">
               <thead>
-                <tr style={styles.tableHeaderRow}>
-                  <th style={styles.thStt}>STT</th>
-                  <th style={styles.thMa}>Mã dịch vụ</th>
-                  <th style={{ padding: '8px' }}>Tên dịch vụ kỹ thuật y tế</th>
-                  <th style={styles.thGia}>Giá niêm yết (đ)</th>
-                  <th style={styles.thTrangThai}>Trạng thái</th>
-                  <th style={styles.thXoa}>Xóa</th>
+                <tr className="sticky top-0 z-10 bg-[var(--bg-main)] border-b-2 border-[var(--border-color)]">
+                  <th className="w-[50px] text-center p-2">STT</th>
+                  <th className="w-[150px] p-2">Mã dịch vụ</th>
+                  <th className="p-2">Tên dịch vụ kỹ thuật y tế</th>
+                  <th className="w-[150px] p-2 text-right">Giá niêm yết (đ)</th>
+                  <th className="w-[120px] p-2 text-center">Trạng thái</th>
+                  <th className="w-[60px] p-2 text-center">Xóa</th>
                 </tr>
-                <tr style={styles.filterRow}>
+                <tr className="bg-[var(--bg-main)] border-b border-[var(--border-color)]">
                   <td></td>
-                  <td style={styles.tdPadding4}>
+                  <td className="p-1">
                     <input 
                       type="text" 
                       placeholder="Lọc mã..." 
-                      className="form-input" 
-                      style={styles.filterInput}
+                      className="form-input h-[26px] text-[12px] py-0.5 px-1.5" 
                       value={dvFilters.maDV}
                       onChange={e => handleDvFilterChange('maDV', e.target.value)}
                     />
                   </td>
-                  <td style={styles.tdPadding4}>
+                  <td className="p-1">
                     <input 
                       type="text" 
                       placeholder="Lọc tên dịch vụ..." 
-                      className="form-input" 
-                      style={styles.filterInput}
+                      className="form-input h-[26px] text-[12px] py-0.5 px-1.5" 
                       value={dvFilters.tenDV}
                       onChange={e => handleDvFilterChange('tenDV', e.target.value)}
                     />
@@ -215,7 +212,7 @@ function DanhMucDichVu() {
               <tbody>
                 {displayedDV.length === 0 ? (
                   <tr>
-                    <td colSpan="6" style={styles.noDataTd}>
+                    <td colSpan="6" className="text-center p-[30px] text-[var(--text-muted)]">
                       Không tìm thấy dịch vụ nào khớp với bộ lọc.
                     </td>
                   </tr>
@@ -225,44 +222,40 @@ function DanhMucDichVu() {
                     return (
                       <tr 
                         key={item.maDV}
-                        className="kb-table-row"
-                        style={{ 
-                          backgroundColor: isSelected ? 'var(--primary-light)' : 'transparent',
-                          cursor: 'pointer',
-                          transition: 'background-color 0.15s'
-                        }}
+                        className={`kb-table-row cursor-pointer transition-colors duration-150 ${
+                          isSelected ? 'bg-[var(--primary-light)]' : 'bg-transparent'
+                        }`}
                         onClick={() => setSelectedDV(item)}
                       >
-                        <td style={styles.tdStt}>
+                        <td className="text-center py-2.5 px-2 font-medium text-[var(--text-muted)]">
                           {dvStartIdx + idx + 1}
                         </td>
-                        <td style={styles.tdMa}>
+                        <td className="font-bold text-[var(--primary-hover)] py-2.5 px-2">
                           {item.maDV}
                         </td>
-                        <td style={styles.tdTen}>{item.tenDV}</td>
-                        <td style={styles.tdGia}>
+                        <td className="font-medium py-2.5 px-2">{item.tenDV}</td>
+                        <td className="text-right font-bold py-2.5 px-2 text-[#0052cc]">
                           {item.giaTien.toLocaleString('vi-VN')}
                         </td>
-                        <td style={styles.tdStatus}>
+                        <td className="py-2.5 px-2 text-center">
                           {item.trangThai ? (
-                            <span style={styles.badgeActive}>
+                            <span className="text-[#10b981] font-semibold text-[11.5px] inline-flex items-center gap-[3px] bg-[#d1fae5] py-0.5 px-2 rounded-[10px]">
                               <Check size={12} /> Áp dụng
                             </span>
                           ) : (
-                            <span style={styles.badgeInactive}>
+                            <span className="text-[var(--text-muted)] italic text-[11.5px] inline-flex items-center gap-[3px] bg-[#e5e7eb] py-0.5 px-2 rounded-[10px]">
                               <X size={12} /> Tạm ngừng
                             </span>
                           )}
                         </td>
-                        <td style={styles.tdXoa}>
+                        <td className="py-2.5 px-2 text-center">
                           <button 
-                            className="kb-icon-btn kb-icon-btn--danger"
+                            className="kb-icon-btn kb-icon-btn--danger mx-auto"
                             onClick={(e) => {
                               e.stopPropagation();
                               handleDeleteDv(item.maDV);
                             }}
                             title="Xóa dịch vụ CLS"
-                            style={styles.deleteBtnIcon}
                           >
                             <Trash2 size={13} />
                           </button>
@@ -276,33 +269,29 @@ function DanhMucDichVu() {
           </div>
 
           {/* Bộ điều khiển phân trang */}
-          <div style={styles.pagination}>
-            <span style={{ color: 'var(--text-muted)' }}>
+          <div className="h-[45px] bg-white border-t border-[var(--border-color)] flex items-center justify-between px-5 text-[13px]">
+            <span className="text-[var(--text-muted)]">
               Hiển thị từ <b>{dvStartIdx + 1}</b> đến <b>{Math.min(dvStartIdx + itemsPerPage, filteredDV.length)}</b> trong tổng số <b>{filteredDV.length}</b> dịch vụ
             </span>
-            <div style={{ display: 'flex', gap: '5px' }}>
+            <div className="flex gap-[5px]">
               <button 
                 disabled={dvPage === 1}
                 onClick={() => setDvPage(p => p - 1)}
-                style={{
-                  ...styles.pageBtn,
-                  backgroundColor: dvPage === 1 ? '#f3f4f6' : '#ffffff',
-                  cursor: dvPage === 1 ? 'not-allowed' : 'pointer'
-                }}
+                className={`py-1 px-2 rounded border border-[var(--border-color)] ${
+                  dvPage === 1 ? 'bg-[#f3f4f6] cursor-not-allowed' : 'bg-white cursor-pointer'
+                }`}
               >
                 Trước
               </button>
-              <span style={styles.pageIndicator}>
+              <span className="flex items-center px-2 font-semibold">
                 Trang {dvPage} / {totalDvPages}
               </span>
               <button 
                 disabled={dvPage === totalDvPages}
                 onClick={() => setDvPage(p => p + 1)}
-                style={{
-                  ...styles.pageBtn,
-                  backgroundColor: dvPage === totalDvPages ? '#f3f4f6' : '#ffffff',
-                  cursor: dvPage === totalDvPages ? 'not-allowed' : 'pointer'
-                }}
+                className={`py-1 px-2 rounded border border-[var(--border-color)] ${
+                  dvPage === totalDvPages ? 'bg-[#f3f4f6] cursor-not-allowed' : 'bg-white cursor-pointer'
+                }`}
               >
                 Sau
               </button>
@@ -311,72 +300,69 @@ function DanhMucDichVu() {
         </div>
 
         {/* CỘT PHẢI: Form biểu mẫu nhập liệu chi tiết */}
-        <div style={styles.rightCol}>
-          <div style={styles.formHeader}>
+        <div className="flex-[0.7] flex flex-col h-full bg-white">
+          <div className="flex bg-[#0052cc] py-3 px-[18px] h-[42px] items-center text-white text-[13px] font-bold gap-2">
             <Database size={16} />
             <span>CHI TIẾT DỊCH VỤ Y TẾ (CLS)</span>
           </div>
 
-          <div style={styles.formArea}>
+          <div className="flex-1 overflow-y-auto p-5 bg-white">
             {selectedDV === null ? (
-              <div style={styles.noSelectedDv}>
-                <Activity size={32} style={styles.noSelectedIcon} />
-                <p style={{ fontSize: '13px' }}>Chọn một dịch vụ cận lâm sàng hoặc click nút <b>"Thêm danh mục"</b> để tạo mới.</p>
+              <div className="h-full flex flex-col items-center justify-center text-[var(--text-muted)] text-center gap-2">
+                <Activity size={32} className="opacity-40 mb-2 text-[var(--primary)]" />
+                <p className="text-[13px]">Chọn một dịch vụ cận lâm sàng hoặc click nút <b>"Thêm danh mục"</b> để tạo mới.</p>
               </div>
             ) : (
-              <form onSubmit={handleSaveDv} style={styles.form}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  <div style={styles.formSection}>
-                    <h4 style={styles.formSectionTitle}>
+              <form onSubmit={handleSaveDv} className="h-full flex flex-col justify-between">
+                <div className="flex flex-col gap-4">
+                  <div className="border-b border-dashed border-[var(--border-color)] pb-4">
+                    <h4 className="text-[13px] font-bold text-[var(--primary)] mb-3">
                       DỊCH VỤ CẬN LÂM SÀNG & XÉT NGHIỆM
                     </h4>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    <div className="flex flex-col gap-3">
                       <div className="form-group">
-                        <label className="form-label" style={{ fontSize: '12.5px' }}>Mã dịch vụ y tế <span style={{ color: 'red' }}>*</span></label>
+                        <label className="form-label text-[12.5px]">Mã dịch vụ y tế <span className="text-red-500">*</span></label>
                         <input 
                           type="text" 
-                          className="form-input" 
+                          className="form-input h-[34px] text-[13px] pl-3 uppercase" 
                           placeholder="Ví dụ: DV001, XQ001..."
                           value={dvForm.maDV}
                           onChange={e => setDvForm({ ...dvForm, maDV: e.target.value })}
                           required
                           disabled={!selectedDV.isNew}
-                          style={styles.maInput}
                         />
                       </div>
                       <div className="form-group">
-                        <label className="form-label" style={{ fontSize: '12.5px' }}>Tên dịch vụ kỹ thuật <span style={{ color: 'red' }}>*</span></label>
+                        <label className="form-label text-[12.5px]">Tên dịch vụ kỹ thuật <span className="text-red-500">*</span></label>
                         <input 
                           type="text" 
-                          className="form-input" 
+                          className="form-input h-[34px] text-[13px] pl-3" 
                           placeholder="Ví dụ: Siêu âm tim màu..."
                           value={dvForm.tenDV}
                           onChange={e => setDvForm({ ...dvForm, tenDV: e.target.value })}
                           required
-                          style={styles.formInputCommon}
                         />
                       </div>
                       <div className="form-group">
-                        <label className="form-label" style={{ fontSize: '12.5px' }}>Đơn giá niêm yết (VNĐ) <span style={{ color: 'red' }}>*</span></label>
+                        <label className="form-label text-[12.5px]">Đơn giá niêm yết (VNĐ) <span className="text-red-500">*</span></label>
                         <input 
                           type="number" 
-                          className="form-input" 
+                          className="form-input h-[34px] text-[13px] pl-3" 
                           placeholder="Nhập giá tiền dịch vụ..."
                           value={dvForm.giaTien}
                           onChange={e => setDvForm({ ...dvForm, giaTien: e.target.value })}
                           required
-                          style={styles.formInputCommon}
                         />
                       </div>
-                      <div className="form-group" style={styles.checkboxGroup}>
+                      <div className="form-group flex items-center gap-2 mt-2.5">
                         <input 
                           type="checkbox" 
                           id="trangThaiDV"
                           checked={dvForm.trangThai}
                           onChange={e => setDvForm({ ...dvForm, trangThai: e.target.checked })}
-                          style={styles.checkbox}
+                          className="w-4 h-4 cursor-pointer"
                         />
-                        <label htmlFor="trangThaiDV" style={styles.checkboxLabel}>
+                        <label htmlFor="trangThaiDV" className="text-[13px] font-semibold text-[var(--text-main)] cursor-pointer">
                           Đang áp dụng cung cấp tại phòng khám
                         </label>
                       </div>
@@ -385,11 +371,11 @@ function DanhMucDichVu() {
                 </div>
 
                 {/* Các nút Lưu/Hủy */}
-                <div style={styles.formActionGroup}>
-                  <button type="submit" className="btn-primary" style={styles.saveBtn}>
+                <div className="flex gap-3 border-t border-[var(--border-color)] pt-4 mt-5">
+                  <button type="submit" className="btn-primary flex-1 h-9 text-[13px] flex items-center justify-center gap-1.5 p-0 m-0">
                     <Save size={16} /> Lưu thông tin [F4]
                   </button>
-                  <button type="button" onClick={() => setSelectedDV(null)} className="btn-outline" style={styles.cancelBtn}>
+                  <button type="button" onClick={() => setSelectedDV(null)} className="btn-outline flex-1 h-9 text-[13px] flex items-center justify-center p-0 m-0">
                     Hủy bỏ
                   </button>
                 </div>
@@ -402,116 +388,5 @@ function DanhMucDichVu() {
     </div>
   );
 }
-
-// Cấu hình CSS inline cho giao diện DanhMucDichVu
-const styles = {
-  wrapper: { height: '100vh', overflow: 'hidden' },
-  topbar: { height: '50px', padding: '0 20px' },
-  topbarLeft: { flex: 1, display: 'flex', justifyContent: 'flex-start' },
-  backBtn: { padding: '5px 10px' },
-  topbarTitle: { flex: 1, display: 'flex', justifyContent: 'center', fontSize: '15px' },
-  topbarRight: { flex: 1, display: 'flex', justifyContent: 'flex-end', fontSize: '12px', opacity: 0.85 },
-  body: {
-    display: 'flex',
-    height: 'calc(100vh - 50px)',
-    backgroundColor: 'var(--bg-main)',
-    overflow: 'hidden'
-  },
-  leftCol: {
-    flex: 1.3,
-    display: 'flex',
-    flexDirection: 'column',
-    borderRight: '1px solid var(--border-color)',
-    height: '100%',
-    backgroundColor: '#ffffff'
-  },
-  panelHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '12px 18px',
-    backgroundColor: 'var(--bg-main)',
-    borderBottom: '1px solid var(--border-color)'
-  },
-  panelTitleContainer: { display: 'flex', alignItems: 'center', gap: '6px' },
-  panelTitleText: { fontSize: '14.5px', fontWeight: '750', color: 'var(--text-main)' },
-  addBtn: { height: '32px', fontSize: '12.5px', padding: '0 12px', display: 'flex', alignItems: 'center', gap: '4px' },
-  tableContainer: { flex: 1, overflowY: 'auto' },
-  table: { width: '100%', borderCollapse: 'collapse', fontSize: '13px' },
-  tableHeaderRow: { position: 'sticky', top: 0, zIndex: 10, background: 'var(--bg-main)', borderBottom: '2px solid var(--border-color)' },
-  thStt: { width: '50px', textAlign: 'center', padding: '8px' },
-  thMa: { width: '150px', padding: '8px' },
-  thGia: { width: '150px', padding: '8px', textAlign: 'right' },
-  thTrangThai: { width: '120px', padding: '8px', textAlign: 'center' },
-  thXoa: { width: '60px', padding: '8px', textAlign: 'center' },
-  filterRow: { backgroundColor: 'var(--bg-main)', borderBottom: '1px solid var(--border-color)' },
-  tdPadding4: { padding: '4px' },
-  filterInput: { height: '26px', fontSize: '12px', padding: '2px 6px' },
-  noDataTd: { textAlign: 'center', padding: '30px', color: 'var(--text-muted)' },
-  tdStt: { textAlign: 'center', padding: '10px 8px', fontWeight: '500', color: 'var(--text-muted)' },
-  tdMa: { fontWeight: '700', color: 'var(--primary-hover)', padding: '10px 8px' },
-  tdTen: { fontWeight: '500', padding: '10px 8px' },
-  tdGia: { textAlign: 'right', fontWeight: '700', padding: '10px 8px', color: '#0052cc' },
-  tdStatus: { padding: '10px 8px', textAlign: 'center' },
-  badgeActive: { color: '#10b981', fontWeight: '600', fontSize: '11.5px', display: 'inline-flex', alignItems: 'center', gap: '3px', backgroundColor: '#d1fae5', padding: '2px 8px', borderRadius: '10px' },
-  badgeInactive: { color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '11.5px', display: 'inline-flex', alignItems: 'center', gap: '3px', backgroundColor: '#e5e7eb', padding: '2px 8px', borderRadius: '10px' },
-  tdXoa: { padding: '10px 8px', textAlign: 'center' },
-  deleteBtnIcon: { margin: '0 auto' },
-  pagination: {
-    height: '45px',
-    backgroundColor: '#ffffff',
-    borderTop: '1px solid var(--border-color)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '0 20px',
-    fontSize: '13px'
-  },
-  pageBtn: { padding: '4px 8px', borderRadius: '4px', border: '1px solid var(--border-color)' },
-  pageIndicator: { display: 'flex', alignItems: 'center', padding: '0 8px', fontWeight: '600' },
-  rightCol: {
-    flex: 0.7,
-    display: 'flex',
-    flexDirection: 'column',
-    height: '100%',
-    backgroundColor: '#ffffff'
-  },
-  formHeader: {
-    display: 'flex',
-    backgroundColor: '#0052cc',
-    padding: '12px 18px',
-    height: '42px',
-    alignItems: 'center',
-    color: '#ffffff',
-    fontSize: '13px',
-    fontWeight: '700',
-    gap: '8px'
-  },
-  formArea: {
-    flex: 1,
-    overflowY: 'auto',
-    padding: '20px',
-    backgroundColor: '#ffffff'
-  },
-  noSelectedDv: { height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)', textAlign: 'center', gap: '8px' },
-  noSelectedIcon: { opacity: 0.4, marginBottom: '8px', color: 'var(--primary)' },
-  form: { height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' },
-  formSection: { borderBottom: '1px dashed var(--border-color)', paddingBottom: '16px' },
-  formSectionTitle: { fontSize: '13px', fontWeight: '700', color: 'var(--primary)', marginBottom: '12px' },
-  maInput: { height: '34px', fontSize: '13px', paddingLeft: '12px', textTransform: 'uppercase' },
-  formInputCommon: { height: '34px', fontSize: '13px', paddingLeft: '12px' },
-  checkboxGroup: { display: 'flex', alignItems: 'center', gap: '8px', marginTop: '10px' },
-  checkbox: { width: '16px', height: '16px', cursor: 'pointer' },
-  checkboxLabel: { fontSize: '13px', fontWeight: '600', color: 'var(--text-main)', cursor: 'pointer' },
-  formActionGroup: {
-    display: 'flex',
-    gap: '12px',
-    borderTop: '1px solid var(--border-color)',
-    paddingTop: '16px',
-    marginTop: '20px'
-  },
-  saveBtn: { flex: 1, height: '36px', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', padding: 0, margin: 0 },
-  cancelBtn: { flex: 1, height: '36px', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, margin: 0 }
-};
 
 export default DanhMucDichVu;

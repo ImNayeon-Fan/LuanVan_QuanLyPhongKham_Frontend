@@ -349,35 +349,43 @@ function LichPhongKham() {
   };
 
   return (
-    <div className="kb-wrapper" style={styles.wrapper}>
+    <div className="kb-wrapper h-screen overflow-hidden flex flex-col font-inherit">
       {/* Topbar điều hướng */}
-      <div className="kb-topbar" style={styles.topbar}>
-        <div style={styles.topbarLeft}>
-          <button className="kb-back-btn" onClick={() => navigate('/')} style={styles.backBtn}>
+      <div className="kb-topbar h-[50px] px-5 flex-shrink-0 font-inherit flex items-center justify-between">
+        <div className="flex-1 flex justify-start">
+          <button className="kb-back-btn py-[5px] px-[10px] font-inherit flex items-center gap-1" onClick={() => navigate('/')}>
             <ArrowLeft size={16} /> Quay về trang chủ
           </button>
         </div>
-        <div className="kb-topbar-title" style={styles.topbarTitle}>
-          <Calendar size={18} style={{ marginRight: '6px' }} />
+        <div className="kb-topbar-title flex-1 flex justify-center text-[15px] font-inherit items-center">
+          <Calendar size={18} className="mr-[6px]" />
           <strong>Quản Lý Lịch Hẹn & Lịch Làm Việc</strong>
         </div>
-        <div style={styles.topbarRight}>
+        <div className="flex-1 flex justify-end text-[12px] opacity-[0.85] font-inherit">
           <span>Trang chủ / Quản lý chung / Lịch hoạt động</span>
         </div>
       </div>
 
       {/* Tab Navigation header */}
-      <div style={styles.tabNavHeader}>
-        <div style={styles.tabGroup}>
+      <div className="flex border-b border-[var(--border-color)] bg-white px-5 h-[46px] items-center justify-between flex-shrink-0 font-inherit">
+        <div className="flex gap-2 h-full font-inherit">
           <button
             onClick={() => setActiveTab('appt')}
-            style={styles.getTabStyle(activeTab === 'appt')}
+            className={`px-5 border-none bg-none text-[14px] cursor-pointer h-full font-inherit transition-all duration-150 ease-in-out ${
+              activeTab === 'appt'
+                ? 'font-extrabold text-[var(--primary)] border-b-[3px] border-[var(--primary)]'
+                : 'font-medium text-[var(--text-muted)] border-b-0'
+            }`}
           >
             Lịch Đặt Khám Bệnh Nhân ({appointments.length})
           </button>
           <button
             onClick={() => setActiveTab('doctor')}
-            style={styles.getTabStyle(activeTab === 'doctor')}
+            className={`px-5 border-none bg-none text-[14px] cursor-pointer h-full font-inherit transition-all duration-150 ease-in-out ${
+              activeTab === 'doctor'
+                ? 'font-extrabold text-[var(--primary)] border-b-[3px] border-[var(--primary)]'
+                : 'font-medium text-[var(--text-muted)] border-b-0'
+            }`}
           >
             Lịch Làm Việc Bác Sĩ
           </button>
@@ -397,8 +405,7 @@ function LichPhongKham() {
               });
               setShowDocModal(true);
             }}
-            className="btn-primary"
-            style={styles.addDocBtn}
+            className="btn-primary h-8 text-[12px] px-3 flex items-center gap-1 m-0 w-auto mt-0 font-inherit"
           >
             <Plus size={14} /> Thêm Lịch Làm Việc
           </button>
@@ -406,38 +413,35 @@ function LichPhongKham() {
       </div>
 
       {/* Main Body Content */}
-      <div style={styles.mainBody}>
+      <div className="flex-1 bg-[var(--bg-main)] overflow-y-auto p-5 flex flex-col">
         
         {/* TAB 1: LỊCH ĐẶT KHÁM BỆNH NHÂN */}
         {activeTab === 'appt' && (
-          <div style={styles.tabApptContent}>
+          <div className="bg-white rounded-[10px] border border-[var(--border-color)] flex flex-col flex-1 overflow-hidden">
             {/* Thanh tìm kiếm & lọc */}
-            <div style={styles.filterBar}>
-              <div style={styles.searchContainer}>
+            <div className="py-3 px-4 flex gap-3 border-b border-[var(--border-color)] bg-[var(--bg-main)]">
+              <div className="flex-1 relative">
                 <input
                   type="text"
                   placeholder="Tìm kiếm bệnh nhân theo Tên hoặc Số điện thoại..."
                   value={apptFilters.search}
                   onChange={(e) => setApptFilters(prev => ({ ...prev, search: e.target.value }))}
-                  className="form-input"
-                  style={styles.searchInput}
+                  className="form-input pl-8 h-[34px] text-[13px] font-inherit"
                 />
-                <Search size={14} style={styles.searchIcon} />
+                <Search size={14} className="absolute left-2.5 top-2.5 text-[var(--text-muted)]" />
               </div>
-              <div style={styles.dateFilterContainer}>
+              <div className="w-[180px]">
                 <input
                   type="date"
                   value={apptFilters.date}
                   onChange={(e) => setApptFilters(prev => ({ ...prev, date: e.target.value }))}
-                  className="form-input"
-                  style={styles.dateInput}
+                  className="form-input h-[34px] text-[13px] font-inherit"
                 />
               </div>
               {(apptFilters.search || apptFilters.date) && (
                 <button 
                   onClick={() => setApptFilters({ search: '', date: '' })} 
-                  className="btn-outline" 
-                  style={styles.clearFilterBtn}
+                  className="btn-outline h-[34px] text-[12.5px] m-0 px-3 font-inherit"
                 >
                   Xóa bộ lọc
                 </button>
@@ -445,41 +449,44 @@ function LichPhongKham() {
             </div>
 
             {/* Bảng danh sách */}
-            <div style={styles.tableWrapper}>
+            <div className="flex-1 overflow-y-auto">
               {filteredAppts.length === 0 ? (
-                <div style={styles.noData}>
-                  <Calendar size={48} style={styles.noDataIcon} />
-                  <p style={styles.noDataText}>Không tìm thấy lịch hẹn khám bệnh nào phù hợp.</p>
+                <div className="p-10 text-center text-[var(--text-muted)]">
+                  <Calendar size={48} strokeWidth={1} className="text-[var(--border-color)] mb-3 mx-auto" />
+                  <p className="text-[14px]">Không tìm thấy lịch hẹn khám bệnh nào phù hợp.</p>
                 </div>
               ) : (
-                <table className="kb-table" style={styles.table}>
+                <table className="kb-table w-full border-collapse text-[13px]">
                   <thead>
-                    <tr style={styles.tableHeaderRow}>
-                      <th style={styles.thStt}>STT</th>
-                      <th style={styles.thMaDatLich}>Mã đặt lịch</th>
-                      <th style={styles.thHoTen}>Họ tên khách</th>
-                      <th style={styles.thSdt}>Số điện thoại</th>
-                      <th style={styles.thNgayHen}>Ngày hẹn khám</th>
-                      <th style={styles.thYeuCau}>Yêu cầu khám bệnh</th>
-                      <th style={styles.thTrangThai}>Trạng thái</th>
-                      <th style={styles.thThaoTac}>Thao tác</th>
+                    <tr className="bg-[var(--bg-main)] border-b-2 border-[var(--border-color)]">
+                      <th className="w-[50px] text-center p-2.5">STT</th>
+                      <th className="w-[140px] p-2.5 text-left">Mã đặt lịch</th>
+                      <th className="w-[160px] p-2.5 text-left">Họ tên khách</th>
+                      <th className="w-[110px] p-2.5 text-left">Số điện thoại</th>
+                      <th className="w-[110px] p-2.5 text-left">Ngày hẹn khám</th>
+                      <th className="p-2.5 text-left">Yêu cầu khám bệnh</th>
+                      <th className="w-[140px] p-2.5 text-center">Trạng thái</th>
+                      <th className="w-[150px] p-2.5 text-center">Thao tác</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredAppts.map((appt, i) => (
-                      <tr key={appt.maDatLich} style={styles.tableBodyRow}>
-                        <td style={styles.tdStt}>{i + 1}</td>
-                        <td style={styles.tdMaDatLich}>{appt.maDatLich}</td>
-                        <td style={styles.tdHoTen}>{appt.hoTenKhach}</td>
-                        <td style={styles.tdSdt}>{appt.sdt}</td>
-                        <td style={styles.tdNgayHen}>{appt.ngayHen}</td>
-                        <td style={styles.tdYeuCau}>{appt.yeuCauKham}</td>
-                        <td style={styles.tdTrangThai}>
+                      <tr key={appt.maDatLich} className="border-b border-[var(--border-color)]">
+                        <td className="text-center p-2.5">{i + 1}</td>
+                        <td className="p-2.5 font-semibold">{appt.maDatLich}</td>
+                        <td className="p-2.5 font-bold">{appt.hoTenKhach}</td>
+                        <td className="p-2.5">{appt.sdt}</td>
+                        <td className="p-2.5 font-semibold">{appt.ngayHen}</td>
+                        <td className="p-2.5 text-[var(--text-muted)]">{appt.yeuCauKham}</td>
+                        <td className="p-2.5 text-center">
                           <select
                             value={appt.trangThai}
                             onChange={(e) => handleUpdateStatus(appt.maDatLich, e.target.value)}
-                            className="form-input"
-                            style={styles.getStatusSelectStyle(appt.trangThai)}
+                            className={`form-input h-7 text-[12px] py-0.5 px-1 w-[120px] font-semibold font-inherit ${
+                              appt.trangThai === 'DaXacNhan' ? 'text-[#10b981]' :
+                              appt.trangThai === 'DaKham' ? 'text-[var(--primary)]' :
+                              appt.trangThai === 'DaHuy' ? 'text-[#ef4444]' : 'text-[#6b7280]'
+                            }`}
                           >
                             <option value="ChoXacNhan">Chờ xác nhận</option>
                             <option value="DaXacNhan">Đã xác nhận</option>
@@ -487,12 +494,13 @@ function LichPhongKham() {
                             <option value="DaHuy">Đã hủy</option>
                           </select>
                         </td>
-                        <td style={styles.tdThaoTac}>
+                        <td className="p-2.5 text-center">
                           <button
                             onClick={() => handleReceivePatient(appt)}
-                            className="btn-primary"
+                            className={`btn-primary h-7 text-[12px] px-2.5 m-0 w-auto mt-0 font-inherit inline-flex items-center gap-1 ${
+                              (appt.trangThai === 'DaHuy' || appt.trangThai === 'DaKham') ? 'opacity-50 cursor-not-allowed' : 'opacity-100 cursor-pointer'
+                            }`}
                             disabled={appt.trangThai === 'DaHuy' || appt.trangThai === 'DaKham'}
-                            style={styles.getReceiveBtnStyle(appt.trangThai === 'DaHuy' || appt.trangThai === 'DaKham')}
                           >
                             Tiếp nhận <ArrowRight size={12} />
                           </button>
@@ -510,58 +518,60 @@ function LichPhongKham() {
         {activeTab === 'doctor' && (
           <>
             {!hasLichBacSiAccess ? (
-              <div style={styles.restrictWrapper}>
-                <ShieldAlert size={64} style={styles.restrictIcon} />
-                <h3 style={styles.restrictTitle}>Giới Hạn Quyền Truy Cập</h3>
-                <p style={styles.restrictDesc}>
+              <div className="flex flex-col items-center justify-center py-20 px-5 bg-white rounded-[10px] border border-[var(--border-color)] text-center flex-1">
+                <ShieldAlert size={64} strokeWidth={1.2} className="text-[#ef4444] mb-5" />
+                <h3 className="text-[18px] font-extrabold text-[#ef4444] mb-2">Giới Hạn Quyền Truy Cập</h3>
+                <p className="max-w-[480px] text-[var(--text-muted)] text-[14px] leading-[1.6] mb-5">
                   Mục này chỉ dành cho <strong>Admin (Quản trị hệ thống)</strong> và <strong>Thư ký y khoa (Lễ tân)</strong> truy cập, sắp xếp và xem lịch làm việc của Bác sĩ. 
                   <br />
-                  Vai trò hiện tại của bạn là <span style={styles.roleBadge}>{userRole || 'Không xác định'}</span> không được phép thao tác.
+                  Vai trò hiện tại của bạn là <span className="text-red-600 font-semibold">{userRole || 'Không xác định'}</span> không được phép thao tác.
                 </p>
-                <button onClick={() => setActiveTab('appt')} className="btn-outline" style={styles.restrictBtn}>
+                <button onClick={() => setActiveTab('appt')} className="btn-outline mt-5 font-inherit">
                   Xem lịch đặt của bệnh nhân
                 </button>
               </div>
             ) : (
-              <div style={styles.tabApptContent}>
+              <div className="bg-white rounded-[10px] border border-[var(--border-color)] flex flex-col flex-1 overflow-hidden">
                 
                 {/* Thanh điều hướng Tuần & Ngày */}
-                <div style={styles.weekNav}>
-                  <div style={styles.weekNavBtnGroup}>
-                    <button onClick={handlePrevWeek} className="btn-outline" style={styles.weekNavBtn}>
+                <div className="py-3 px-4 flex items-center justify-between border-b border-[var(--border-color)] bg-[var(--bg-main)]">
+                  <div className="flex items-center gap-2">
+                    <button onClick={handlePrevWeek} className="btn-outline h-[34px] px-2.5 m-0 flex items-center justify-center font-inherit">
                       <ChevronLeft size={16} /> Tuần trước
                     </button>
-                    <button onClick={handleCurrentWeek} className="btn-outline" style={styles.weekNavBtnThis}>
+                    <button onClick={handleCurrentWeek} className="btn-outline h-[34px] px-3 m-0 flex items-center justify-center font-inherit">
                       Tuần này
                     </button>
-                    <button onClick={handleNextWeek} className="btn-outline" style={styles.weekNavBtn}>
+                    <button onClick={handleNextWeek} className="btn-outline h-[34px] px-2.5 m-0 flex items-center justify-center font-inherit">
                       Tuần sau <ChevronRight size={16} />
                     </button>
                   </div>
                   
-                  <div style={styles.weekTitle}>
+                  <div className="text-[14.5px] font-extrabold text-[var(--primary)]">
                     Từ {formatDateDMY(weekDays[0])} đến {formatDateDMY(weekDays[6])}
                   </div>
 
-                  <div style={styles.weekLegend}>
-                    <Calendar size={16} style={styles.weekLegendIcon} />
-                    <span style={styles.weekLegendText}>Lịch trực theo tuần</span>
+                  <div className="flex items-center gap-2 opacity-80">
+                    <Calendar size={16} className="text-[var(--text-muted)]" />
+                    <span className="text-[13px] font-medium">Lịch trực theo tuần</span>
                   </div>
                 </div>
 
                 {/* Bảng dạng cột từ Thứ 2 đến Chủ nhật */}
-                <div style={styles.tableWrapper}>
-                  <table style={styles.gridTable}>
+                <div className="flex-1 overflow-y-auto">
+                  <table className="w-full border-collapse table-fixed min-w-[1000px]">
                     <thead>
-                      <tr style={styles.tableHeaderRow}>
-                        <th style={styles.gridThDoctor}>Bác sĩ \ Thứ & Ngày</th>
+                      <tr className="bg-[var(--bg-main)] border-b-2 border-[var(--border-color)]">
+                        <th className="w-[200px] py-3 px-2.5 border-r border-[var(--border-color)] text-left text-[13px]">Bác sĩ \ Thứ & Ngày</th>
                         {weekDays.map((day, idx) => {
                           const dateStr = getISODateString(day);
                           const isToday = dateStr === new Date().toISOString().split('T')[0];
                           return (
-                            <th key={idx} style={styles.getGridThDayStyle(isToday)}>
-                              <div style={{ fontSize: '13px', fontWeight: '800' }}>{weekDaysNames[idx]}</div>
-                              <div style={{ fontSize: '11px', opacity: 0.8, marginTop: '2px' }}>{formatDateDMY(day).slice(0, 5)}</div>
+                            <th key={idx} className={`py-2.5 px-1.5 border-r border-[var(--border-color)] text-center ${
+                              isToday ? 'bg-[var(--primary-light)] text-[var(--primary)]' : 'bg-transparent text-[var(--text-main)]'
+                            }`}>
+                              <div className="text-[13px] font-extrabold">{weekDaysNames[idx]}</div>
+                              <div className="text-[11px] opacity-80 mt-0.5">{formatDateDMY(day).slice(0, 5)}</div>
                             </th>
                           );
                         })}
@@ -569,11 +579,11 @@ function LichPhongKham() {
                     </thead>
                     <tbody>
                       {doctorsList.map((doc) => (
-                        <tr key={doc.maNV} style={styles.tableBodyRow}>
-                          <td style={styles.gridTdDoctor}>
-                            <div style={styles.gridDocName}>{doc.hoTen}</div>
-                            <div style={styles.gridDocMajor}>{doc.chuyenMon || 'Bác sĩ trực'}</div>
-                            <div style={styles.gridDocId}>Mã: {doc.maNV}</div>
+                        <tr key={doc.maNV} className="border-b border-[var(--border-color)]">
+                          <td className="py-3 px-2.5 border-r border-[var(--border-color)] bg-[var(--bg-main)] font-semibold">
+                            <div className="text-[13.5px] font-extrabold text-[var(--text-main)]">{doc.hoTen}</div>
+                            <div className="text-[11.5px] text-[var(--text-muted)] mt-0.5">{doc.chuyenMon || 'Bác sĩ trực'}</div>
+                            <div className="text-[10px] text-[var(--primary)] mt-1 italic">Mã: {doc.maNV}</div>
                           </td>
 
                           {weekDays.map((day, dayIdx) => {
@@ -582,13 +592,18 @@ function LichPhongKham() {
                             const daySchedules = doctorSchedules.filter(s => s.maNV === doc.maNV && s.ngayLamViec === dateStr);
 
                             return (
-                              <td key={dayIdx} style={styles.getGridTdDayStyle(isToday)}>
-                                <div style={styles.schedContainer}>
+                              <td key={dayIdx} className={`py-2 px-1.5 border-r border-[var(--border-color)] align-top h-[110px] ${
+                                isToday ? 'bg-[rgba(14,165,233,0.03)]' : 'bg-transparent'
+                              }`}>
+                                <div className="flex flex-col gap-1.5 h-full">
                                   
                                   {daySchedules.map((sched) => (
-                                    <div key={sched.maLich} style={styles.getSchedItemStyle(sched.caLamViec)}>
-                                      <div style={styles.schedHeader}>
-                                        <span style={styles.schedCaText}>
+                                    <div key={sched.maLich} className={`p-[6px_8px] rounded-md text-[11.5px] font-semibold relative border flex flex-col gap-0.5 shadow-[0_1px_2px_rgba(0,0,0,0.03)] ${
+                                      sched.caLamViec === 'Sang' ? 'bg-[#e0f2fe] text-[#0369a1] border-[#bae6fd]' :
+                                      sched.caLamViec === 'Chieu' ? 'bg-[#fef3c7] text-[#b45309] border-[#fde68a]' : 'bg-[#dcfce7] text-[#15803d] border-[#bbf7d0]'
+                                    }`}>
+                                      <div className="flex justify-between items-center">
+                                        <span className="text-[11px] font-bold">
                                           {sched.caLamViec === 'Sang' ? 'Ca Sáng' : sched.caLamViec === 'Chieu' ? 'Ca Chiều' : 'Cả ngày'}
                                         </span>
                                         {hasLichBacSiAccess && (
@@ -597,24 +612,24 @@ function LichPhongKham() {
                                               e.stopPropagation();
                                               handleDeleteDoctorSchedule(sched.maLich, sched.tenBacSi);
                                             }}
-                                            style={styles.schedDeleteBtn}
+                                            className="border-none bg-none text-[#ef4444] cursor-pointer px-0.5 text-[11px] font-bold leading-none font-inherit"
                                             title="Xóa ca trực này"
                                           >
                                             ✕
                                           </button>
                                         )}
                                       </div>
-                                      <div style={styles.schedRoomInfo}>
+                                      <div className="text-[11px] flex items-center gap-0.5 text-inherit font-bold mt-0.5">
                                         <MapPin size={10} /> {sched.phongKham}
                                       </div>
                                       {sched.ghiChu && (
-                                        <div style={styles.schedNotes}>{sched.ghiChu}</div>
+                                        <div className="text-[10px] opacity-80 italic break-words mt-0.5 border-t border-dashed border-[rgba(0,0,0,0.05)] pt-0.5">{sched.ghiChu}</div>
                                       )}
                                     </div>
                                   ))}
 
                                   {daySchedules.length === 0 && !hasLichBacSiAccess && (
-                                    <div style={styles.schedEmptyPlaceholder}>-</div>
+                                    <div className="flex-1 flex items-center justify-center text-[#cbd5e1] text-[12px]">-</div>
                                   )}
 
                                   {hasLichBacSiAccess && (
@@ -625,7 +640,7 @@ function LichPhongKham() {
                                         });
                                         setShowDocModal(true);
                                       }}
-                                      style={styles.quickAddBtn}
+                                      className="w-full p-1 border border-dashed border-[var(--border-color)] rounded-[6px] bg-transparent text-[var(--text-muted)] text-[11px] cursor-pointer flex items-center justify-center gap-1 transition-all duration-200 ease-in-out mt-auto font-inherit"
                                     >
                                       <Plus size={10} /> Trực
                                     </button>
@@ -649,24 +664,23 @@ function LichPhongKham() {
 
       {/* MODAL THÊM LỊCH LÀM VIỆC BÁC SĨ */}
       {showDocModal && (
-        <div style={styles.modalOverlay}>
-          <div style={styles.modalContainer}>
-            <div style={styles.modalHeader}>
-              <h3 style={styles.modalHeaderTitle}>
-                <ShieldCheck size={18} style={{ color: 'var(--primary)' }} />
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[200] p-5">
+          <div className="bg-white rounded-[10px] w-full max-w-[460px] shadow-[0_20px_25px_-5px_rgba(0,0,0,0.1)] overflow-hidden">
+            <div className="flex items-center justify-between py-3.5 px-5 border-b border-[var(--border-color)] bg-[var(--bg-main)]">
+              <h3 className="text-[14.5px] font-extrabold m-0 flex items-center gap-1.5">
+                <ShieldCheck size={18} className="text-[var(--primary)]" />
                 Sắp Lịch Làm Việc Bác Sĩ
               </h3>
-              <button onClick={() => setShowDocModal(false)} style={styles.modalCloseBtn}>✕</button>
+              <button onClick={() => setShowDocModal(false)} className="bg-none border-none cursor-pointer text-[var(--text-muted)] text-[16px] font-inherit">✕</button>
             </div>
 
-            <form onSubmit={handleAddDoctorSchedule} style={styles.modalForm}>
+            <form onSubmit={handleAddDoctorSchedule} className="p-5 flex flex-col gap-3.5">
               <div className="form-group">
-                <label className="form-label" style={styles.modalLabel}>Chọn Bác sĩ</label>
+                <label className="form-label font-semibold mb-1.5 text-[13px]">Chọn Bác sĩ</label>
                 <select
                   value={docForm.maNV}
                   onChange={(e) => setDocForm(prev => ({ ...prev, maNV: e.target.value }))}
-                  className="form-input"
-                  style={styles.modalInput}
+                  className="form-input h-9 text-[13px] px-2.5 font-inherit"
                   required
                 >
                   {doctorsList.map(doc => (
@@ -678,24 +692,22 @@ function LichPhongKham() {
               </div>
 
               <div className="form-group">
-                <label className="form-label" style={styles.modalLabel}>Ngày làm việc</label>
+                <label className="form-label font-semibold mb-1.5 text-[13px]">Ngày làm việc</label>
                 <input
                   type="date"
                   value={docForm.ngayLamViec}
                   onChange={(e) => setDocForm(prev => ({ ...prev, ngayLamViec: e.target.value }))}
-                  className="form-input"
-                  style={styles.modalInput}
+                  className="form-input h-9 text-[13px] px-2.5 font-inherit"
                   required
                 />
               </div>
 
               <div className="form-group">
-                <label className="form-label" style={styles.modalLabel}>Ca làm việc</label>
+                <label className="form-label font-semibold mb-1.5 text-[13px]">Ca làm việc</label>
                 <select
                   value={docForm.caLamViec}
                   onChange={(e) => setDocForm(prev => ({ ...prev, caLamViec: e.target.value }))}
-                  className="form-input"
-                  style={styles.modalInput}
+                  className="form-input h-9 text-[13px] px-2.5 font-inherit"
                   required
                 >
                   <option value="Sang">Ca Sáng (08:00 - 12:00)</option>
@@ -705,35 +717,33 @@ function LichPhongKham() {
               </div>
 
               <div className="form-group">
-                <label className="form-label" style={styles.modalLabel}>Phòng trực / Phòng khám</label>
+                <label className="form-label font-semibold mb-1.5 text-[13px]">Phòng trực / Phòng khám</label>
                 <input
                   type="text"
                   placeholder="Ví dụ: Phòng 101, Phòng Nhi, Phòng Siêu âm..."
                   value={docForm.phongKham}
                   onChange={(e) => setDocForm(prev => ({ ...prev, phongKham: e.target.value }))}
-                  className="form-input"
-                  style={styles.modalInput}
+                  className="form-input h-9 text-[13px] px-2.5 font-inherit"
                   required
                 />
               </div>
 
               <div className="form-group">
-                <label className="form-label" style={styles.modalLabel}>Ghi chú công tác</label>
+                <label className="form-label font-semibold mb-1.5 text-[13px]">Ghi chú công tác</label>
                 <input
                   type="text"
                   placeholder="Ví dụ: Khám nội nhi, Hội chẩn..."
                   value={docForm.ghiChu}
                   onChange={(e) => setDocForm(prev => ({ ...prev, ghiChu: e.target.value }))}
-                  className="form-input"
-                  style={styles.modalInput}
+                  className="form-input h-9 text-[13px] px-2.5 font-inherit"
                 />
               </div>
 
-              <div style={styles.modalActionGroup}>
-                <button type="button" onClick={() => setShowDocModal(false)} className="btn-outline" style={styles.modalCancelBtn}>
+              <div className="flex gap-2.5 justify-end mt-2.5">
+                <button type="button" onClick={() => setShowDocModal(false)} className="btn-outline h-[34px] px-4 m-0 text-[13px] font-inherit">
                   Đóng lại
                 </button>
-                <button type="submit" className="btn-primary" style={styles.modalSubmitBtn}>
+                <button type="submit" className="btn-primary h-[34px] px-5 m-0 w-auto mt-0 text-[13px] font-inherit">
                   Lưu Lịch Làm Việc
                 </button>
               </div>
@@ -745,260 +755,4 @@ function LichPhongKham() {
   );
 }
 
-// Bảng cấu hình CSS inline tập trung cho trang LichPhongKham
-const styles = {
-  wrapper: { height: '100vh', overflow: 'hidden', display: 'flex', flexDirection: 'column', fontFamily: 'inherit' },
-  topbar: { height: '50px', padding: '0 20px', flexShrink: 0, fontFamily: 'inherit' },
-  topbarLeft: { flex: 1, display: 'flex', justifyContent: 'flex-start' },
-  backBtn: { padding: '5px 10px', fontFamily: 'inherit' },
-  topbarTitle: { flex: 1, display: 'flex', justifyContent: 'center', fontSize: '15px', fontFamily: 'inherit' },
-  topbarRight: { flex: 1, display: 'flex', justifyContent: 'flex-end', fontSize: '12px', opacity: 0.85, fontFamily: 'inherit' },
-  tabNavHeader: {
-    display: 'flex',
-    borderBottom: '1px solid var(--border-color)',
-    backgroundColor: '#ffffff',
-    padding: '0 20px',
-    height: '46px',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    flexShrink: 0,
-    fontFamily: 'inherit'
-  },
-  tabGroup: { display: 'flex', gap: '8px', height: '100%', fontFamily: 'inherit' },
-  getTabStyle: (isActive) => ({
-    padding: '0 20px',
-    border: 'none',
-    background: 'none',
-    fontSize: '14px',
-    fontWeight: isActive ? '800' : '500',
-    color: isActive ? 'var(--primary)' : 'var(--text-muted)',
-    borderBottom: isActive ? '3px solid var(--primary)' : 'none',
-    cursor: 'pointer',
-    height: '100%',
-    fontFamily: 'inherit',
-    transition: 'all 0.15s ease'
-  }),
-  addDocBtn: { 
-    height: '32px', 
-    fontSize: '12px', 
-    padding: '0 12px', 
-    display: 'flex', 
-    alignItems: 'center', 
-    gap: '4px', 
-    margin: 0, 
-    width: 'auto', 
-    marginTop: 0,
-    fontFamily: 'inherit'
-  },
-  mainBody: { flex: 1, backgroundColor: 'var(--bg-main)', overflowY: 'auto', padding: '20px', display: 'flex', flexDirection: 'column' },
-  tabApptContent: { backgroundColor: '#ffffff', borderRadius: '10px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden' },
-  filterBar: { padding: '12px 16px', display: 'flex', gap: '12px', borderBottom: '1px solid var(--border-color)', backgroundColor: 'var(--bg-main)' },
-  searchContainer: { flex: 1, position: 'relative' },
-  searchInput: { paddingLeft: '32px', height: '34px', fontSize: '13px', fontFamily: 'inherit' },
-  searchIcon: { position: 'absolute', left: '10px', top: '10px', color: 'var(--text-muted)' },
-  dateFilterContainer: { width: '180px' },
-  dateInput: { height: '34px', fontSize: '13px', fontFamily: 'inherit' },
-  clearFilterBtn: { height: '34px', fontSize: '12.5px', margin: 0, padding: '0 12px', fontFamily: 'inherit' },
-  tableWrapper: { flex: 1, overflowY: 'auto' },
-  table: { width: '100%', borderCollapse: 'collapse', fontSize: '13px' },
-  tableHeaderRow: { background: 'var(--bg-main)', borderBottom: '2px solid var(--border-color)' },
-  thStt: { width: '50px', textAlign: 'center', padding: '10px' },
-  thMaDatLich: { width: '140px', padding: '10px' },
-  thHoTen: { width: '160px', padding: '10px' },
-  thSdt: { width: '110px', padding: '10px' },
-  thNgayHen: { width: '110px', padding: '10px' },
-  thYeuCau: { padding: '10px' },
-  thTrangThai: { width: '140px', padding: '10px', textAlign: 'center' },
-  thThaoTac: { width: '150px', padding: '10px', textAlign: 'center' },
-  tableBodyRow: { borderBottom: '1px solid var(--border-color)' },
-  tdStt: { textAlign: 'center', padding: '10px' },
-  tdMaDatLich: { padding: '10px', fontWeight: '600' },
-  tdHoTen: { padding: '10px', fontWeight: '700' },
-  tdSdt: { padding: '10px' },
-  tdNgayHen: { padding: '10px', fontWeight: '600' },
-  tdYeuCau: { padding: '10px', color: 'var(--text-muted)' },
-  tdTrangThai: { padding: '10px', textAlign: 'center' },
-  tdThaoTac: { padding: '10px', textAlign: 'center' },
-  getStatusSelectStyle: (status) => ({
-    height: '28px',
-    fontSize: '12px',
-    padding: '2px 4px',
-    width: '120px',
-    fontWeight: '600',
-    fontFamily: 'inherit',
-    color: 
-      status === 'DaXacNhan' ? '#10b981' : 
-      status === 'DaKham' ? 'var(--primary)' : 
-      status === 'DaHuy' ? '#ef4444' : '#6b7280'
-  }),
-  getReceiveBtnStyle: (disabled) => ({
-    height: '28px',
-    fontSize: '12px',
-    padding: '0 10px',
-    margin: 0,
-    width: 'auto',
-    marginTop: 0,
-    fontFamily: 'inherit',
-    display: 'inline-flex',
-    alignItems: 'center',
-    gap: '4px',
-    opacity: disabled ? 0.5 : 1,
-    cursor: disabled ? 'not-allowed' : 'pointer'
-  }),
-  noData: { padding: '40px', textAlign: 'center', color: 'var(--text-muted)' },
-  noDataIcon: { strokeWidth: 1, color: 'var(--border-color)', marginBottom: '12px' },
-  noDataText: { fontSize: '14px' },
-  
-  // RESTRICT ACCESS STYLES
-  restrictWrapper: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '80px 20px',
-    backgroundColor: '#ffffff',
-    borderRadius: '10px',
-    border: '1px solid var(--border-color)',
-    textAlign: 'center',
-    flex: 1
-  },
-  restrictIcon: { color: '#ef4444', strokeWidth: 1.2, marginBottom: '20px' },
-  restrictTitle: { fontSize: '18px', fontWeight: '800', color: '#ef4444', marginBottom: '8px' },
-  restrictDesc: { maxWidth: '480px', color: 'var(--text-muted)', fontSize: '14px', lineHeight: '1.6' },
-  roleBadge: { color: 'red', fontWeight: '600' },
-  restrictBtn: { marginTop: '20px', fontFamily: 'inherit' },
-
-  // WEEKLY GRID STYLES
-  weekNav: {
-    padding: '12px 16px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderBottom: '1px solid var(--border-color)',
-    backgroundColor: 'var(--bg-main)'
-  },
-  weekNavBtnGroup: { display: 'flex', alignItems: 'center', gap: '8px' },
-  weekNavBtn: { height: '34px', padding: '0 10px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'inherit' },
-  weekNavBtnThis: { height: '34px', padding: '0 12px', margin: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'inherit' },
-  weekTitle: { fontSize: '14.5px', fontWeight: '800', color: 'var(--primary)' },
-  weekLegend: { display: 'flex', alignItems: 'center', gap: '8px', opacity: 0.8 },
-  weekLegendIcon: { color: 'var(--text-muted)' },
-  weekLegendText: { fontSize: '13px', fontWeight: '500' },
-  gridTable: { width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed', minWidth: '1000px' },
-  gridThDoctor: { width: '200px', padding: '12px 10px', borderRight: '1px solid var(--border-color)', textAlign: 'left', fontSize: '13px' },
-  getGridThDayStyle: (isToday) => ({
-    padding: '10px 6px',
-    borderRight: '1px solid var(--border-color)',
-    textAlign: 'center',
-    backgroundColor: isToday ? 'var(--primary-light)' : 'transparent',
-    color: isToday ? 'var(--primary)' : 'var(--text-main)'
-  }),
-  gridTdDoctor: {
-    padding: '12px 10px',
-    borderRight: '1px solid var(--border-color)',
-    backgroundColor: 'var(--bg-main)',
-    fontWeight: '600'
-  },
-  gridDocName: { fontSize: '13.5px', fontWeight: '800', color: 'var(--text-main)' },
-  gridDocMajor: { fontSize: '11.5px', color: 'var(--text-muted)', marginTop: '2px' },
-  gridDocId: { fontSize: '10px', color: 'var(--primary)', marginTop: '4px', fontStyle: 'italic' },
-  getGridTdDayStyle: (isToday) => ({
-    padding: '8px 6px',
-    borderRight: '1px solid var(--border-color)',
-    backgroundColor: isToday ? 'rgba(14, 165, 233, 0.03)' : 'transparent',
-    verticalAlign: 'top',
-    height: '110px'
-  }),
-  schedContainer: { display: 'flex', flexDirection: 'column', gap: '6px', height: '100%' },
-  getSchedItemStyle: (caLamViec) => {
-    const bg = caLamViec === 'Sang' ? '#e0f2fe' : caLamViec === 'Chieu' ? '#fef3c7' : '#dcfce7';
-    const color = caLamViec === 'Sang' ? '#0369a1' : caLamViec === 'Chieu' ? '#b45309' : '#15803d';
-    const border = caLamViec === 'Sang' ? '#bae6fd' : caLamViec === 'Chieu' ? '#fde68a' : '#bbf7d0';
-    return {
-      backgroundColor: bg,
-      color: color,
-      padding: '6px 8px',
-      borderRadius: '6px',
-      fontSize: '11.5px',
-      fontWeight: '600',
-      position: 'relative',
-      border: '1px solid ' + border,
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '2px',
-      boxShadow: '0 1px 2px rgba(0,0,0,0.03)'
-    };
-  },
-  schedHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-  schedCaText: { fontSize: '11px', fontWeight: 'bold' },
-  schedDeleteBtn: {
-    border: 'none',
-    background: 'none',
-    color: '#ef4444',
-    cursor: 'pointer',
-    padding: '0 2px',
-    fontSize: '11px',
-    fontWeight: 'bold',
-    lineHeight: 1,
-    fontFamily: 'inherit'
-  },
-  schedRoomInfo: { fontSize: '11px', display: 'flex', alignItems: 'center', gap: '2px', color: 'inherit', fontWeight: 'bold', marginTop: '2px' },
-  schedNotes: { fontSize: '10px', opacity: 0.8, fontStyle: 'italic', wordBreak: 'break-word', marginTop: '2px', borderTop: '1px dashed rgba(0,0,0,0.05)', paddingTop: '2px' },
-  schedEmptyPlaceholder: { flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#cbd5e1', fontSize: '12px' },
-  quickAddBtn: {
-    width: '100%',
-    padding: '4px',
-    border: '1px dashed var(--border-color)',
-    borderRadius: '6px',
-    backgroundColor: 'transparent',
-    color: 'var(--text-muted)',
-    fontSize: '11px',
-    cursor: 'pointer',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '4px',
-    transition: 'all 0.2s ease',
-    marginTop: 'auto',
-    fontFamily: 'inherit'
-  },
-
-  // MODAL FORM STYLES
-  modalOverlay: {
-    position: 'fixed',
-    top: 0, left: 0, right: 0, bottom: 0,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 200,
-    padding: '20px'
-  },
-  modalContainer: {
-    backgroundColor: '#ffffff',
-    borderRadius: '10px',
-    width: '100%',
-    maxWidth: '460px',
-    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
-    overflow: 'hidden'
-  },
-  modalHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: '14px 20px',
-    borderBottom: '1px solid var(--border-color)',
-    backgroundColor: 'var(--bg-main)'
-  },
-  modalHeaderTitle: { fontSize: '14.5px', fontWeight: '800', margin: 0, display: 'flex', alignItems: 'center', gap: '6px' },
-  modalCloseBtn: { background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '16px', fontFamily: 'inherit' },
-  modalForm: { padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px' },
-  modalLabel: { fontWeight: '600', marginBottom: '6px', fontSize: '13px' },
-  modalInput: { height: '36px', fontSize: '13px', padding: '0 10px', fontFamily: 'inherit' },
-  modalActionGroup: { display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '10px' },
-  modalCancelBtn: { height: '34px', padding: '0 16px', margin: 0, fontSize: '13px', fontFamily: 'inherit' },
-  modalSubmitBtn: { height: '34px', padding: '0 20px', margin: 0, width: 'auto', marginTop: 0, fontSize: '13px', fontFamily: 'inherit' }
-};
-
 export default LichPhongKham;
-

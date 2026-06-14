@@ -94,17 +94,28 @@ export const apiLogout = async () => {
   } // Hoàn tất quy trình đăng xuất để chuyển hướng người dùng về màn hình đăng nhập
 };
 
-// API Đổi mật khẩu giả lập
-export const apiChangePassword = async (oldPassword, newPassword, confirmPassword) => {
-  await new Promise(resolve => setTimeout(resolve, 200)); // Giả lập độ trễ mạng để tạo cảm giác thực tế cho người dùng
-  return { message: 'Đổi mật khẩu thành công!' }; // Trả về thông báo thành công giả lập
+// API Đổi mật khẩu kết nối với Backend thực tế qua SQL Server (yêu cầu xác thực JWT)
+export const apiChangePassword = async (matKhauCu, matKhauMoi, nhapLaiMatKhauMoi) => {
+  return await apiFetch('/NhanSu/DoiMatKhau', {
+    method: 'PUT',
+    body: JSON.stringify({ 
+      matKhauCu: matKhauCu.trim(), 
+      matKhauMoi: matKhauMoi.trim(), 
+      nhapLaiMatKhauMoi: nhapLaiMatKhauMoi.trim() 
+    })
+  });
 };
 
 // API Quên mật khẩu / Đổi mật khẩu kết nối với Backend thực tế qua SQL Server
-export const apiResetPassword = async (email, sdt, newPassword) => {
+export const apiResetPassword = async (email, soDienThoai, matKhauMoi, nhapLaiMatKhauMoi) => {
   return await apiFetch('/xacthuc/QuenMatKhau', {
     method: 'POST',
-    body: JSON.stringify({ email: email.trim(), sdt: sdt.trim(), newPassword: newPassword.trim() })
+    body: JSON.stringify({ 
+      email: email.trim(), 
+      soDienThoai: soDienThoai.trim(), 
+      matKhauMoi: matKhauMoi.trim(), 
+      nhapLaiMatKhauMoi: nhapLaiMatKhauMoi.trim() 
+    })
   });
 };
 

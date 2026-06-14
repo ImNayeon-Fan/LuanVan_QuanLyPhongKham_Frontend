@@ -114,6 +114,9 @@ function Home() {
       setNewPassword('');
       setConfirmPassword('');
       setShowPasswordModal(false);
+      
+      // Buộc người dùng đăng nhập lại vì token cũ đã bị vô hiệu hóa ở BE
+      handleLogout();
     } catch (err) {
       showError(err.message || 'Có lỗi xảy ra khi đổi mật khẩu.');
     }

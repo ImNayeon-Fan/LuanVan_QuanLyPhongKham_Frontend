@@ -158,15 +158,15 @@ function DanhMucDichVu() {
         {/* CỘT TRÁI: Bảng danh sách dịch vụ */}
         <div className="flex-[1.3] flex flex-col border-r border-[var(--border-color)] h-full bg-white">
           <div className="flex justify-between items-center py-3 px-[18px] bg-[var(--bg-main)] border-b border-[var(--border-color)]">
-            <div className="flex items-center gap-[6px]">
-              <Activity size={16} className="text-[var(--primary)]" />
-              <h3 className="text-[14.5px] font-[750] text-[var(--text-main)]">
+            <div className="flex items-center gap-[6px] shrink-0">
+              <Activity size={16} className="text-[var(--primary)] shrink-0" />
+              <h3 className="text-[14.5px] font-[750] text-[var(--text-main)] whitespace-nowrap">
                 DANH SÁCH KỸ THUẬT & DỊCH VỤ CẬN LÂM SÀNG
               </h3>
             </div>
             <button 
               onClick={handleAddNewDv}
-              className="btn-primary h-8 text-[12.5px] px-3 flex items-center gap-1"
+              className="btn-primary h-8 text-[12.5px] px-3 flex items-center gap-1 !w-auto !mt-0 shrink-0"
             >
               <Plus size={14} /> Thêm danh mục
             </button>

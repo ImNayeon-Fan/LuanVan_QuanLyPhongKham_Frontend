@@ -150,15 +150,15 @@ function DanhMucICD() {
         {/* CỘT TRÁI: Bảng danh sách ICD */}
         <div className="flex-[1.3] flex flex-col border-r border-[var(--border-color)] h-full bg-white">
           <div className="flex justify-between items-center py-3 px-[18px] bg-[var(--bg-main)] border-b border-[var(--border-color)]">
-            <div className="flex items-center gap-[6px]">
-              <ListCollapse size={16} className="text-[var(--primary)]" />
-              <h3 className="text-[14.5px] font-[750] text-[var(--text-main)]">
+            <div className="flex items-center gap-[6px] shrink-0">
+              <ListCollapse size={16} className="text-[var(--primary)] shrink-0" />
+              <h3 className="text-[14.5px] font-[750] text-[var(--text-main)] whitespace-nowrap">
                 DANH SÁCH MÃ CHẨN ĐOÁN & TÊN BỆNH
               </h3>
             </div>
             <button 
               onClick={handleAddNewIcd}
-              className="btn-primary h-7 text-[12px] px-2.5 flex items-center gap-1 w-auto"
+              className="btn-primary h-7 text-[12px] px-2.5 flex items-center gap-1 !w-auto !mt-0 shrink-0"
             >
               <Plus size={12} /> Thêm danh mục
             </button>
@@ -180,7 +180,7 @@ function DanhMucICD() {
                     <input 
                       type="text" 
                       placeholder="Lọc mã..." 
-                      className="form-input h-[26px] text-[12px] py-0.5 px-1.5"
+                      className="form-input h-[26px] text-[12px] !py-0.5 !pl-2 !pr-2"
                       value={icdFilters.maICD}
                       onChange={e => handleIcdFilterChange('maICD', e.target.value)}
                     />
@@ -189,7 +189,7 @@ function DanhMucICD() {
                     <input 
                       type="text" 
                       placeholder="Lọc tên bệnh..." 
-                      className="form-input h-[26px] text-[12px] py-0.5 px-1.5"
+                      className="form-input h-[26px] text-[12px] !py-0.5 !pl-2 !pr-2"
                       value={icdFilters.tenBenh}
                       onChange={e => handleIcdFilterChange('tenBenh', e.target.value)}
                     />

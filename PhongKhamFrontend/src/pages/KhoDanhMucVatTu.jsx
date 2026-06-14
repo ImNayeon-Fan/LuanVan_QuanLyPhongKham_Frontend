@@ -202,15 +202,15 @@ function KhoDanhMucVatTu() {
         <div className="flex-[1.2] flex flex-col border-r border-[var(--border-color)] h-full bg-white">
           {/* Tiêu đề & nút Thêm mới */}
           <div className="flex justify-between items-center py-3 px-4 border-b border-[var(--border-color)] bg-[var(--bg-main)]">
-            <div className="flex items-center gap-[6px]">
-              <ClipboardList size={16} className="text-[var(--primary)]" />
-              <h3 className="text-[14.5px] font-[750] text-[var(--text-main)]">
+            <div className="flex items-center gap-[6px] shrink-0">
+              <ClipboardList size={16} className="text-[var(--primary)] shrink-0" />
+              <h3 className="text-[14.5px] font-[750] text-[var(--text-main)] whitespace-nowrap">
                 Danh mục vật tư tiêu hao hiện có
               </h3>
             </div>
             <button 
               onClick={handleAddNew}
-              className="btn-primary h-8 text-[12.5px] px-3 flex items-center gap-1"
+              className="btn-primary h-8 text-[12.5px] px-3 flex items-center gap-1 !w-auto !mt-0 shrink-0"
             >
               <Plus size={14} /> Thêm vật tư mới
             </button>

@@ -43,7 +43,7 @@ function Login() {
       return;
     }
     try {
-      const response = await apiResetPassword(resetEmail.trim(), resetSdt.trim(), resetNewPassword.trim());
+      const response = await apiResetPassword(resetEmail.trim(), resetSdt.trim(), resetNewPassword.trim(), resetConfirmPassword.trim());
       showSuccess(response.message || "Đổi mật khẩu thành công!");
       closeResetModal();
     } catch (err) {

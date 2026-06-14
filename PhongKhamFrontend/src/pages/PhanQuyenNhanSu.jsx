@@ -77,7 +77,7 @@ function PhanQuyenNhanSu() {
 
   // State lưu trữ bộ lọc tìm kiếm trên danh sách
   const [filters, setFilters] = useState({
-    maNV: '', username: '', hoTen: '', roleName: ''
+    maNV: '', email: '', hoTen: '', roleName: ''
   });
 
   // Quản lý phân trang danh sách nhân sự
@@ -156,7 +156,7 @@ function PhanQuyenNhanSu() {
     const normalizedRoleName = ROLE_ID_TO_NAME[item.roleID] || item.roleName || '';
     return (
       (item.maNV || '').toLowerCase().includes(filters.maNV.toLowerCase()) &&
-      (item.username || '').toLowerCase().includes(filters.username.toLowerCase()) &&
+      (item.email || '').toLowerCase().includes(filters.email.toLowerCase()) &&
       (item.hoTen || '').toLowerCase().includes(filters.hoTen.toLowerCase()) &&
       normalizedRoleName.toLowerCase().includes(filters.roleName.toLowerCase())
     );
@@ -222,8 +222,13 @@ function PhanQuyenNhanSu() {
       showToast('Số điện thoại không đúng định dạng (phải gồm đúng 10 chữ số và bắt đầu bằng số 0)!', 'error');
       return;
     }
-    if (!formData.username.trim()) {
-      showToast('Vui lòng nhập Tên đăng nhập tài khoản!', 'error');
+    if (!formData.email || !formData.email.trim()) {
+      showToast('Vui lòng nhập Địa chỉ Email làm tên đăng nhập tài khoản!', 'error');
+      return;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email.trim())) {
+      showToast('Địa chỉ Email không đúng định dạng!', 'error');
       return;
     }
 
@@ -239,9 +244,9 @@ function PhanQuyenNhanSu() {
         const payload = {
           hoTen: formData.hoTen.trim(),
           sdt: formData.sdt.trim(),
-          email: formData.email?.trim() || null,
+          email: formData.email.trim(),
           chuyenMon: formData.chuyenMon?.trim() || null,
-          username: formData.username.trim(),
+          username: formData.email.trim(),
           password: formData.passwordHash ? formData.passwordHash : null,
           roleID: mappedRoleID,
           isActive: formData.isActive
@@ -253,9 +258,9 @@ function PhanQuyenNhanSu() {
           maNV: formData.maNV.trim(),
           hoTen: formData.hoTen.trim(),
           sdt: formData.sdt.trim(),
-          email: formData.email?.trim() || null,
+          email: formData.email.trim(),
           chuyenMon: formData.chuyenMon?.trim() || null,
-          username: formData.username.trim(),
+          username: formData.email.trim(),
           password: formData.passwordHash,
           roleID: mappedRoleID,
           isActive: formData.isActive
@@ -390,7 +395,7 @@ function PhanQuyenNhanSu() {
             </div>
             <div>
               <button onClick={handleAddNew} className="btn-primary h-8 text-[12.5px] px-3 flex items-center gap-1">
-                <Plus size={14} /> Thêm mới [F1]
+                <Plus size={14} /> Thêm mới
               </button>
             </div>
           </div>
@@ -402,7 +407,7 @@ function PhanQuyenNhanSu() {
                 <tr className="sticky top-0 z-10 bg-[var(--bg-main)] border-b-2 border-[var(--border-color)]">
                   <th className="w-[45px] text-center p-2">STT</th>
                   <th className="w-[100px] p-2">Mã NV</th>
-                  <th className="w-[120px] p-2">Tên đăng nhập</th>
+                  <th className="w-[160px] p-2">Email</th>
                   <th className="w-[160px] p-2">Họ tên</th>
                   <th className="w-[120px] p-2">Vai trò</th>
                   <th className="w-[120px] p-2 text-center">Trạng thái</th>
@@ -419,7 +424,7 @@ function PhanQuyenNhanSu() {
                   <td className="p-1">
                     <input
                       type="text" placeholder="Lọc..." className="form-input h-[26px] text-xs py-0.5 px-1.5"
-                      value={filters.username} onChange={e => handleFilterChange('username', e.target.value)}
+                      value={filters.email} onChange={e => handleFilterChange('email', e.target.value)}
                     />
                   </td>
                   <td className="p-1">
@@ -430,7 +435,7 @@ function PhanQuyenNhanSu() {
                   </td>
                   <td className="p-1">
                     <select
-                      className="form-input h-[26px] text-xs px-1"
+                      className="form-input h-[26px] text-xs py-0 px-1"
                       value={filters.roleName} onChange={e => handleFilterChange('roleName', e.target.value)}
                     >
                       <option value="">Tất cả</option>
@@ -443,7 +448,7 @@ function PhanQuyenNhanSu() {
                   </td>
                   <td className="p-1">
                     <select
-                      className="form-input h-[26px] text-xs px-0.5 font-semibold"
+                      className="form-input h-[26px] text-xs py-0 px-0.5 font-semibold"
                       value={activeStatusFilter}
                       onChange={e => {
                         setActiveStatusFilter(e.target.value);
@@ -475,7 +480,7 @@ function PhanQuyenNhanSu() {
                       <td className={`font-semibold py-2.5 px-2 ${isSelected ? 'text-[var(--primary-hover)]' : 'text-[var(--text-main)]'}`}>
                         {staff.maNV}
                       </td>
-                      <td className="py-2.5 px-2">{staff.username || '—'}</td>
+                      <td className="py-2.5 px-2 font-medium text-slate-600">{staff.email || '—'}</td>
                       <td className="font-semibold py-2.5 px-2">{staff.hoTen}</td>
                       <td className="py-2.5 px-2 font-semibold">
                         <span className={`text-[11.5px] py-0.5 px-2 rounded-[10px] ${
@@ -517,8 +522,10 @@ function PhanQuyenNhanSu() {
               <button
                 disabled={activePage === 1}
                 onClick={() => setCurrentPage(activePage - 1)}
-                className={`btn-outline h-6 w-6 p-0 flex items-center justify-center ${
-                  activePage === 1 ? 'cursor-not-allowed' : 'cursor-pointer'
+                className={`h-6 w-6 rounded border border-[#0ea5e9] flex items-center justify-center text-[11px] font-bold transition-all ${
+                  activePage === 1
+                    ? 'opacity-40 cursor-not-allowed text-[#0ea5e9] bg-transparent'
+                    : 'text-[#0ea5e9] bg-transparent hover:bg-[#e0f2fe] cursor-pointer'
                 }`}
               >
                 &lt;
@@ -527,7 +534,11 @@ function PhanQuyenNhanSu() {
                 <button
                   key={p}
                   onClick={() => setCurrentPage(p)}
-                  className={`${p === activePage ? "btn-primary" : "btn-outline"} h-6 w-6 p-0 flex items-center justify-center text-[11px] font-bold cursor-pointer`}
+                  className={`h-6 w-6 rounded border flex items-center justify-center text-[11px] font-bold transition-all cursor-pointer ${
+                    p === activePage
+                      ? "bg-[#0ea5e9] text-white border-[#0ea5e9]"
+                      : "bg-transparent text-[#0ea5e9] border-[#0ea5e9] hover:bg-[#e0f2fe]"
+                  }`}
                 >
                   {p}
                 </button>
@@ -535,8 +546,10 @@ function PhanQuyenNhanSu() {
               <button
                 disabled={activePage === totalPages}
                 onClick={() => setCurrentPage(activePage + 1)}
-                className={`btn-outline h-6 w-6 p-0 flex items-center justify-center ${
-                  activePage === totalPages ? 'cursor-not-allowed' : 'cursor-pointer'
+                className={`h-6 w-6 rounded border border-[#0ea5e9] flex items-center justify-center text-[11px] font-bold transition-all ${
+                  activePage === totalPages
+                    ? 'opacity-40 cursor-not-allowed text-[#0ea5e9] bg-transparent'
+                    : 'text-[#0ea5e9] bg-transparent hover:bg-[#e0f2fe] cursor-pointer'
                 }`}
               >
                 &gt;
@@ -553,29 +566,29 @@ function PhanQuyenNhanSu() {
             <span>THÔNG TIN NHÂN SỰ & TÀI KHOẢN</span>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-5 bg-white">
+          <div className="flex-1 overflow-y-auto p-3.5 bg-white">
             {selectedStaff === null ? (
               <div className="h-full flex flex-col items-center justify-center text-[var(--text-muted)] text-center gap-3">
                 <User size={48} className="opacity-25 text-[var(--primary)]" />
-                <div>
+                 <div>
                   <h4 className="font-semibold text-[var(--text-main)]">Chưa chọn nhân sự</h4>
-                  <p className="text-[13px] mt-1">Chọn một nhân viên bên bảng danh mục hoặc bấm "Thêm mới [F1]" để quản trị tài khoản hệ thống.</p>
+                  <p className="text-[13px] mt-1">Chọn một nhân viên bên bảng danh mục hoặc bấm "Thêm mới" để quản trị tài khoản hệ thống.</p>
                 </div>
               </div>
             ) : (
               <form onSubmit={handleSave} className="h-full flex flex-col justify-between">
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-3">
 
                   {/* Nhóm 1: Thông tin nhân viên */}
-                  <div className="border-b border-dashed border-[var(--border-color)] pb-4">
-                    <h4 className="text-[13px] font-bold text-[var(--primary)] mb-3 flex items-center gap-1.5">
+                  <div className="border-b border-dashed border-[var(--border-color)] pb-2.5">
+                    <h4 className="text-[13px] font-bold text-[var(--primary)] mb-2 flex items-center gap-1.5">
                       <User size={14} /> THÔNG TIN HỒ SƠ NHÂN VIÊN
                     </h4>
-                    <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                    <div className="grid grid-cols-2 gap-x-4 gap-y-2.5">
                       <div className="form-group m-0">
                         <label className="form-label text-[12.5px]">Mã nhân viên <span className="text-red-500">*</span></label>
                         <input
-                          type="text" className="form-input h-[34px] text-[13px]" placeholder="VD: NV001, BS001" value={formData.maNV}
+                          type="text" className="form-input h-[34px] text-[13px] pl-3" placeholder="VD: NV001, BS001" value={formData.maNV}
                           onChange={e => setFormData({ ...formData, maNV: e.target.value })} required
                           disabled={staffList.some(s => s.maNV === selectedStaff.maNV && selectedStaff.username !== '')}
                         />
@@ -584,7 +597,7 @@ function PhanQuyenNhanSu() {
                       <div className="form-group m-0">
                         <label className="form-label text-[12.5px]">Họ và tên <span className="text-red-500">*</span></label>
                         <input
-                          type="text" className="form-input h-[34px] text-[13px]" placeholder="Họ và tên" value={formData.hoTen}
+                          type="text" className="form-input h-[34px] text-[13px] pl-3" placeholder="Họ và tên" value={formData.hoTen}
                           onChange={e => setFormData({ ...formData, hoTen: e.target.value })} required
                         />
                       </div>
@@ -592,7 +605,7 @@ function PhanQuyenNhanSu() {
                       <div className="form-group m-0">
                         <label className="form-label text-[12.5px]">Số điện thoại <span className="text-red-500">*</span></label>
                         <input
-                          type="text" className="form-input h-[34px] text-[13px]" placeholder="Số điện thoại" value={formData.sdt}
+                          type="text" className="form-input h-[34px] text-[13px] pl-3" placeholder="Số điện thoại" value={formData.sdt}
                           onChange={e => setFormData({ ...formData, sdt: e.target.value })} required
                         />
                       </div>
@@ -600,7 +613,8 @@ function PhanQuyenNhanSu() {
                       <div className="form-group m-0">
                         <label className="form-label text-[12.5px]">Khoa (Chuyên môn)</label>
                         <select
-                          className="form-input h-[34px] text-[13px] px-2" value={formData.chuyenMon || ''}
+                          className="w-full h-[34px] px-2.5 py-0 text-[13px] bg-white border border-slate-200 rounded-md outline-none focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)]/20 transition-all"
+                          value={formData.chuyenMon || ''}
                           onChange={e => setFormData({ ...formData, chuyenMon: e.target.value })}
                         >
                           <option value="">— Chọn khoa / chuyên môn —</option>
@@ -611,10 +625,10 @@ function PhanQuyenNhanSu() {
                       </div>
 
                       <div className="form-group m-0 col-span-2">
-                        <label className="form-label text-[12.5px]">Địa chỉ Email</label>
+                        <label className="form-label text-[12.5px]">Địa chỉ Email <span className="text-red-500">*</span></label>
                         <input
-                          type="email" className="form-input h-[34px] text-[13px]" placeholder="Email liên lạc" value={formData.email || ''}
-                          onChange={e => setFormData({ ...formData, email: e.target.value })}
+                          type="email" className="form-input h-[34px] text-[13px] pl-3" placeholder="Email liên lạc (Tên đăng nhập)" value={formData.email || ''}
+                          onChange={e => setFormData({ ...formData, email: e.target.value, username: e.target.value })} required
                         />
                       </div>
                     </div>
@@ -626,13 +640,6 @@ function PhanQuyenNhanSu() {
                       <Key size={14} /> TÀI KHOẢN HỆ THỐNG & PHÂN QUYỀN
                     </h4>
                     <div className="grid grid-cols-2 gap-x-4 gap-y-3">
-                      <div className="form-group m-0">
-                        <label className="form-label text-[12.5px]">Tên đăng nhập <span className="text-red-500">*</span></label>
-                        <input
-                          type="text" className="form-input h-[34px] text-[13px]" placeholder="Tên đăng nhập" value={formData.username}
-                          onChange={e => setFormData({ ...formData, username: e.target.value })} required
-                        />
-                      </div>
 
                       <div className="form-group m-0">
                         <label className="form-label text-[12.5px]">
@@ -640,7 +647,7 @@ function PhanQuyenNhanSu() {
                         </label>
                         <div className="flex gap-2">
                           <input
-                            type="password" className="form-input h-[34px] text-[13px] flex-1" placeholder={isEdit ? "Bỏ trống nếu giữ nguyên" : "Nhập mật khẩu"}
+                            type="password" className="form-input h-[34px] text-[13px] pl-3 flex-1" placeholder={isEdit ? "Bỏ trống nếu giữ nguyên" : "Nhập mật khẩu"}
                             value={formData.passwordHash} onChange={e => setFormData({ ...formData, passwordHash: e.target.value })}
                             required={!isEdit}
                           />
@@ -656,7 +663,8 @@ function PhanQuyenNhanSu() {
                       <div className="form-group m-0">
                         <label className="form-label text-[12.5px]">Vai trò <span className="text-red-500">*</span></label>
                         <select
-                          className="form-input h-[34px] text-[13px] px-2" value={formData.roleName}
+                          className="w-full h-[34px] px-2.5 py-0 text-[13px] bg-white border border-slate-200 rounded-md outline-none focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)]/20 transition-all"
+                          value={formData.roleName}
                           onChange={e => setFormData({ ...formData, roleName: e.target.value })} required
                         >
                           {ROLE_OPTIONS.map(opt => (
@@ -668,7 +676,8 @@ function PhanQuyenNhanSu() {
                       <div className="form-group m-0">
                         <label className="form-label text-[12.5px]">Trạng thái tài khoản <span className="text-red-500">*</span></label>
                         <select
-                          className="form-input h-[34px] text-[13px] px-2" value={formData.isActive ? 'true' : 'false'}
+                          className="w-full h-[34px] px-2.5 py-0 text-[13px] bg-white border border-slate-200 rounded-md outline-none focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)]/20 transition-all"
+                          value={formData.isActive ? 'true' : 'false'}
                           onChange={e => setFormData({ ...formData, isActive: e.target.value === 'true' })} required
                         >
                           <option value="true">Cho phép hoạt động (Active)</option>
@@ -680,9 +689,9 @@ function PhanQuyenNhanSu() {
                 </div>
 
                 {/* Bottom Action buttons */}
-                <div className="flex justify-end gap-2.5 border-t border-[var(--border-color)] pt-4 mt-8">
-                  <button type="button" className="btn-outline w-[100px] h-9 flex items-center justify-center p-0 m-0" onClick={handleCancel}>Hủy</button>
-                  <button type="submit" className="btn-primary w-[120px] h-9 flex items-center justify-center gap-1.5 p-0 m-0"><Save size={16} /> Lưu [F4]</button>
+                <div className="flex justify-end gap-2.5 border-t border-[var(--border-color)] pt-2 mt-4">
+                  <button type="button" className="btn-outline w-[100px] h-[34px] flex items-center justify-center p-0 m-0" onClick={handleCancel}>Hủy</button>
+                  <button type="submit" className="btn-primary w-[120px] h-[34px] flex items-center justify-center gap-1.5 p-0 m-0"><Save size={16} /> Lưu [F4]</button>
                 </div>
               </form>
             )}

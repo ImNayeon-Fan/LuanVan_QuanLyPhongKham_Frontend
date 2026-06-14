@@ -1,30 +1,66 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Lock, LogIn, KeyRound } from 'lucide-react';
-import { apiLogin, apiChangePassword, setSession } from '../utils/api';
+import { Mail, Lock, LogIn, KeyRound, X, Phone } from 'lucide-react';
+import { apiLogin, apiChangePassword, apiResetPassword, setSession } from '../utils/api';
 import { useToast } from '../utils/ToastContext';
 
 function Login() {
   const [viewMode, setViewMode] = useState('login'); // 'login', 'forceChange'
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [tempUser, setTempUser] = useState(null);
   
+  // Các state quản lý việc mở modal đổi mật khẩu
+  const [showResetModal, setShowResetModal] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
+  const [resetSdt, setResetSdt] = useState('');
+  const [resetNewPassword, setResetNewPassword] = useState('');
+  const [resetConfirmPassword, setResetConfirmPassword] = useState('');
+  
   const navigate = useNavigate();
   const { showSuccess, showError, showWarning } = useToast();
+
+  // Đóng modal và reset tất cả trường nhập liệu
+  const closeResetModal = () => {
+    setShowResetModal(false);
+    setResetEmail('');
+    setResetSdt('');
+    setResetNewPassword('');
+    setResetConfirmPassword('');
+  };
+
+  // Xử lý yêu cầu đổi mật khẩu (Quên mật khẩu)
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    if (!resetEmail.trim() || !resetSdt.trim() || !resetNewPassword.trim() || !resetConfirmPassword.trim()) {
+      showError("Vui lòng điền đầy đủ các thông tin yêu cầu!");
+      return;
+    }
+    if (resetNewPassword !== resetConfirmPassword) {
+      showError("Mật khẩu mới và xác nhận mật khẩu không trùng khớp!");
+      return;
+    }
+    try {
+      const response = await apiResetPassword(resetEmail.trim(), resetSdt.trim(), resetNewPassword.trim());
+      showSuccess(response.message || "Đổi mật khẩu thành công!");
+      closeResetModal();
+    } catch (err) {
+      showError(err.message || "Tài khoản hoặc số điện thoại không tồn tại!");
+    }
+  };
 
   // Xử lý đăng nhập thông thường
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await apiLogin(username.trim(), password);
+      const response = await apiLogin(email.trim(), password);
       
       // Nếu mật khẩu đăng nhập là mật khẩu mặc định "STUCaoLo"
       if (password === 'STUCaoLo') {
         setTempUser({
-          username: username.trim(),
+          username: email.trim(),
           hoTen: response.hoTen,
           roleName: response.roleName,
           token: response.token
@@ -36,10 +72,10 @@ function Login() {
 
       // Lưu phiên đăng nhập chính thức
       setSession(response.token, response);
-      showSuccess(`Đăng nhập thành công! Chào mừng ${response.hoTen || username.trim()} quay trở lại.`);
+      showSuccess(`Đăng nhập thành công! Chào mừng ${response.hoTen || email.trim()} quay trở lại.`);
       navigate('/');
     } catch (err) {
-      showError(err.message || "Tên đăng nhập hoặc mật khẩu không chính xác!");
+      showError(err.message || "Email hoặc mật khẩu không chính xác!");
     }
   };
 
@@ -167,20 +203,20 @@ function Login() {
             <>
               <div className="auth-header">
                 <h1>Đăng nhập</h1>
-                <p>Nhập tài khoản để truy cập hệ thống</p>
+                <p>Nhập địa chỉ Email để truy cập hệ thống</p>
               </div>
 
               <form onSubmit={handleLogin}>
                 <div className="form-group">
-                  <label className="form-label">Tài khoản</label>
+                  <label className="form-label">Địa chỉ Email</label>
                   <div className="input-wrapper">
-                    <User className="input-icon" size={18} />
+                    <Mail className="input-icon" size={18} />
                     <input
-                      type="text"
+                      type="email"
                       className="form-input"
-                      placeholder="Nhập tên đăng nhập..."
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
+                      placeholder="Nhập địa chỉ email..."
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
                       required
                     />
                   </div>
@@ -199,6 +235,18 @@ function Login() {
                       required
                     />
                   </div>
+                </div>
+
+                {/* Đường dẫn mở popup Đổi mật khẩu */}
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '-6px', marginBottom: '14px' }}>
+                  <button 
+                    type="button" 
+                    onClick={() => setShowResetModal(true)} 
+                    style={{ fontSize: '12px', color: 'var(--primary)', textDecoration: 'none', cursor: 'pointer', backgroundColor: 'transparent', border: 0, padding: 0, fontWeight: '500' }}
+                    className="hover:underline"
+                  >
+                    Quên mật khẩu?
+                  </button>
                 </div>
 
                 <button type="submit" className="btn-primary" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
@@ -256,7 +304,111 @@ function Login() {
           )}
         </div>
 
+        {/* MODAL / POPUP: QUÊN MẬT KHẨU / ĐỔI MẬT KHẨU */}
+        {showResetModal && (
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+            {/* Backdrop làm mờ phía sau */}
+            <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(4px)' }} onClick={closeResetModal} />
+            
+            {/* Hộp thoại Modal Container */}
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden relative z-10 border border-slate-100 animate-in fade-in zoom-in-95 duration-200" style={{ display: 'flex', flexDirection: 'column' }}>
+              {/* Header của Modal */}
+              <div className="px-6 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white flex justify-between items-center" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h3 className="font-semibold text-base m-0 text-white" style={{ fontSize: '15px' }}>Đổi mật khẩu tài khoản</h3>
+                <button onClick={closeResetModal} className="text-white/80 hover:text-white bg-transparent border-0 cursor-pointer p-0 m-0 flex items-center" style={{ color: 'white', opacity: 0.8 }}>
+                  <X size={18} />
+                </button>
+              </div>
+              
+              {/* Form nhập thông tin */}
+              <form onSubmit={handleResetPassword} className="p-6" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div className="form-group m-0" style={{ margin: 0 }}>
+                  <label className="form-label text-xs font-semibold text-slate-600" style={{ fontSize: '12px', color: '#475569', marginBottom: '4px', display: 'block' }}>Email đăng nhập</label>
+                  <div className="input-wrapper">
+                    <Mail className="input-icon" size={16} />
+                    <input
+                      type="email"
+                      className="form-input"
+                      style={{ fontSize: '13px', padding: '8px 12px 8px 36px', height: '36px' }}
+                      placeholder="Nhập địa chỉ email đăng nhập..."
+                      value={resetEmail}
+                      onChange={(e) => setResetEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group m-0" style={{ margin: 0 }}>
+                  <label className="form-label text-xs font-semibold text-slate-600" style={{ fontSize: '12px', color: '#475569', marginBottom: '4px', display: 'block' }}>Số điện thoại</label>
+                  <div className="input-wrapper">
+                    <Phone className="input-icon" size={16} />
+                    <input
+                      type="text"
+                      className="form-input"
+                      style={{ fontSize: '13px', padding: '8px 12px 8px 36px', height: '36px' }}
+                      placeholder="Nhập số điện thoại liên kết..."
+                      value={resetSdt}
+                      onChange={(e) => setResetSdt(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group m-0" style={{ margin: 0 }}>
+                  <label className="form-label text-xs font-semibold text-slate-600" style={{ fontSize: '12px', color: '#475569', marginBottom: '4px', display: 'block' }}>Mật khẩu mới</label>
+                  <div className="input-wrapper">
+                    <Lock className="input-icon" size={16} />
+                    <input
+                      type="password"
+                      className="form-input"
+                      style={{ fontSize: '13px', padding: '8px 12px 8px 36px', height: '36px' }}
+                      placeholder="Nhập mật khẩu mới..."
+                      value={resetNewPassword}
+                      onChange={(e) => setResetNewPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="form-group m-0" style={{ margin: 0 }}>
+                  <label className="form-label text-xs font-semibold text-slate-600" style={{ fontSize: '12px', color: '#475569', marginBottom: '4px', display: 'block' }}>Xác nhận mật khẩu</label>
+                  <div className="input-wrapper">
+                    <KeyRound className="input-icon" size={16} />
+                    <input
+                      type="password"
+                      className="form-input"
+                      style={{ fontSize: '13px', padding: '8px 12px 8px 36px', height: '36px' }}
+                      placeholder="Xác nhận lại mật khẩu..."
+                      value={resetConfirmPassword}
+                      onChange={(e) => setResetConfirmPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-2" style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                  <button 
+                    type="button" 
+                    onClick={closeResetModal} 
+                    style={{ flex: 1, padding: '8px 16px', backgroundColor: '#f1f5f9', color: '#334155', fontWeight: '600', borderRadius: '8px', fontSize: '12px', cursor: 'pointer', border: 0, transition: 'background-color 0.2s' }}
+                    className="hover:bg-slate-200"
+                  >
+                    Hủy bỏ
+                  </button>
+                  <button 
+                    type="submit" 
+                    style={{ flex: 1, padding: '8px 16px', backgroundColor: '#10b981', color: 'white', fontWeight: '600', borderRadius: '8px', fontSize: '12px', cursor: 'pointer', border: 0, transition: 'background-color 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
+                    className="hover:bg-emerald-600"
+                  >
+                    <KeyRound size={14} /> Cập nhật
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
+
     </div>
   );
 }

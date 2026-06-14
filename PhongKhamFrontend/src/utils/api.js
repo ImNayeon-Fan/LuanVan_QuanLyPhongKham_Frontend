@@ -1,5 +1,5 @@
-// Cấu hình URL cơ sở cho API (khi kết nối backend thực tế)
-export const API_BASE_URL = 'http://localhost:5024/api';
+// Cấu hình URL cơ sở cho API (kết nối với Backend .NET chạy trên cổng 5025)
+export const API_BASE_URL = 'http://localhost:5025/api';
 
 // Lấy token xác thực từ LocalStorage
 export const getToken = () => localStorage.getItem('token');
@@ -8,6 +8,7 @@ export const getToken = () => localStorage.getItem('token');
 export const setSession = (token, user) => {
   localStorage.setItem('token', token);
   localStorage.setItem('currentUser', JSON.stringify({
+    ...user,
     name: user.hoTen || user.name,
     username: user.username,
     role: user.roleName || user.role || 'Admin',
@@ -57,71 +58,54 @@ export const apiFetch = async (endpoint, options = {}) => {
 // MOCK API FUNCTIONS USING LOCALSTORAGE
 // ==========================================
 
-// API Đăng nhập giả lập
-export const apiLogin = async (username, password) => {
-  // Trễ nhẹ giả lập mạng
-  await new Promise(resolve => setTimeout(resolve, 300));
+// API Đăng nhập kết nối với Backend thực tế qua SQL Server
+export const apiLogin = async (email, password) => {
+  const data = await apiFetch('/xacthuc/DangNhap', { // Gọi endpoint DangNhap của Backend qua phương thức POST để xác thực tài khoản
+    method: 'POST', // Sử dụng phương thức POST để gửi thông tin đăng nhập trong request body bảo mật hơn
+    body: JSON.stringify({ email, password }) // Chuyển đổi email và mật khẩu thành chuỗi JSON gửi lên server
+  }); // Nhận dữ liệu phản hồi chứa JWT Token và thông tin người dùng được truy xuất từ SQL Server
 
-  const storedUsers = localStorage.getItem('danhSachNhanVien');
-  let users = [];
-  if (storedUsers) {
-    try { users = JSON.parse(storedUsers); } catch(e) {}
-  } else {
-    // Tạo sẵn danh sách nhân viên mặc định nếu chưa có
-    users = [
-      { maNV: 'BS001', hoTen: 'BS. CK1. Nguyễn Văn An', username: 'bsan', role: 'Bác sĩ', trangThai: 'active', roleID: 2 },
-      { maNV: 'BS002', hoTen: 'BS. CK2. Trần Thị Bình', username: 'bsbinh', role: 'Bác sĩ', trangThai: 'active', roleID: 2 },
-      { maNV: 'NV003', hoTen: 'Mai Xuân Phát', username: 'maixuanphat', role: 'Thu ngân', trangThai: 'active', roleID: 3 }
-    ];
-    localStorage.setItem('danhSachNhanVien', JSON.stringify(users));
-  }
+  const user = { // Khởi tạo đối tượng người dùng từ kết quả trả về của backend
+    userID: data.userID, // Lưu ID người dùng từ cơ sở dữ liệu
+    maNV: data.maNV, // Lưu mã nhân viên tương ứng từ cơ sở dữ liệu SQL Server
+    hoTen: data.hoTen, // Lưu họ và tên của nhân sự
+    username: email, // Sử dụng email đăng nhập làm tên người dùng chính thức trong hệ thống
+    roleID: data.roleID, // Lưu ID của vai trò phân quyền
+    roleName: data.roleName, // Lưu tên vai trò của nhân sự (Admin, BacSi, LeTan...)
+    sdt: data.sdt, // Lưu số điện thoại từ cơ sở dữ liệu SQL Server của backend trả về
+    email: data.email, // Lưu địa chỉ email từ cơ sở dữ liệu SQL Server của backend trả về
+    chuyenMon: data.chuyenMon, // Lưu khoa chuyên môn từ cơ sở dữ liệu SQL Server của backend trả về
+  }; // Hoàn thiện đối tượng người dùng phù hợp với cấu trúc lưu trữ và sử dụng ở phía Frontend
 
-  let foundUser = users.find(u => u.username.toLowerCase() === username.toLowerCase());
-  
-  // Nếu không tìm thấy trong danh sách mặc định, tự động tạo mới để đăng nhập thành công luôn
-  if (!foundUser) {
-    let role = 'Admin';
-    let roleID = 1;
-    let hoTen = username;
-    
-    const lowerUser = username.toLowerCase();
-    if (lowerUser.includes('bs') || lowerUser.includes('bacsi') || lowerUser.includes('an') || lowerUser.includes('binh')) {
-      role = 'Bác sĩ';
-      roleID = 2;
-      hoTen = 'Bác sĩ ' + username;
-    } else if (lowerUser.includes('phat') || lowerUser.includes('thungan') || lowerUser.includes('cashier')) {
-      role = 'Thu ngân';
-      roleID = 3;
-      hoTen = 'Mai Xuân Phát';
-    }
-    
-    foundUser = {
-      maNV: 'NV' + String(users.length + 1).padStart(3, '0'),
-      hoTen: hoTen,
-      username: username,
-      role: role,
-      trangThai: 'active',
-      roleID: roleID
-    };
-    
-    users.push(foundUser);
-    localStorage.setItem('danhSachNhanVien', JSON.stringify(users));
-  }
-
-  const token = 'mock-jwt-token-for-' + username;
-  setSession(token, foundUser);
-  return { token, user: foundUser };
+  setSession(data.token, user); // Lưu trữ JWT Token và thông tin người dùng vào LocalStorage để duy trì phiên làm việc
+  return { token: data.token, user, ...user }; // Trả về kết quả đăng nhập thành công chứa cả object user và các trường phẳng hóa cho Login.jsx
 };
 
-// API Đăng xuất giả lập
+// API Đăng xuất kết nối với Backend thực tế
 export const apiLogout = async () => {
-  clearSession();
+  try { // Đặt trong khối try-catch để ngăn lỗi mạng làm gián đoạn tiến trình xóa session ở client
+    await apiFetch('/xacthuc/DangXuat', { // Gọi endpoint DangXuat của Backend để thêm token hiện tại vào blacklist
+      method: 'POST' // Sử dụng phương thức POST theo đúng định nghĩa routing của API
+    }); // Đợi Backend xử lý cập nhật blacklist token trong MemoryCache
+  } catch (error) { // Bắt lỗi nếu API gặp sự cố hoặc máy chủ không phản hồi
+    console.error('Logout error:', error); // Ghi nhận lỗi đăng xuất ra console để hỗ trợ debug khi cần thiết
+  } finally { // Luôn thực thi phần xóa dữ liệu phiên đăng nhập ở client bất kể API có thành công hay không
+    clearSession(); // Thực hiện xóa sạch token và thông tin currentUser khỏi LocalStorage của trình duyệt
+  } // Hoàn tất quy trình đăng xuất để chuyển hướng người dùng về màn hình đăng nhập
 };
 
 // API Đổi mật khẩu giả lập
 export const apiChangePassword = async (oldPassword, newPassword, confirmPassword) => {
-  await new Promise(resolve => setTimeout(resolve, 200));
-  return { message: 'Đổi mật khẩu thành công!' };
+  await new Promise(resolve => setTimeout(resolve, 200)); // Giả lập độ trễ mạng để tạo cảm giác thực tế cho người dùng
+  return { message: 'Đổi mật khẩu thành công!' }; // Trả về thông báo thành công giả lập
+};
+
+// API Quên mật khẩu / Đổi mật khẩu kết nối với Backend thực tế qua SQL Server
+export const apiResetPassword = async (email, sdt, newPassword) => {
+  return await apiFetch('/xacthuc/QuenMatKhau', {
+    method: 'POST',
+    body: JSON.stringify({ email: email.trim(), sdt: sdt.trim(), newPassword: newPassword.trim() })
+  });
 };
 
 // API Lấy danh sách nhân viên giả lập
@@ -131,12 +115,21 @@ export const apiGetStaffList = async (status = 'active', page = 1, limit = 20, s
   const stored = localStorage.getItem('danhSachNhanVien');
   let list = [];
   if (stored) {
-    try { list = JSON.parse(stored); } catch(e) {}
-  } else {
+    try { 
+      list = JSON.parse(stored); 
+      // Tự động dọn dẹp nếu phát hiện dữ liệu cũ chưa đồng bộ
+      const testUser = list.find(u => u.username === 'maixuanphat' || u.username === 'thungan');
+      if (testUser && (testUser.maNV === 'NV003' || testUser.email === 'maixuanphat@phongkham.vn' || testUser.role === 'Thu ngân')) {
+        list = [];
+      }
+    } catch(e) {}
+  }
+
+  if (list.length === 0) {
     list = [
-      { maNV: 'BS001', hoTen: 'BS. CK1. Nguyễn Văn An', username: 'bsan', role: 'Bác sĩ', trangThai: 'active', roleID: 2 },
-      { maNV: 'BS002', hoTen: 'BS. CK2. Trần Thị Bình', username: 'bsbinh', role: 'Bác sĩ', trangThai: 'active', roleID: 2 },
-      { maNV: 'NV003', hoTen: 'Mai Xuân Phát', username: 'thungan', role: 'Thu ngân', trangThai: 'active', roleID: 3 }
+      { maNV: 'NV001', hoTen: 'Mai Xuân Phát', username: 'maixuanphat', role: 'Admin', trangThai: 'active', roleID: 1, sdt: '0896421137', email: 'mxp1803@gmail.com' },
+      { maNV: 'BS001', hoTen: 'BS. CK1. Nguyễn Văn An', username: 'bsan', role: 'Bác sĩ', trangThai: 'active', roleID: 2, sdt: '0912345678', email: 'nguyenvanan@phongkham.vn', khoa: 'Khoa Nội' },
+      { maNV: 'BS002', hoTen: 'BS. CK2. Trần Thị Bình', username: 'bsbinh', role: 'Bác sĩ', trangThai: 'active', roleID: 2, sdt: '0987654321', email: 'tranthibinh@phongkham.vn', khoa: 'Khoa Sản' }
     ];
     localStorage.setItem('danhSachNhanVien', JSON.stringify(list));
   }

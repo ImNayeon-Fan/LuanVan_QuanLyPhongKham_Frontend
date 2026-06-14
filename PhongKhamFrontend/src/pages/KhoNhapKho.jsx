@@ -466,7 +466,11 @@ function KhoNhapKho() {
               <button 
                 disabled={activePage === 1} 
                 onClick={() => setCurrentPage(activePage - 1)} 
-                className={`btn-outline h-6 w-6 p-0 flex items-center justify-center ${activePage === 1 ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                className={`h-6 w-6 rounded border border-[#0ea5e9] flex items-center justify-center text-[11px] font-bold transition-all ${
+                  activePage === 1 
+                    ? 'opacity-40 cursor-not-allowed text-[#0ea5e9] bg-transparent' 
+                    : 'text-[#0ea5e9] bg-transparent hover:bg-[#e0f2fe] cursor-pointer'
+                }`}
               >
                 &lt;
               </button>
@@ -474,7 +478,11 @@ function KhoNhapKho() {
                 <button 
                   key={p} 
                   onClick={() => setCurrentPage(p)} 
-                  className={`${p === activePage ? "btn-primary" : "btn-outline"} h-6 w-6 p-0 flex items-center justify-center text-[11px] font-bold cursor-pointer`}
+                  className={`h-6 w-6 rounded border flex items-center justify-center text-[11px] font-bold transition-all cursor-pointer ${
+                    p === activePage
+                      ? "bg-[#0ea5e9] text-white border-[#0ea5e9]"
+                      : "bg-transparent text-[#0ea5e9] border-[#0ea5e9] hover:bg-[#e0f2fe]"
+                  }`}
                 >
                   {p}
                 </button>
@@ -482,7 +490,11 @@ function KhoNhapKho() {
               <button 
                 disabled={activePage === totalPages} 
                 onClick={() => setCurrentPage(activePage + 1)} 
-                className={`btn-outline h-6 w-6 p-0 flex items-center justify-center ${activePage === totalPages ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                className={`h-6 w-6 rounded border border-[#0ea5e9] flex items-center justify-center text-[11px] font-bold transition-all ${
+                  activePage === totalPages 
+                    ? 'opacity-40 cursor-not-allowed text-[#0ea5e9] bg-transparent' 
+                    : 'text-[#0ea5e9] bg-transparent hover:bg-[#e0f2fe] cursor-pointer'
+                }`}
               >
                 &gt;
               </button>

@@ -119,89 +119,49 @@ export const apiResetPassword = async (email, soDienThoai, matKhauMoi, nhapLaiMa
   });
 };
 
-// API Lấy danh sách nhân viên giả lập
+// API Lấy danh sách nhân viên kết nối với Backend thực tế qua SQL Server
 export const apiGetStaffList = async (status = 'active', page = 1, limit = 20, search = '', roleID = null) => {
-  await new Promise(resolve => setTimeout(resolve, 150));
-  
-  const stored = localStorage.getItem('danhSachNhanVien');
-  let list = [];
-  if (stored) {
-    try { 
-      list = JSON.parse(stored); 
-      // Tự động dọn dẹp nếu phát hiện dữ liệu cũ chưa đồng bộ
-      const testUser = list.find(u => u.username === 'maixuanphat' || u.username === 'thungan');
-      if (testUser && (testUser.maNV === 'NV003' || testUser.email === 'maixuanphat@phongkham.vn' || testUser.role === 'Thu ngân')) {
-        list = [];
-      }
-    } catch(e) {}
+  if (status === 'all') {
+    const [activeRes, inactiveRes] = await Promise.all([
+      apiFetch(`/nhan-su?status=active&page=1&limit=100${search ? `&search=${encodeURIComponent(search)}` : ''}${roleID ? `&roleID=${roleID}` : ''}`),
+      apiFetch(`/nhan-su?status=inactive&page=1&limit=100${search ? `&search=${encodeURIComponent(search)}` : ''}${roleID ? `&roleID=${roleID}` : ''}`)
+    ]);
+    const combined = [...(activeRes?.data || []), ...(inactiveRes?.data || [])];
+    return { data: combined, total: combined.length };
   }
 
-  if (list.length === 0) {
-    list = [
-      { maNV: 'NV001', hoTen: 'Mai Xuân Phát', username: 'maixuanphat', role: 'Admin', trangThai: 'active', roleID: 1, sdt: '0896421137', email: 'mxp1803@gmail.com' },
-      { maNV: 'BS001', hoTen: 'BS. CK1. Nguyễn Văn An', username: 'bsan', role: 'Bác sĩ', trangThai: 'active', roleID: 2, sdt: '0912345678', email: 'nguyenvanan@phongkham.vn', khoa: 'Khoa Nội' },
-      { maNV: 'BS002', hoTen: 'BS. CK2. Trần Thị Bình', username: 'bsbinh', role: 'Bác sĩ', trangThai: 'active', roleID: 2, sdt: '0987654321', email: 'tranthibinh@phongkham.vn', khoa: 'Khoa Sản' }
-    ];
-    localStorage.setItem('danhSachNhanVien', JSON.stringify(list));
-  }
+  const queryParams = new URLSearchParams();
+  queryParams.append('status', status);
+  queryParams.append('page', page);
+  queryParams.append('limit', limit > 100 ? 100 : limit);
+  if (search) queryParams.append('search', search);
+  if (roleID) queryParams.append('roleID', roleID);
 
-  let filtered = list;
-  if (status && status !== 'all') {
-    filtered = filtered.filter(u => u.trangThai === status);
-  }
-  if (search) {
-    const q = search.toLowerCase();
-    filtered = filtered.filter(u => u.hoTen.toLowerCase().includes(q) || u.maNV.toLowerCase().includes(q));
-  }
-  if (roleID) {
-    filtered = filtered.filter(u => u.roleID === Number(roleID) || (Number(roleID) === 2 && u.role === 'Bác sĩ'));
-  }
-  
-  return { data: filtered, total: filtered.length };
+  const response = await apiFetch(`/nhan-su?${queryParams.toString()}`);
+  return { data: response?.data || [], total: response?.pagination?.total || 0 };
 };
 
-// API Thêm nhân viên mới giả lập
+// API Thêm nhân viên mới kết nối với Backend thực tế qua SQL Server
 export const apiAddStaff = async (staffData) => {
-  await new Promise(resolve => setTimeout(resolve, 200));
-  
-  const stored = localStorage.getItem('danhSachNhanVien') || '[]';
-  let list = [];
-  try { list = JSON.parse(stored); } catch(e) {}
-  
-  const newStaff = {
-    maNV: 'NV' + String(list.length + 1).padStart(3, '0'),
-    trangThai: 'active',
-    ...staffData
-  };
-  list.push(newStaff);
-  localStorage.setItem('danhSachNhanVien', JSON.stringify(list));
-  return newStaff;
+  return await apiFetch('/nhan-su', {
+    method: 'POST',
+    body: JSON.stringify(staffData)
+  });
 };
 
-// API Cập nhật nhân viên giả lập
+// API Cập nhật nhân viên kết nối với Backend thực tế qua SQL Server
 export const apiUpdateStaff = async (maNV, staffData) => {
-  await new Promise(resolve => setTimeout(resolve, 200));
-  
-  const stored = localStorage.getItem('danhSachNhanVien') || '[]';
-  let list = [];
-  try { list = JSON.parse(stored); } catch(e) {}
-  
-  list = list.map(item => item.maNV === maNV ? { ...item, ...staffData } : item);
-  localStorage.setItem('danhSachNhanVien', JSON.stringify(list));
-  return { message: 'Cập nhật thành công' };
+  return await apiFetch(`/nhan-su/${maNV}`, {
+    method: 'PUT',
+    body: JSON.stringify(staffData)
+  });
 };
 
-// API Xóa nhân viên giả lập
+// API Xóa nhân viên kết nối với Backend thực tế qua SQL Server
 export const apiDeleteStaff = async (maNV) => {
-  await new Promise(resolve => setTimeout(resolve, 200));
-  
-  const stored = localStorage.getItem('danhSachNhanVien') || '[]';
-  let list = [];
-  try { list = JSON.parse(stored); } catch(e) {}
-  
-  list = list.filter(item => item.maNV !== maNV);
-  localStorage.setItem('danhSachNhanVien', JSON.stringify(list));
-  return { message: 'Xóa nhân viên thành công' };
+  return await apiFetch(`/nhan-su/${maNV}`, {
+    method: 'DELETE'
+  });
 };
 
 // API Tra cứu bệnh nhân cũ theo SĐT giả lập

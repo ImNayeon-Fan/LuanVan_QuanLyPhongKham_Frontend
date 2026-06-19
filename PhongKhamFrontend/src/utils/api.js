@@ -234,3 +234,37 @@ export const apiGetChiTietPhieuKham = async (maPhieu) => {
   if (found) return found;
   throw new Error('Không tìm thấy hồ sơ bệnh án');
 };
+
+// API Lấy danh sách danh mục bệnh lý ICD-10 kết nối với Backend thực tế
+export const apiGetICDList = async (maICD = '', tenBenh = '', page = 1, pageSize = 10) => {
+  const queryParams = new URLSearchParams();
+  if (maICD) queryParams.append('maICD', maICD);
+  if (tenBenh) queryParams.append('tenBenh', tenBenh);
+  queryParams.append('page', page);
+  queryParams.append('pageSize', pageSize);
+
+  return await apiFetch(`/BenhLyICD?${queryParams.toString()}`);
+};
+
+// API Thêm mới bệnh lý ICD-10 kết nối với Backend thực tế
+export const apiAddICD = async (icdData) => {
+  return await apiFetch('/BenhLyICD', {
+    method: 'POST',
+    body: JSON.stringify(icdData)
+  });
+};
+
+// API Cập nhật bệnh lý ICD-10 kết nối với Backend thực tế
+export const apiUpdateICD = async (maICD, icdData) => {
+  return await apiFetch(`/BenhLyICD/${maICD}`, {
+    method: 'PUT',
+    body: JSON.stringify(icdData)
+  });
+};
+
+// API Xóa bệnh lý ICD-10 kết nối với Backend thực tế
+export const apiDeleteICD = async (maICD) => {
+  return await apiFetch(`/BenhLyICD/${maICD}`, {
+    method: 'DELETE'
+  });
+};

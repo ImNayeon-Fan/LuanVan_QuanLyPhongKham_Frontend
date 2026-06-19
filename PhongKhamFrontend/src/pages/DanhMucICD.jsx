@@ -4,18 +4,12 @@ import {
   ArrowLeft, Plus, Trash2, Save, Database, ListCollapse
 } from 'lucide-react';
 import { useToast } from '../utils/ToastContext';
-
-// Dữ liệu mẫu ICD-10 gốc
-const defaultICDData = [
-  { maICD: 'A09', tenBenh: 'Tiêu chảy và viêm dạ dày ruột do nhiễm khuẩn' },
-  { maICD: 'I10', tenBenh: 'Tăng huyết áp vô căn (nguyên phát)' },
-  { maICD: 'E11', tenBenh: 'Đái tháo đường không phụ thuộc insulin (Typ 2)' },
-  { maICD: 'J06', tenBenh: 'Nhiễm khuẩn đường hô hấp trên cấp tính nhiều vị trí' },
-  { maICD: 'K29', tenBenh: 'Viêm dạ dày và tá tràng' },
-  { maICD: 'M54', tenBenh: 'Đau lưng' },
-  { maICD: 'N39', tenBenh: 'Nhiễm trùng đường tiết niệu (không xác định vị trí)' },
-  { maICD: 'R05', tenBenh: 'Ho' }
-];
+import { 
+  apiGetICDList,
+  apiAddICD,
+  apiUpdateICD,
+  apiDeleteICD
+} from '../utils/api';
 
 /**
  * Component Quản lý Danh mục Bệnh lý (ICD-10)
@@ -30,19 +24,48 @@ function DanhMucICD() {
   const [icdForm, setIcdForm] = useState({ maICD: '', tenBenh: '' });
   const [icdFilters, setIcdFilters] = useState({ maICD: '', tenBenh: '' });
   const [icdPage, setIcdPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const itemsPerPage = 10;
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  // Khởi chạy lấy danh sách từ LocalStorage
-  useEffect(() => {
-    const storedICD = localStorage.getItem('danhMucICD');
-    if (storedICD) {
-      setIcdList(JSON.parse(storedICD));
-    } else {
-      localStorage.setItem('danhMucICD', JSON.stringify(defaultICDData));
-      setIcdList(defaultICDData);
+  // Tải danh sách bệnh lý từ Backend API (Server-side Pagination & Filtering)
+  const loadICDList = async () => {
+    try {
+      setIsLoading(true);
+      const response = await apiGetICDList(icdFilters.maICD, icdFilters.tenBenh, icdPage, itemsPerPage);
+      if (response && response.data) {
+        const mappedData = response.data.map(item => ({
+          maICD: item.MaICD || item.maICD || '',
+          tenBenh: item.TenBenh || item.tenBenh || ''
+        }));
+        setIcdList(mappedData);
+        setTotalCount(response.total || 0);
+      } else {
+        setIcdList([]);
+        setTotalCount(0);
+      }
+    } catch (error) {
+      console.error('Lỗi tải danh mục ICD:', error);
+      showError('Không thể tải danh mục ICD từ hệ thống: ' + (error.message || error));
+      if (error.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('currentUser');
+        navigate('/login');
+      }
+    } finally {
+      setIsLoading(false);
     }
-  }, []);
+  };
+
+  // Cơ chế Debounce (250ms) cho việc gõ bộ lọc tìm kiếm
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      loadICDList();
+    }, 250);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [icdFilters.maICD, icdFilters.tenBenh, icdPage, itemsPerPage]);
 
   // Cập nhật form khi chọn bệnh lý thay đổi
   useEffect(() => {
@@ -56,17 +79,11 @@ function DanhMucICD() {
     }
   }, [selectedICD]);
 
-  // Bộ lọc danh sách ICD
-  const filteredICD = icdList.filter(item => 
-    (item.maICD || '').toLowerCase().includes(icdFilters.maICD.toLowerCase()) &&
-    (item.tenBenh || '').toLowerCase().includes(icdFilters.tenBenh.toLowerCase())
-  );
-
-  // Tính toán phân trang
-  const totalIcdPages = Math.max(1, Math.ceil(filteredICD.length / itemsPerPage));
+  // Biến phục vụ hiển thị đồng bộ với mã JSX cũ
+  const displayedICD = icdList;
+  const totalIcdPages = Math.max(1, Math.ceil(totalCount / itemsPerPage));
   const activeIcdPage = Math.min(icdPage, totalIcdPages);
   const icdStartIdx = (activeIcdPage - 1) * itemsPerPage;
-  const displayedICD = filteredICD.slice(icdStartIdx, icdStartIdx + itemsPerPage);
 
   // Xử lý khi bộ lọc thay đổi
   const handleIcdFilterChange = (key, val) => {
@@ -79,8 +96,8 @@ function DanhMucICD() {
     setSelectedICD({ maICD: '', tenBenh: '', isNew: true });
   };
 
-  // Lưu dữ liệu vào danh sách (Thêm mới hoặc cập nhật)
-  const handleSaveIcd = (e) => {
+  // Lưu dữ liệu vào danh sách (Thêm mới hoặc cập nhật qua API)
+  const handleSaveIcd = async (e) => {
     e.preventDefault();
     if (!icdForm.maICD.trim()) {
       showError('Vui lòng nhập Mã bệnh lý (ICD)!');
@@ -96,32 +113,37 @@ function DanhMucICD() {
       tenBenh: icdForm.tenBenh.trim()
     };
 
-    let newList = [];
-    if (selectedICD?.isNew) {
-      const exists = icdList.some(item => item.maICD.toUpperCase() === updatedRecord.maICD);
-      if (exists) {
-        showError('Mã ICD này đã tồn tại trong danh mục!');
-        return;
+    try {
+      if (selectedICD?.isNew) {
+        await apiAddICD(updatedRecord);
+        showSuccess('Thêm mới danh mục Mã bệnh lý thành công!');
+      } else {
+        await apiUpdateICD(selectedICD.maICD, {
+          tenBenh: updatedRecord.tenBenh
+        });
+        showSuccess('Cập nhật thông tin bệnh lý thành công!');
       }
-      newList = [...icdList, updatedRecord];
-    } else {
-      newList = icdList.map(item => item.maICD === selectedICD.maICD ? updatedRecord : item);
+      setSelectedICD(updatedRecord);
+      loadICDList();
+    } catch (error) {
+      console.error('Lỗi khi lưu ICD:', error);
+      showError('Không thể lưu thông tin bệnh lý: ' + (error.message || 'Lỗi hệ thống'));
     }
-
-    setIcdList(newList);
-    localStorage.setItem('danhMucICD', JSON.stringify(newList));
-    setSelectedICD(updatedRecord);
-    showSuccess('Lưu danh mục Mã bệnh lý thành công!');
   };
 
-  // Xóa mã bệnh lý khỏi danh mục
-  const handleDeleteIcd = (maICD) => {
+  // Xóa mã bệnh lý khỏi danh mục qua API
+  const handleDeleteIcd = async (maICD) => {
     if (window.confirm(`Bạn có chắc chắn muốn xóa mã bệnh ${maICD} khỏi danh mục?`)) {
-      const newList = icdList.filter(item => item.maICD !== maICD);
-      setIcdList(newList);
-      localStorage.setItem('danhMucICD', JSON.stringify(newList));
-      if (selectedICD && selectedICD.maICD === maICD) {
-        setSelectedICD(null);
+      try {
+        await apiDeleteICD(maICD);
+        showSuccess('Xóa mã bệnh lý thành công!');
+        if (selectedICD && selectedICD.maICD === maICD) {
+          setSelectedICD(null);
+        }
+        loadICDList();
+      } catch (error) {
+        console.error('Lỗi khi xóa ICD:', error);
+        showError('Không thể xóa bệnh lý: ' + (error.message || 'Lỗi hệ thống'));
       }
     }
   };
@@ -243,10 +265,27 @@ function DanhMucICD() {
           </div>
 
           {/* Điều khiển phân trang */}
-          <div className="h-[45px] bg-white border-t border-[var(--border-color)] flex items-center justify-between px-5 text-[13px]">
-            <span className="text-[var(--text-muted)]">
-              Hiển thị từ <b>{icdStartIdx + 1}</b> đến <b>{Math.min(icdStartIdx + itemsPerPage, filteredICD.length)}</b> trong tổng số <b>{filteredICD.length}</b> mã ICD
-            </span>
+          <div className="h-[45px] bg-white border-t border-[var(--border-color)] flex items-center justify-between px-5 text-[13px] shrink-0">
+            <div className="flex items-center gap-4">
+              <span className="text-[var(--text-muted)]">
+                Hiển thị từ <b>{icdStartIdx + 1}</b> đến <b>{Math.min(icdStartIdx + itemsPerPage, totalCount)}</b> trong tổng số <b>{totalCount}</b> mã ICD
+              </span>
+              <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)] whitespace-nowrap">
+                <span>| Hiển thị:</span>
+                <select
+                  value={itemsPerPage}
+                  onChange={e => {
+                    setItemsPerPage(Number(e.target.value));
+                    setIcdPage(1);
+                  }}
+                  className="form-input h-[26px] !py-0 !px-1.5 text-xs w-[85px] font-semibold border-[var(--border-color)] rounded bg-white cursor-pointer"
+                >
+                  <option value={10}>10 hàng</option>
+                  <option value={50}>50 hàng</option>
+                  <option value={100}>100 hàng</option>
+                </select>
+              </div>
+            </div>
             <div className="flex gap-[5px]">
               <button 
                 disabled={icdPage === 1}

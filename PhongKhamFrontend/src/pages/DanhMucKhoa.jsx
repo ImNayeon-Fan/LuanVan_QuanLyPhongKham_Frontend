@@ -4,10 +4,16 @@ import {
   ArrowLeft, Search, Plus, Trash2, Save, Database, 
   Users, User, Award
 } from 'lucide-react';
-import { apiGetStaffList } from '../utils/api';
+import { 
+  apiGetStaffList,
+  apiGetKhoaList,
+  apiAddKhoa,
+  apiUpdateKhoa,
+  apiDeleteKhoa
+} from '../utils/api';
 import { useToast } from '../utils/ToastContext';
 
-// Danh sách khoa mặc định
+// Danh sách khoa mặc định (dự phòng)
 const DEFAULT_KHOA = [
   { maKhoa: 'KHOA01', tenKhoa: 'Nội tổng quát' },
   { maKhoa: 'KHOA02', tenKhoa: 'Tim mạch' },
@@ -30,9 +36,14 @@ function DanhMucKhoa() {
   const [khoaForm, setKhoaForm] = useState({ maKhoa: '', tenKhoa: '' });
   const [searchQuery, setSearchQuery] = useState('');
 
+  // Các state phân trang & loading
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalCount, setTotalCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+
   // Tải danh mục khoa và bác sĩ khi component mount
   useEffect(() => {
-    loadKhoaList();
     loadDoctors();
   }, []);
 
@@ -48,21 +59,38 @@ function DanhMucKhoa() {
     }
   }, [selectedKhoa]);
 
-  // Tải danh mục khoa từ localStorage
-  const loadKhoaList = () => {
+  // Tải danh mục khoa từ Backend API
+  const loadKhoaList = async () => {
     try {
-      const stored = localStorage.getItem('danhMucKhoa');
-      if (stored) {
-        setKhoaList(JSON.parse(stored));
+      setIsLoading(true);
+      const response = await apiGetKhoaList('', searchQuery, page, pageSize);
+      if (response && response.data) {
+        const mappedData = response.data.map(item => ({
+          maKhoa: item.MaKhoa || item.maKhoa || '',
+          tenKhoa: item.TenKhoa || item.tenKhoa || ''
+        }));
+        setKhoaList(mappedData);
+        setTotalCount(response.total || 0);
       } else {
-        localStorage.setItem('danhMucKhoa', JSON.stringify(DEFAULT_KHOA));
-        setKhoaList(DEFAULT_KHOA);
+        setKhoaList([]);
+        setTotalCount(0);
       }
     } catch (e) {
-      console.error(e);
-      setKhoaList(DEFAULT_KHOA);
+      console.error('Lỗi tải danh mục khoa:', e);
+      showError('Không thể tải danh mục khoa từ hệ thống: ' + (e.message || e));
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  // Cơ chế Debounce (250ms) cho tìm kiếm và đồng bộ trang
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      loadKhoaList();
+    }, 250);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery, page, pageSize]);
 
   // Tải danh sách bác sĩ từ hệ thống Backend API
   const loadDoctors = async () => {
@@ -78,24 +106,25 @@ function DanhMucKhoa() {
     }
   };
 
-  // Đếm số bác sĩ thuộc một khoa (dựa theo tên khoa chuyên môn)
-  const getDoctorCount = (tenKhoa) => {
-    return doctorsList.filter(d => (d.chuyenMon || '').toLowerCase() === tenKhoa.toLowerCase()).length;
+  // Đếm số bác sĩ thuộc một khoa (dựa theo mã khoa hoặc tên khoa)
+  const getDoctorCount = (khoaItem) => {
+    return doctorsList.filter(d => 
+      (d.maKhoa && d.maKhoa === khoaItem.maKhoa) ||
+      (!d.maKhoa && (d.chuyenMon || '').toLowerCase() === khoaItem.tenKhoa.toLowerCase())
+    ).length;
   };
 
   // Lấy danh sách bác sĩ thuộc khoa được chọn
-  const getDoctorsInKhoa = (tenKhoa) => {
-    return doctorsList.filter(d => (d.chuyenMon || '').toLowerCase() === tenKhoa.toLowerCase());
+  const getDoctorsInKhoa = (khoaItem) => {
+    return doctorsList.filter(d => 
+      (d.maKhoa && d.maKhoa === khoaItem.maKhoa) ||
+      (!d.maKhoa && (d.chuyenMon || '').toLowerCase() === khoaItem.tenKhoa.toLowerCase())
+    );
   };
 
   // Khởi tạo thêm mới khoa phòng với mã khoa tự tăng
   const handleAddNew = () => {
-    const nextIdx = khoaList.length + 1;
-    const khoaNumbers = khoaList
-      .map(k => k.maKhoa)
-      .filter(id => /^KHOA\d+$/i.test(id))
-      .map(id => parseInt(id.replace(/^KHOA/i, ''), 10));
-    const nextNum = khoaNumbers.length > 0 ? Math.max(...khoaNumbers) + 1 : nextIdx;
+    const nextNum = totalCount + 1;
     const newCode = `KHOA${String(nextNum).padStart(2, '0')}`;
 
     setSelectedKhoa({
@@ -106,7 +135,7 @@ function DanhMucKhoa() {
   };
 
   // Lưu thông tin khoa (Thêm mới hoặc Cập nhật)
-  const handleSave = (e) => {
+  const handleSave = async (e) => {
     e.preventDefault();
     const { maKhoa, tenKhoa } = khoaForm;
 
@@ -120,50 +149,28 @@ function DanhMucKhoa() {
       tenKhoa: tenKhoa.trim()
     };
 
-    let newList = [];
     try {
       if (selectedKhoa?.isNew) {
-        // Kiểm tra trùng tên khoa hoặc mã khoa
-        const isDuplicateCode = khoaList.some(k => k.maKhoa === updatedRecord.maKhoa);
-        const isDuplicateName = khoaList.some(k => k.tenKhoa.toLowerCase() === updatedRecord.tenKhoa.toLowerCase());
-
-        if (isDuplicateCode) {
-          showError('Mã khoa này đã tồn tại trong danh mục!');
-          return;
-        }
-        if (isDuplicateName) {
-          showWarning('Tên khoa / Chuyên môn này đã tồn tại!');
-          return;
-        }
-
-        newList = [...khoaList, updatedRecord];
+        await apiAddKhoa(updatedRecord);
         showSuccess('Thêm mới khoa thành công!');
       } else {
-        // Cập nhật tên khoa
-        const isDuplicateName = khoaList.some(k => 
-          k.tenKhoa.toLowerCase() === updatedRecord.tenKhoa.toLowerCase() && 
-          k.maKhoa !== updatedRecord.maKhoa
-        );
-        if (isDuplicateName) {
-          showWarning('Tên khoa / Chuyên môn khác đã sử dụng tên này!');
-          return;
-        }
-
-        newList = khoaList.map(k => k.maKhoa === selectedKhoa.maKhoa ? updatedRecord : k);
+        await apiUpdateKhoa(selectedKhoa.maKhoa, {
+          tenKhoa: updatedRecord.tenKhoa
+        });
         showSuccess('Cập nhật thông tin khoa thành công!');
       }
 
-      localStorage.setItem('danhMucKhoa', JSON.stringify(newList));
-      setKhoaList(newList);
       setSelectedKhoa(updatedRecord);
+      loadKhoaList();
     } catch (err) {
-      showError('Không thể lưu thông tin khoa!');
+      console.error('Lỗi lưu khoa:', err);
+      showError('Không thể lưu thông tin khoa: ' + (err.message || 'Lỗi hệ thống'));
     }
   };
 
   // Xóa khoa khỏi danh mục (Chỉ cho phép xóa khi không có bác sĩ trực thuộc)
-  const handleDelete = (maKhoa, tenKhoa) => {
-    const docCount = getDoctorCount(tenKhoa);
+  const handleDelete = async (maKhoa, tenKhoa) => {
+    const docCount = getDoctorCount({ maKhoa, tenKhoa });
     if (docCount > 0) {
       showError(`Không thể xóa khoa này vì đang có ${docCount} bác sĩ đang trực thuộc!`);
       return;
@@ -171,24 +178,18 @@ function DanhMucKhoa() {
 
     if (window.confirm(`Bạn có chắc chắn muốn xóa khoa: ${tenKhoa} (Mã: ${maKhoa})?`)) {
       try {
-        const newList = khoaList.filter(k => k.maKhoa !== maKhoa);
-        localStorage.setItem('danhMucKhoa', JSON.stringify(newList));
-        setKhoaList(newList);
+        await apiDeleteKhoa(maKhoa);
+        showSuccess('Xóa khoa thành công!');
         if (selectedKhoa && selectedKhoa.maKhoa === maKhoa) {
           setSelectedKhoa(null);
         }
-        showSuccess('Xóa khoa thành công!');
+        loadKhoaList();
       } catch (err) {
-        showError('Không thể xóa khoa!');
+        console.error('Lỗi khi xóa khoa:', err);
+        showError('Không thể xóa khoa: ' + (err.message || 'Lỗi hệ thống'));
       }
     }
   };
-
-  // Bộ lọc tìm kiếm khoa
-  const filteredKhoa = khoaList.filter(k => 
-    (k.maKhoa || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (k.tenKhoa || '').toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   return (
     <div className="kb-wrapper h-screen overflow-hidden">
@@ -256,36 +257,101 @@ function DanhMucKhoa() {
                 </tr>
               </thead>
               <tbody>
-                {filteredKhoa.map((k, idx) => (
-                  <tr 
-                    key={k.maKhoa}
-                    onClick={() => setSelectedKhoa(k)}
-                    className={`border-b border-[var(--border-color)] cursor-pointer ${
-                      selectedKhoa?.maKhoa === k.maKhoa 
-                        ? 'kb-patient-item--active bg-[var(--primary-light)]' 
-                        : 'bg-transparent'
-                    }`}
-                  >
-                    <td className="text-center p-2">{idx + 1}</td>
-                    <td className="p-2 font-semibold">{k.maKhoa}</td>
-                    <td className="p-2 font-bold">{k.tenKhoa}</td>
-                    <td className="p-2 text-center font-semibold text-[var(--primary)]">
-                      {getDoctorCount(k.tenKhoa)} bác sĩ
-                    </td>
-                    <td className="p-2 text-center" onClick={(e) => e.stopPropagation()}>
-                      <button
-                        onClick={() => handleDelete(k.maKhoa, k.tenKhoa)}
-                        className="btn-danger py-1 px-2 m-0 h-auto inline-flex"
-                      >
-                        <Trash2 size={13} />
-                      </button>
+                {isLoading ? (
+                  <tr>
+                    <td colSpan="5" className="text-center p-[30px] text-[var(--text-muted)]">
+                      Đang tải danh mục khoa phòng...
                     </td>
                   </tr>
-                ))}
+                ) : khoaList.length === 0 ? (
+                  <tr>
+                    <td colSpan="5" className="text-center p-[30px] text-[var(--text-muted)]">
+                      Không tìm thấy khoa phòng nào khớp với bộ lọc.
+                    </td>
+                  </tr>
+                ) : (
+                  khoaList.map((k, idx) => {
+                    const isSelected = selectedKhoa?.maKhoa === k.maKhoa;
+                    return (
+                      <tr 
+                        key={k.maKhoa}
+                        onClick={() => setSelectedKhoa(k)}
+                        className={`border-b border-[var(--border-color)] cursor-pointer ${
+                          isSelected 
+                            ? 'kb-patient-item--active bg-[var(--primary-light)]' 
+                            : 'bg-transparent'
+                        }`}
+                      >
+                        <td className="text-center p-2">{(page - 1) * pageSize + idx + 1}</td>
+                        <td className="p-2 font-semibold">{k.maKhoa}</td>
+                        <td className="p-2 font-bold">{k.tenKhoa}</td>
+                        <td className="p-2 text-center font-semibold text-[var(--primary)]">
+                          {getDoctorCount(k)} bác sĩ
+                        </td>
+                        <td className="p-2 text-center" onClick={(e) => e.stopPropagation()}>
+                          <button
+                            onClick={() => handleDelete(k.maKhoa, k.tenKhoa)}
+                            className="btn-danger py-1 px-2 m-0 h-auto inline-flex"
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
               </tbody>
             </table>
           </div>
+
+          {/* Điều khiển phân trang */}
+          <div className="h-[45px] bg-white border-t border-[var(--border-color)] flex items-center justify-between px-5 text-[13px] shrink-0">
+            <div className="flex items-center gap-4">
+              <span className="text-[var(--text-muted)]">
+                Hiển thị từ <b>{totalCount === 0 ? 0 : (page - 1) * pageSize + 1}</b> đến <b>{Math.min((page - 1) * pageSize + pageSize, totalCount)}</b> trong tổng số <b>{totalCount}</b> khoa
+              </span>
+              <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)] whitespace-nowrap">
+                <span>| Hiển thị:</span>
+                <select
+                  value={pageSize}
+                  onChange={e => {
+                    setPageSize(Number(e.target.value));
+                    setPage(1);
+                  }}
+                  className="form-input h-[26px] !py-0 !px-1.5 text-xs w-[85px] font-semibold border-[var(--border-color)] rounded bg-white cursor-pointer"
+                >
+                  <option value={10}>10 hàng</option>
+                  <option value={50}>50 hàng</option>
+                  <option value={100}>100 hàng</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex gap-[5px]">
+              <button 
+                disabled={page === 1}
+                onClick={() => setPage(p => p - 1)}
+                className={`py-1 px-2 rounded border border-[var(--border-color)] ${
+                  page === 1 ? 'bg-[#f3f4f6] cursor-not-allowed' : 'bg-white cursor-pointer'
+                }`}
+              >
+                Trước
+              </button>
+              <span className="flex items-center px-2 font-semibold">
+                Trang {page} / {Math.max(1, Math.ceil(totalCount / pageSize))}
+              </span>
+              <button 
+                disabled={page === Math.max(1, Math.ceil(totalCount / pageSize))}
+                onClick={() => setPage(p => p + 1)}
+                className={`py-1 px-2 rounded border border-[var(--border-color)] ${
+                  page === Math.max(1, Math.ceil(totalCount / pageSize)) ? 'bg-[#f3f4f6] cursor-not-allowed' : 'bg-white cursor-pointer'
+                }`}
+              >
+                Sau
+              </button>
+            </div>
+          </div>
         </div>
+
 
         {/* CỘT PHẢI: Form chi tiết & danh sách bác sĩ thuộc khoa */}
         <div className="flex-1 flex flex-col h-full bg-white">
@@ -337,16 +403,16 @@ function DanhMucKhoa() {
                   <div className="mt-5">
                     <h4 className="text-[13px] font-[750] text-[var(--text-main)] flex items-center gap-1.5 mb-2.5">
                       <Users size={16} className="text-[var(--primary)]" />
-                      Danh sách Bác sĩ thuộc khoa ({getDoctorsInKhoa(selectedKhoa.tenKhoa).length})
+                      Danh sách Bác sĩ thuộc khoa ({getDoctorsInKhoa(selectedKhoa).length})
                     </h4>
                     
-                    {getDoctorsInKhoa(selectedKhoa.tenKhoa).length === 0 ? (
+                    {getDoctorsInKhoa(selectedKhoa).length === 0 ? (
                       <div className="p-4 border border-dashed border-[var(--border-color)] rounded-lg text-[var(--text-muted)] text-[12.5px] text-center">
                         Khoa này hiện tại chưa có bác sĩ trực thuộc.
                       </div>
                     ) : (
                       <div className="flex flex-col gap-2 max-h-[300px] overflow-y-auto">
-                        {getDoctorsInKhoa(selectedKhoa.tenKhoa).map((doc) => (
+                        {getDoctorsInKhoa(selectedKhoa).map((doc) => (
                           <div key={doc.maNV} className="border border-[var(--border-color)] rounded-lg py-2.5 px-3.5 text-[12.5px] flex justify-between items-center bg-[var(--bg-main)]">
                             <div className="flex items-center gap-2">
                               <User size={14} className="text-[var(--primary)]" />

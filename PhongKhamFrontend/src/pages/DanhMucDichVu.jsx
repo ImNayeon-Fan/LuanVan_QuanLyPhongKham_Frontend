@@ -4,8 +4,14 @@ import {
   ArrowLeft, Plus, Trash2, Save, Check, X, Database, Activity
 } from 'lucide-react';
 import { useToast } from '../utils/ToastContext';
+import { 
+  apiGetDichVuCLSList,
+  apiAddDichVuCLS,
+  apiUpdateDichVuCLS,
+  apiDeleteDichVuCLS
+} from '../utils/api';
 
-// Dữ liệu mẫu dịch vụ cận lâm sàng gốc
+// Dữ liệu mẫu dịch vụ cận lâm sàng gốc (dự phòng)
 const defaultDichVuData = [
   { maDV: 'DV001', tenDV: 'Siêu âm ổ bụng tổng quát', giaTien: 150000, trangThai: true },
   { maDV: 'DV002', tenDV: 'X-Quang ngực thẳng (Kỹ thuật số)', giaTien: 120000, trangThai: true },
@@ -28,19 +34,49 @@ function DanhMucDichVu() {
   const [dvForm, setDvForm] = useState({ maDV: '', tenDV: '', giaTien: '', trangThai: true });
   const [dvFilters, setDvFilters] = useState({ maDV: '', tenDV: '' });
   const [dvPage, setDvPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  const itemsPerPage = 10;
-
-  // Tải dữ liệu từ LocalStorage khi khởi tạo trang
-  useEffect(() => {
-    const storedDV = localStorage.getItem('danhMucDichVuCLS');
-    if (storedDV) {
-      setDvList(JSON.parse(storedDV));
-    } else {
-      localStorage.setItem('danhMucDichVuCLS', JSON.stringify(defaultDichVuData));
-      setDvList(defaultDichVuData);
+  // Tải danh sách dịch vụ y tế từ Backend API
+  const loadDVList = async () => {
+    try {
+      setIsLoading(true);
+      const response = await apiGetDichVuCLSList(dvFilters.maDV, dvFilters.tenDV, null, dvPage, itemsPerPage);
+      if (response && response.data) {
+        const mappedData = response.data.map(item => ({
+          maDV: item.MaDV || item.maDV || '',
+          tenDV: item.TenDV || item.tenDV || '',
+          giaTien: item.GiaTien !== undefined && item.GiaTien !== null ? item.GiaTien : 0,
+          trangThai: item.TrangThai !== undefined ? item.TrangThai : true
+        }));
+        setDvList(mappedData);
+        setTotalCount(response.total || 0);
+      } else {
+        setDvList([]);
+        setTotalCount(0);
+      }
+    } catch (error) {
+      console.error('Lỗi tải danh mục dịch vụ CLS:', error);
+      showError('Không thể tải danh mục dịch vụ từ hệ thống: ' + (error.message || error));
+      if (error.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('currentUser');
+        navigate('/login');
+      }
+    } finally {
+      setIsLoading(false);
     }
-  }, []);
+  };
+
+  // Cơ chế Debounce (250ms) cho việc gõ bộ lọc tìm kiếm
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      loadDVList();
+    }, 250);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [dvFilters.maDV, dvFilters.tenDV, dvPage, itemsPerPage]);
 
   // Đồng bộ thông tin form khi người dùng chọn một hàng trong danh sách
   useEffect(() => {
@@ -48,7 +84,7 @@ function DanhMucDichVu() {
       setDvForm({
         maDV: selectedDV.maDV || '',
         tenDV: selectedDV.tenDV || '',
-        giaTien: selectedDV.giaTien || '',
+        giaTien: selectedDV.giaTien !== undefined ? selectedDV.giaTien : '',
         trangThai: selectedDV.trangThai !== undefined ? selectedDV.trangThai : true
       });
     } else {
@@ -56,17 +92,11 @@ function DanhMucDichVu() {
     }
   }, [selectedDV]);
 
-  // Hàm lọc tìm kiếm theo mã hoặc tên dịch vụ
-  const filteredDV = dvList.filter(item => 
-    (item.maDV || '').toLowerCase().includes(dvFilters.maDV.toLowerCase()) &&
-    (item.tenDV || '').toLowerCase().includes(dvFilters.tenDV.toLowerCase())
-  );
-
-  // Tính toán phân trang cho danh sách hiển thị
-  const totalDvPages = Math.max(1, Math.ceil(filteredDV.length / itemsPerPage));
+  // Biến phục vụ hiển thị đồng bộ với mã JSX cũ
+  const displayedDV = dvList;
+  const totalDvPages = Math.max(1, Math.ceil(totalCount / itemsPerPage));
   const activeDvPage = Math.min(dvPage, totalDvPages);
   const dvStartIdx = (activeDvPage - 1) * itemsPerPage;
-  const displayedDV = filteredDV.slice(dvStartIdx, dvStartIdx + itemsPerPage);
 
   // Thay đổi bộ lọc tìm kiếm và reset trang về 1
   const handleDvFilterChange = (key, val) => {
@@ -76,13 +106,13 @@ function DanhMucDichVu() {
 
   // Khởi tạo một dịch vụ mới với mã tăng tự động
   const handleAddNewDv = () => {
-    const nextNum = dvList.length + 1;
+    const nextNum = totalCount + 1;
     const newCode = `DV${String(nextNum).padStart(3, '0')}`;
     setSelectedDV({ maDV: newCode, tenDV: '', giaTien: 100000, trangThai: true, isNew: true });
   };
 
   // Xử lý lưu thông tin (Thêm mới hoặc Cập nhật)
-  const handleSaveDv = (e) => {
+  const handleSaveDv = async (e) => {
     e.preventDefault();
     if (!dvForm.maDV.trim()) {
       showError('Vui lòng nhập Mã dịch vụ!');
@@ -104,35 +134,43 @@ function DanhMucDichVu() {
       trangThai: dvForm.trangThai
     };
 
-    let newList = [];
-    if (selectedDV?.isNew) {
-      const exists = dvList.some(item => item.maDV.toUpperCase() === updatedRecord.maDV);
-      if (exists) {
-        showError('Mã dịch vụ này đã tồn tại trong danh mục!');
-        return;
+    try {
+      if (selectedDV?.isNew) {
+        await apiAddDichVuCLS(updatedRecord);
+        showSuccess('Thêm mới dịch vụ cận lâm sàng & xét nghiệm thành công!');
+      } else {
+        await apiUpdateDichVuCLS(selectedDV.maDV, {
+          tenDV: updatedRecord.tenDV,
+          giaTien: updatedRecord.giaTien,
+          trangThai: updatedRecord.trangThai
+        });
+        showSuccess('Cập nhật dịch vụ y tế CLS thành công!');
       }
-      newList = [...dvList, updatedRecord];
-    } else {
-      newList = dvList.map(item => item.maDV === selectedDV.maDV ? updatedRecord : item);
+      setSelectedDV(updatedRecord);
+      loadDVList();
+    } catch (error) {
+      console.error('Lỗi khi lưu dịch vụ CLS:', error);
+      showError('Không thể lưu thông tin dịch vụ: ' + (error.message || 'Lỗi hệ thống'));
     }
-
-    setDvList(newList);
-    localStorage.setItem('danhMucDichVuCLS', JSON.stringify(newList));
-    setSelectedDV(updatedRecord);
-    showSuccess('Lưu danh mục dịch vụ cận lâm sàng thành công!');
   };
 
   // Xóa dịch vụ y tế khỏi danh mục
-  const handleDeleteDv = (maDV) => {
+  const handleDeleteDv = async (maDV) => {
     if (window.confirm(`Bạn có chắc chắn muốn xóa dịch vụ ${maDV} khỏi danh mục?`)) {
-      const newList = dvList.filter(item => item.maDV !== maDV);
-      setDvList(newList);
-      localStorage.setItem('danhMucDichVuCLS', JSON.stringify(newList));
-      if (selectedDV && selectedDV.maDV === maDV) {
-        setSelectedDV(null);
+      try {
+        await apiDeleteDichVuCLS(maDV);
+        showSuccess('Xóa dịch vụ y tế CLS thành công!');
+        if (selectedDV && selectedDV.maDV === maDV) {
+          setSelectedDV(null);
+        }
+        loadDVList();
+      } catch (error) {
+        console.error('Lỗi khi xóa dịch vụ CLS:', error);
+        showError('Không thể xóa dịch vụ: ' + (error.message || 'Lỗi hệ thống'));
       }
     }
   };
+
 
   return (
     <div className="kb-wrapper h-screen overflow-hidden">
@@ -210,7 +248,13 @@ function DanhMucDichVu() {
                 </tr>
               </thead>
               <tbody>
-                {displayedDV.length === 0 ? (
+                {isLoading ? (
+                  <tr>
+                    <td colSpan="6" className="text-center p-[30px] text-[var(--text-muted)]">
+                      Đang tải danh mục dịch vụ cận lâm sàng...
+                    </td>
+                  </tr>
+                ) : displayedDV.length === 0 ? (
                   <tr>
                     <td colSpan="6" className="text-center p-[30px] text-[var(--text-muted)]">
                       Không tìm thấy dịch vụ nào khớp với bộ lọc.
@@ -269,10 +313,27 @@ function DanhMucDichVu() {
           </div>
 
           {/* Bộ điều khiển phân trang */}
-          <div className="h-[45px] bg-white border-t border-[var(--border-color)] flex items-center justify-between px-5 text-[13px]">
-            <span className="text-[var(--text-muted)]">
-              Hiển thị từ <b>{dvStartIdx + 1}</b> đến <b>{Math.min(dvStartIdx + itemsPerPage, filteredDV.length)}</b> trong tổng số <b>{filteredDV.length}</b> dịch vụ
-            </span>
+          <div className="h-[45px] bg-white border-t border-[var(--border-color)] flex items-center justify-between px-5 text-[13px] shrink-0">
+            <div className="flex items-center gap-4">
+              <span className="text-[var(--text-muted)]">
+                Hiển thị từ <b>{totalCount === 0 ? 0 : dvStartIdx + 1}</b> đến <b>{Math.min(dvStartIdx + itemsPerPage, totalCount)}</b> trong tổng số <b>{totalCount}</b> dịch vụ
+              </span>
+              <div className="flex items-center gap-1.5 text-xs text-[var(--text-muted)] whitespace-nowrap">
+                <span>| Hiển thị:</span>
+                <select
+                  value={itemsPerPage}
+                  onChange={e => {
+                    setItemsPerPage(Number(e.target.value));
+                    setDvPage(1);
+                  }}
+                  className="form-input h-[26px] !py-0 !px-1.5 text-xs w-[85px] font-semibold border-[var(--border-color)] rounded bg-white cursor-pointer"
+                >
+                  <option value={10}>10 hàng</option>
+                  <option value={50}>50 hàng</option>
+                  <option value={100}>100 hàng</option>
+                </select>
+              </div>
+            </div>
             <div className="flex gap-[5px]">
               <button 
                 disabled={dvPage === 1}

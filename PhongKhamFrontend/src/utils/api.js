@@ -268,3 +268,76 @@ export const apiDeleteICD = async (maICD) => {
     method: 'DELETE'
   });
 };
+
+// API Lấy danh sách danh mục dịch vụ y tế CLS kết nối với Backend thực tế
+export const apiGetDichVuCLSList = async (maDV = '', tenDV = '', trangThai = null, page = 1, pageSize = 10) => {
+  const queryParams = new URLSearchParams();
+  if (maDV) queryParams.append('maDV', maDV);
+  if (tenDV) queryParams.append('tenDV', tenDV);
+  if (trangThai !== null && trangThai !== undefined && trangThai !== '') {
+    queryParams.append('trangThai', trangThai);
+  }
+  queryParams.append('page', page);
+  queryParams.append('pageSize', pageSize);
+
+  return await apiFetch(`/DichVuCLS?${queryParams.toString()}`);
+};
+
+// API Thêm mới dịch vụ y tế CLS kết nối với Backend thực tế
+export const apiAddDichVuCLS = async (dichVuData) => {
+  return await apiFetch('/DichVuCLS', {
+    method: 'POST',
+    body: JSON.stringify(dichVuData)
+  });
+};
+
+// API Cập nhật dịch vụ y tế CLS kết nối với Backend thực tế
+export const apiUpdateDichVuCLS = async (maDV, dichVuData) => {
+  return await apiFetch(`/DichVuCLS/${maDV}`, {
+    method: 'PUT',
+    body: JSON.stringify(dichVuData)
+  });
+};
+
+// API Xóa dịch vụ y tế CLS kết nối với Backend thực tế
+export const apiDeleteDichVuCLS = async (maDV) => {
+  return await apiFetch(`/DichVuCLS/${maDV}`, {
+    method: 'DELETE'
+  });
+};
+
+// API Lấy danh sách danh mục khoa phòng kết nối với Backend thực tế
+export const apiGetKhoaList = async (maKhoa = '', tenKhoa = '', page = 1, pageSize = 10) => {
+  const queryParams = new URLSearchParams();
+  if (maKhoa) queryParams.append('maKhoa', maKhoa);
+  if (tenKhoa) queryParams.append('tenKhoa', tenKhoa);
+  queryParams.append('page', page);
+  queryParams.append('pageSize', pageSize);
+
+  return await apiFetch(`/DanhMucKhoa?${queryParams.toString()}`);
+};
+
+// API Thêm mới khoa phòng kết nối với Backend thực tế
+export const apiAddKhoa = async (khoaData) => {
+  return await apiFetch('/DanhMucKhoa', {
+    method: 'POST',
+    body: JSON.stringify(khoaData)
+  });
+};
+
+// API Cập nhật khoa phòng kết nối với Backend thực tế
+export const apiUpdateKhoa = async (maKhoa, khoaData) => {
+  return await apiFetch(`/DanhMucKhoa/${maKhoa}`, {
+    method: 'PUT',
+    body: JSON.stringify(khoaData)
+  });
+};
+
+// API Xóa khoa phòng kết nối với Backend thực tế
+export const apiDeleteKhoa = async (maKhoa) => {
+  return await apiFetch(`/DanhMucKhoa/${maKhoa}`, {
+    method: 'DELETE'
+  });
+};
+
+

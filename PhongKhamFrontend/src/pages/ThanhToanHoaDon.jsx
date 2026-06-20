@@ -6,6 +6,8 @@ import {
   AlertCircle, Plus, Trash2, FileText, Activity, Pill, ClipboardList, CreditCard
 } from 'lucide-react';
 import { useToast } from '../utils/ToastContext';
+import { apiGetDichVuCLSList } from '../utils/api';
+
 
 // Từ điển đơn giá dịch vụ cận lâm sàng dự phòng
 const FALLBACK_SERVICE_PRICES = {
@@ -212,11 +214,34 @@ function ThanhToanHoaDon() {
       }
     } catch(e) {}
 
-    // Load các danh mục chuẩn
-    try {
-      const storedDV = localStorage.getItem('danhMucDichVuCLS');
-      if (storedDV) setDanhMucDichVu(JSON.parse(storedDV));
+    // Fetch danh mục dịch vụ cận lâm sàng từ Backend
+    const fetchDichVuCLS = async () => {
+      try {
+        const response = await apiGetDichVuCLSList('', '', null, 1, 100);
+        if (response && response.data) {
+          const mappedData = response.data.map(item => ({
+            maDV: item.MaDV || item.maDV || '',
+            tenDV: item.TenDV || item.tenDV || '',
+            giaTien: item.GiaTien !== undefined && item.GiaTien !== null ? item.GiaTien : 0,
+            trangThai: item.TrangThai !== undefined ? item.TrangThai : true
+          }));
+          setDanhMucDichVu(mappedData);
+          return;
+        }
+      } catch (err) {
+        console.error("Failed to load services from backend, using fallback:", err);
+      }
       
+      // Fallback
+      try {
+        const storedDV = localStorage.getItem('danhMucDichVuCLS');
+        if (storedDV) setDanhMucDichVu(JSON.parse(storedDV));
+      } catch (e) {}
+    };
+
+    fetchDichVuCLS();
+    
+    try {
       const storedThuoc = localStorage.getItem('danhMucThuoc');
       if (storedThuoc) setDanhMucThuoc(JSON.parse(storedThuoc));
 
@@ -224,6 +249,7 @@ function ThanhToanHoaDon() {
       if (storedVT) setDanhMucVatTu(JSON.parse(storedVT));
     } catch(e) {}
   }, [navigate]);
+
 
   // Đồng bộ phương thức thanh toán của phiếu khi thay đổi bệnh nhân
   useEffect(() => {

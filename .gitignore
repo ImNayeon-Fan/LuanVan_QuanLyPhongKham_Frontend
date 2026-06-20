@@ -7,7 +7,6 @@ PhongKhamFrontend/dist/
 dist/
 
 # Database & Backend (Ignore in Frontend repo)
-PhongKhamDatabase/
 PhongKhamBackend/
 
 # Scratch & Temporary files

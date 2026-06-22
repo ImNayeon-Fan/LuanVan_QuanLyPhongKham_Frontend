@@ -314,12 +314,12 @@ export const apiGetKhoaList = async (maKhoa = '', tenKhoa = '', page = 1, pageSi
   queryParams.append('page', page);
   queryParams.append('pageSize', pageSize);
 
-  return await apiFetch(`/DanhMucKhoa?${queryParams.toString()}`);
+  return await apiFetch(`/Khoa?${queryParams.toString()}`);
 };
 
 // API Thêm mới khoa phòng kết nối với Backend thực tế
 export const apiAddKhoa = async (khoaData) => {
-  return await apiFetch('/DanhMucKhoa', {
+  return await apiFetch('/Khoa', {
     method: 'POST',
     body: JSON.stringify(khoaData)
   });
@@ -327,7 +327,7 @@ export const apiAddKhoa = async (khoaData) => {
 
 // API Cập nhật khoa phòng kết nối với Backend thực tế
 export const apiUpdateKhoa = async (maKhoa, khoaData) => {
-  return await apiFetch(`/DanhMucKhoa/${maKhoa}`, {
+  return await apiFetch(`/Khoa/${maKhoa}`, {
     method: 'PUT',
     body: JSON.stringify(khoaData)
   });
@@ -335,7 +335,7 @@ export const apiUpdateKhoa = async (maKhoa, khoaData) => {
 
 // API Xóa khoa phòng kết nối với Backend thực tế
 export const apiDeleteKhoa = async (maKhoa) => {
-  return await apiFetch(`/DanhMucKhoa/${maKhoa}`, {
+  return await apiFetch(`/Khoa/${maKhoa}`, {
     method: 'DELETE'
   });
 };

@@ -340,4 +340,40 @@ export const apiDeleteKhoa = async (maKhoa) => {
   });
 };
 
+// API Lấy danh sách danh mục thuốc kết nối với Backend thực tế qua SQL Server
+export const apiGetThuocList = async (maThuoc = '', tenThuoc = '', hoatChat = '', donViTinh = '', page = 1, pageSize = 10) => {
+  const queryParams = new URLSearchParams();
+  if (maThuoc) queryParams.append('maThuoc', maThuoc);
+  if (tenThuoc) queryParams.append('tenThuoc', tenThuoc);
+  if (hoatChat) queryParams.append('hoatChat', hoatChat);
+  if (donViTinh) queryParams.append('donViTinh', donViTinh);
+  queryParams.append('page', page);
+  queryParams.append('pageSize', pageSize);
+
+  return await apiFetch(`/Thuoc?${queryParams.toString()}`);
+};
+
+// API Thêm mới thuốc vào danh mục kết nối với Backend thực tế
+export const apiAddThuoc = async (thuocData) => {
+  return await apiFetch('/Thuoc', {
+    method: 'POST',
+    body: JSON.stringify(thuocData)
+  });
+};
+
+// API Cập nhật thông tin thuốc kết nối với Backend thực tế
+export const apiUpdateThuoc = async (maThuoc, thuocData) => {
+  return await apiFetch(`/Thuoc/${maThuoc}`, {
+    method: 'PUT',
+    body: JSON.stringify(thuocData)
+  });
+};
+
+// API Xóa thuốc khỏi danh mục (Soft Delete) kết nối với Backend thực tế
+export const apiDeleteThuoc = async (maThuoc) => {
+  return await apiFetch(`/Thuoc/${maThuoc}`, {
+    method: 'DELETE'
+  });
+};
+
 

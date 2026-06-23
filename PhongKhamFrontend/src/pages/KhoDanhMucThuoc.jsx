@@ -4,18 +4,24 @@ import {
   ArrowLeft, Plus, Trash2, Save, Database, Pill
 } from 'lucide-react';
 import { useToast } from '../utils/ToastContext';
+import {
+  apiGetThuocList,
+  apiAddThuoc,
+  apiUpdateThuoc,
+  apiDeleteThuoc
+} from '../utils/api';
 
 // Dữ liệu mẫu danh mục thuốc ban đầu
 const DEFAULT_DRUGS = [
   { maThuoc: 'TH001', tenThuoc: 'Paracetamol 500mg', hoatChat: 'Paracetamol', donViTinh: 'Viên' },
   { maThuoc: 'TH002', tenThuoc: 'Amoxicillin 500mg', hoatChat: 'Amoxicillin trihydrate', donViTinh: 'Viên' },
   { maThuoc: 'TH003', tenThuoc: 'Panadol Extra', hoatChat: 'Paracetamol + Caffeine', donViTinh: 'Viên' },
-  { maThuoc: 'TH004', tenThuoc: 'Decolgen Forte', hoatChat: 'Paracetamol + Chlorpheniramine', donViTinh: 'Vỉ' },
+  { maThuoc: 'TH004', tenThuoc: 'Decolgen Forte', hoatChat: 'Paracetamol + Chlorpheniramine', donViTinh: 'Viên' },
   { maThuoc: 'TH005', tenThuoc: 'Gaviscon Dual Action', hoatChat: 'Sodium alginate + Calcium carbonate', donViTinh: 'Chai' },
   { maThuoc: 'TH006', tenThuoc: 'Augmentin 1g', hoatChat: 'Amoxicillin + Clavulanic acid', donViTinh: 'Hộp' },
 ];
 
-const DON_VI_OPTIONS = ['Viên', 'Vỉ', 'Hộp', 'Chai', 'Gói', 'Ống', 'Tuýp'];
+const DON_VI_OPTIONS = ['Viên', 'Hộp', 'Chai', 'Gói', 'Ống', 'Tuýp'];
 
 /**
  * Component Quản lý Danh mục Thuốc trong phòng khám
@@ -25,14 +31,20 @@ function KhoDanhMucThuoc() {
   const { showSuccess, showError } = useToast();
   
   const [drugs, setDrugs] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
   const [selectedDrug, setSelectedDrug] = useState(null);
+
+  // Vai trò người dùng có quyền quản trị kho thuốc hay không (Admin, QuanLyKhoThuoc)
+  const [isManager, setIsManager] = useState(false);
 
   // State thông tin form điền
   const [formData, setFormData] = useState({
     maThuoc: '',
     tenThuoc: '',
     hoatChat: '',
-    donViTinh: 'Viên'
+    donViTinh: 'Viên',
+    isActive: true
   });
 
   // State bộ lọc tìm kiếm
@@ -45,27 +57,67 @@ function KhoDanhMucThuoc() {
 
   // State quản lý phân trang
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const [pageSize, setPageSize] = useState(10);
 
-  // Lấy dữ liệu thuốc từ LocalStorage
+  // Kiểm tra vai trò của người dùng đăng nhập hiện tại từ LocalStorage
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem('danhMucThuoc');
-      if (stored) {
-        setDrugs(JSON.parse(stored));
-      } else {
-        localStorage.setItem('danhMucThuoc', JSON.stringify(DEFAULT_DRUGS));
-        setDrugs(DEFAULT_DRUGS);
+    const userStr = localStorage.getItem('currentUser');
+    if (userStr) {
+      try {
+        const u = JSON.parse(userStr);
+        const role = u.roleName || u.role || 'Admin';
+        setIsManager(role === 'Admin' || role === 'QuanLyKhoThuoc');
+      } catch (e) {
+        setIsManager(false);
       }
-    } catch (e) {
-      setDrugs(DEFAULT_DRUGS);
     }
   }, []);
 
-  // Reset trang về 1 khi đổi bộ lọc
+  // Lấy danh sách thuốc từ Backend API
+  const loadDrugs = async () => {
+    setIsLoading(true);
+    try {
+      const res = await apiGetThuocList(
+        filters.maThuoc.trim(),
+        filters.tenThuoc.trim(),
+        filters.hoatChat.trim(),
+        filters.donViTinh,
+        currentPage,
+        pageSize
+      );
+      if (res && res.data) {
+        setDrugs(res.data);
+        setTotalCount(res.total || 0);
+      } else {
+        setDrugs([]);
+        setTotalCount(0);
+      }
+    } catch (err) {
+      console.error('Lỗi tải danh mục thuốc từ máy chủ:', err);
+      showError('Không thể tải danh mục thuốc từ máy chủ: ' + (err.message || err));
+      if (err.status === 401) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('currentUser');
+        navigate('/login');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Reset trang về 1 khi đổi bộ lọc hoặc đổi kích thước trang
   useEffect(() => {
     setCurrentPage(1);
-  }, [filters]);
+  }, [filters.maThuoc, filters.tenThuoc, filters.hoatChat, filters.donViTinh, pageSize]);
+
+  // Bộ lọc tìm kiếm debounce (250ms) để tránh spam API
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      loadDrugs();
+    }, 250);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [filters.maThuoc, filters.tenThuoc, filters.hoatChat, filters.donViTinh, currentPage, pageSize]);
 
   // Điền thông tin vào form mỗi khi chọn một loại thuốc khác
   useEffect(() => {
@@ -74,34 +126,59 @@ function KhoDanhMucThuoc() {
         maThuoc: selectedDrug.maThuoc || '',
         tenThuoc: selectedDrug.tenThuoc || '',
         hoatChat: selectedDrug.hoatChat || '',
-        donViTinh: selectedDrug.donViTinh || 'Viên'
+        donViTinh: selectedDrug.donViTinh || 'Viên',
+        isActive: selectedDrug.isActive !== false
       });
     } else {
       setFormData({
         maThuoc: '',
         tenThuoc: '',
         hoatChat: '',
-        donViTinh: 'Viên'
+        donViTinh: 'Viên',
+        isActive: true
       });
     }
   }, [selectedDrug]);
 
-  // Bộ lọc danh mục thuốc
-  const filteredDrugs = drugs.filter(item => {
-    return (
-      (item.maThuoc || '').toLowerCase().includes(filters.maThuoc.toLowerCase()) &&
-      (item.tenThuoc || '').toLowerCase().includes(filters.tenThuoc.toLowerCase()) &&
-      (item.hoatChat || '').toLowerCase().includes(filters.hoatChat.toLowerCase()) &&
-      (item.donViTinh || '').toLowerCase().includes(filters.donViTinh.toLowerCase())
-    );
-  });
-
-  // Tính toán phân trang
-  const totalPages = Math.max(1, Math.ceil(filteredDrugs.length / itemsPerPage));
+  // Các biến tính phân trang phục vụ đồng bộ UI
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const activePage = Math.min(currentPage, totalPages);
-  const startIndex = (activePage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const displayedDrugs = filteredDrugs.slice(startIndex, endIndex);
+  const startIndex = (activePage - 1) * pageSize;
+  const endIndex = startIndex + drugs.length;
+  const displayedDrugs = drugs;
+
+  // Tính toán danh sách các trang hiển thị (collapsed pagination với dấu ba chấm)
+  const getPaginationItems = () => {
+    const pages = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (activePage <= 4) {
+        for (let i = 1; i <= 5; i++) {
+          pages.push(i);
+        }
+        pages.push('...');
+        pages.push(totalPages);
+      } else if (activePage >= totalPages - 3) {
+        pages.push(1);
+        pages.push('...');
+        for (let i = totalPages - 4; i <= totalPages; i++) {
+          pages.push(i);
+        }
+      } else {
+        pages.push(1);
+        pages.push('...');
+        pages.push(activePage - 1);
+        pages.push(activePage);
+        pages.push(activePage + 1);
+        pages.push('...');
+        pages.push(totalPages);
+      }
+    }
+    return pages;
+  };
 
   // Xử lý khi thay đổi input trên form nhập
   const handleInputChange = (key, val) => {
@@ -113,26 +190,44 @@ function KhoDanhMucThuoc() {
     setFilters({ ...filters, [key]: val });
   };
 
-  // Khởi tạo thêm mới thuốc với mã tự sinh tăng dần (THxxx)
-  const handleAddNew = () => {
-    const drugNumbers = drugs
-      .map(d => d.maThuoc)
-      .filter(id => /^TH\d+$/i.test(id))
-      .map(id => parseInt(id.replace(/^TH/i, ''), 10));
-    const nextNum = drugNumbers.length > 0 ? Math.max(...drugNumbers) + 1 : 1;
-    const newCode = `TH${String(nextNum).padStart(3, '0')}`;
+  // Khởi tạo thêm mới thuốc với mã tự sinh tăng dần dạng THxxx dựa trên toàn bộ thuốc hiện tại
+  const handleAddNew = async () => {
+    setIsLoading(true);
+    try {
+      // Tải tối đa 1000 thuốc để tính toán mã số tiếp theo chính xác nhất
+      const res = await apiGetThuocList('', '', '', '', 1, 1000);
+      const allDrugs = res.data || [];
+      const drugNumbers = allDrugs
+        .map(d => d.maThuoc)
+        .filter(id => /^TH\d+$/i.test(id))
+        .map(id => parseInt(id.replace(/^TH/i, ''), 10));
+      const nextNum = drugNumbers.length > 0 ? Math.max(...drugNumbers) + 1 : 1;
+      const newCode = `TH${String(nextNum).padStart(3, '0')}`;
 
-    setSelectedDrug({
-      maThuoc: newCode,
-      tenThuoc: '',
-      hoatChat: '',
-      donViTinh: 'Viên',
-      isNew: true
-    });
+      setSelectedDrug({
+        maThuoc: newCode,
+        tenThuoc: '',
+        hoatChat: '',
+        donViTinh: 'Viên',
+        isNew: true
+      });
+    } catch (error) {
+      console.error('Lỗi khi tự động tính toán mã thuốc tiếp theo:', error);
+      showError('Không thể tự động tính toán mã thuốc tiếp theo. Hãy nhập thủ công!');
+      setSelectedDrug({
+        maThuoc: '',
+        tenThuoc: '',
+        hoatChat: '',
+        donViTinh: 'Viên',
+        isNew: true
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // Lưu thông tin thuốc (Thêm mới hoặc Cập nhật)
-  const handleSave = (e) => {
+  // Lưu thông tin thuốc (Thêm mới hoặc Cập nhật) gọi qua API Backend
+  const handleSave = async (e) => {
     if (e) e.preventDefault();
     if (!formData.tenThuoc.trim()) {
       showError("Vui lòng nhập tên thuốc!");
@@ -143,36 +238,62 @@ function KhoDanhMucThuoc() {
       return;
     }
 
-    const updatedDrug = {
+    const payload = {
       maThuoc: formData.maThuoc.trim().toUpperCase(),
       tenThuoc: formData.tenThuoc.trim(),
-      hoatChat: formData.hoatChat.trim(),
+      hoatChat: formData.hoatChat ? formData.hoatChat.trim() : null,
       donViTinh: formData.donViTinh
     };
 
-    let newList = [];
-    const isEditingExisting = drugs.some(d => d.maThuoc === updatedDrug.maThuoc);
+    setIsLoading(true);
+    try {
+      if (selectedDrug?.isNew) {
+        // Gọi API thêm mới
+        const res = await apiAddThuoc(payload);
+        showSuccess(res.message || "Thêm mới danh mục thuốc thành công!");
+        setSelectedDrug(null);
+      } else {
+        // Gọi API cập nhật thông tin chung
+        const updatePayload = {
+          tenThuoc: payload.tenThuoc,
+          hoatChat: payload.hoatChat,
+          donViTinh: payload.donViTinh
+        };
+        const res = await apiUpdateThuoc(payload.maThuoc, updatePayload);
 
-    if (isEditingExisting) {
-      newList = drugs.map(d => d.maThuoc === updatedDrug.maThuoc ? updatedDrug : d);
-    } else {
-      newList = [...drugs, updatedDrug];
+        // Nếu chuyển đổi trạng thái từ Active sang Inactive (ngừng sử dụng)
+        if (selectedDrug.isActive !== false && formData.isActive === false) {
+          await apiDeleteThuoc(payload.maThuoc);
+        }
+
+        showSuccess(res.message || "Cập nhật thông tin danh mục thuốc thành công!");
+        setSelectedDrug(null);
+      }
+      loadDrugs(); // Nạp lại danh sách
+    } catch (error) {
+      console.error('Lỗi lưu thông tin thuốc:', error);
+      showError('Lưu thông tin thất bại: ' + (error.message || error));
+    } finally {
+      setIsLoading(false);
     }
-
-    setDrugs(newList);
-    localStorage.setItem('danhMucThuoc', JSON.stringify(newList));
-    setSelectedDrug(updatedDrug);
-    showSuccess("Lưu thông tin danh mục thuốc thành công!");
   };
 
-  // Xóa thuốc khỏi danh mục
-  const handleDeleteDrug = (maThuoc, tenThuoc) => {
-    if (window.confirm(`Bạn có chắc chắn muốn xóa thuốc: ${tenThuoc} (Mã: ${maThuoc})?`)) {
-      const newList = drugs.filter(d => d.maThuoc !== maThuoc);
-      setDrugs(newList);
-      localStorage.setItem('danhMucThuoc', JSON.stringify(newList));
-      if (selectedDrug && selectedDrug.maThuoc === maThuoc) {
-        setSelectedDrug(null);
+  // Vô hiệu hóa hoạt động của thuốc (Soft Delete)
+  const handleDeleteDrug = async (maThuoc, tenThuoc) => {
+    if (window.confirm(`Bạn có chắc chắn muốn ngừng hoạt động của thuốc: ${tenThuoc} (Mã: ${maThuoc})?`)) {
+      setIsLoading(true);
+      try {
+        const res = await apiDeleteThuoc(maThuoc);
+        showSuccess(res.message || "Đã ngừng hoạt động danh mục thuốc thành công!");
+        if (selectedDrug && selectedDrug.maThuoc === maThuoc) {
+          setSelectedDrug(null);
+        }
+        loadDrugs();
+      } catch (error) {
+        console.error('Lỗi ngừng hoạt động thuốc:', error);
+        showError('Không thể thực hiện: ' + (error.message || error));
+      } finally {
+        setIsLoading(false);
       }
     }
   };
@@ -208,12 +329,14 @@ function KhoDanhMucThuoc() {
                 Danh mục dược phẩm hiện tại
               </h3>
             </div>
-            <button 
-              onClick={handleAddNew}
-              className="btn-primary h-8 text-[12.5px] px-3 flex items-center gap-1 !w-auto !mt-0 shrink-0"
-            >
-              <Plus size={14} /> Thêm thuốc mới
-            </button>
+            {isManager && (
+              <button 
+                onClick={handleAddNew}
+                className="btn-primary h-8 text-[12.5px] px-3 flex items-center gap-1 !w-auto !mt-0 shrink-0"
+              >
+                <Plus size={14} /> Thêm thuốc mới
+              </button>
+            )}
           </div>
 
           {/* Bảng dữ liệu thuốc */}
@@ -226,7 +349,8 @@ function KhoDanhMucThuoc() {
                   <th className="w-[220px] p-2">Tên thuốc</th>
                   <th className="p-2">Hoạt chất chính</th>
                   <th className="w-[100px] p-2">Đơn vị tính</th>
-                  <th className="w-[60px] p-2 text-center">Xóa</th>
+                  {isManager && <th className="w-[155px] p-2 text-center">Trạng thái</th>}
+                  {isManager && <th className="w-[60px] p-2 text-center">Xóa</th>}
                 </tr>
                 {/* Lọc tìm kiếm */}
                 <tr className="bg-[var(--bg-main)] border-b border-[var(--border-color)]">
@@ -270,50 +394,76 @@ function KhoDanhMucThuoc() {
                       ))}
                     </select>
                   </td>
-                  <td></td>
+                  {isManager && <td></td>}
+                  {isManager && <td></td>}
                 </tr>
               </thead>
               <tbody>
-                {displayedDrugs.map((drug, idx) => {
-                  const isSelected = selectedDrug && selectedDrug.maThuoc === drug.maThuoc;
-                  return (
-                    <tr 
-                      key={drug.maThuoc}
-                      className={`kb-table-row cursor-pointer transition-colors duration-150 ${isSelected ? 'bg-[var(--primary-light)]' : 'bg-transparent'}`}
-                      onClick={() => setSelectedDrug(drug)}
-                    >
-                      <td className="text-center py-2.5 px-2 text-[var(--text-muted)]">
-                        {startIndex + idx + 1}
-                      </td>
-                      <td className={`font-semibold py-2.5 px-2 ${isSelected ? 'text-[var(--primary-hover)]' : 'text-[var(--text-main)]'}`}>
-                        {drug.maThuoc}
-                      </td>
-                      <td className="font-[650] py-2.5 px-2">{drug.tenThuoc}</td>
-                      <td className={`py-2.5 px-2 ${drug.hoatChat ? 'not-italic text-[var(--text-main)]' : 'italic text-[var(--text-muted)]'}`}>
-                        {drug.hoatChat || '—'}
-                      </td>
-                      <td className="py-2.5 px-2 font-medium">{drug.donViTinh}</td>
-                      <td className="py-2.5 px-2 text-center">
-                        <button 
-                          className="kb-icon-btn kb-icon-btn--danger mx-auto"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteDrug(drug.maThuoc, drug.tenThuoc);
-                          }}
-                          title="Xóa thuốc"
-                        >
-                          <Trash2 size={13} />
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })}
-                {filteredDrugs.length === 0 && (
+                {isLoading ? (
                   <tr>
-                    <td colSpan={6} className="text-center p-10 text-[var(--text-muted)]">
+                    <td colSpan={isManager ? 7 : 5} className="text-center p-10 text-[var(--text-muted)]">
+                      Đang tải danh mục thuốc...
+                    </td>
+                  </tr>
+                ) : displayedDrugs.length === 0 ? (
+                  <tr>
+                    <td colSpan={isManager ? 7 : 5} className="text-center p-10 text-[var(--text-muted)]">
                       Không tìm thấy thuốc trùng khớp với bộ lọc tìm kiếm
                     </td>
                   </tr>
+                ) : (
+                  displayedDrugs.map((drug, idx) => {
+                    const isSelected = selectedDrug && selectedDrug.maThuoc === drug.maThuoc;
+                    return (
+                      <tr 
+                        key={drug.maThuoc}
+                        className={`kb-table-row cursor-pointer transition-colors duration-150 ${isSelected ? 'bg-[var(--primary-light)]' : 'bg-transparent'} ${drug.isActive === false ? 'opacity-65' : ''}`}
+                        onClick={() => setSelectedDrug(drug)}
+                      >
+                        <td className="text-center py-2.5 px-2 text-[var(--text-muted)]">
+                          {startIndex + idx + 1}
+                        </td>
+                        <td className={`font-semibold py-2.5 px-2 ${isSelected ? 'text-[var(--primary-hover)]' : 'text-[var(--text-main)]'}`}>
+                          {drug.maThuoc}
+                        </td>
+                        <td className="font-[650] py-2.5 px-2">{drug.tenThuoc}</td>
+                        <td className={`py-2.5 px-2 ${drug.hoatChat ? 'not-italic text-[var(--text-main)]' : 'italic text-[var(--text-muted)]'}`}>
+                          {drug.hoatChat || '—'}
+                        </td>
+                        <td className="py-2.5 px-2 font-medium">{drug.donViTinh}</td>
+                        {isManager && (
+                          <td className="py-2.5 px-2 text-center font-medium">
+                            {drug.isActive !== false ? (
+                              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-green-100 text-green-700 whitespace-nowrap">
+                                Đang được sử dụng
+                              </span>
+                            ) : (
+                              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-gray-100 text-gray-500 whitespace-nowrap">
+                                Ngừng sử dụng
+                              </span>
+                            )}
+                          </td>
+                        )}
+                        {isManager && (
+                          <td className="py-2.5 px-2 text-center">
+                            <button 
+                              className={`kb-icon-btn kb-icon-btn--danger mx-auto ${drug.isActive === false ? 'opacity-30 cursor-not-allowed' : ''}`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (drug.isActive !== false) {
+                                  handleDeleteDrug(drug.maThuoc, drug.tenThuoc);
+                                }
+                              }}
+                              disabled={drug.isActive === false}
+                              title={drug.isActive === false ? "Thuốc đã ngừng sử dụng" : "Ngừng sử dụng thuốc"}
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </td>
+                        )}
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
@@ -321,44 +471,68 @@ function KhoDanhMucThuoc() {
 
           {/* Phân trang dưới bảng */}
           <div className="border-t border-[var(--border-color)] py-2 px-4 flex justify-between items-center text-[12.5px] text-[var(--text-muted)] bg-[var(--bg-main)]">
-            <div className="flex gap-1 items-center">
-              <button 
-                disabled={activePage === 1} 
-                onClick={() => setCurrentPage(activePage - 1)}
-                className={`h-6 w-6 rounded border border-[#0ea5e9] flex items-center justify-center text-[11px] font-bold transition-all ${
-                  activePage === 1 
-                    ? 'opacity-40 cursor-not-allowed text-[#0ea5e9] bg-transparent' 
-                    : 'text-[#0ea5e9] bg-transparent hover:bg-[#e0f2fe] cursor-pointer'
-                }`}
-              >
-                &lt;
-              </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-                <button
-                  key={p}
-                  onClick={() => setCurrentPage(p)}
-                  className={`h-6 w-6 rounded border flex items-center justify-center text-[11px] font-bold transition-all cursor-pointer ${
-                    p === activePage
-                      ? "bg-[#0ea5e9] text-white border-[#0ea5e9]"
-                      : "bg-transparent text-[#0ea5e9] border-[#0ea5e9] hover:bg-[#e0f2fe]"
+            <div className="flex gap-3 items-center">
+              <div className="flex gap-1 items-center">
+                <button 
+                  disabled={activePage === 1} 
+                  onClick={() => setCurrentPage(activePage - 1)}
+                  className={`h-6 w-6 rounded border border-[#0ea5e9] flex items-center justify-center text-[11px] font-bold transition-all ${
+                    activePage === 1 
+                      ? 'opacity-40 cursor-not-allowed text-[#0ea5e9] bg-transparent' 
+                      : 'text-[#0ea5e9] bg-transparent hover:bg-[#e0f2fe] cursor-pointer'
                   }`}
                 >
-                  {p}
+                  &lt;
                 </button>
-              ))}
-              <button 
-                disabled={activePage === totalPages} 
-                onClick={() => setCurrentPage(activePage + 1)}
-                className={`h-6 w-6 rounded border border-[#0ea5e9] flex items-center justify-center text-[11px] font-bold transition-all ${
-                  activePage === totalPages 
-                    ? 'opacity-40 cursor-not-allowed text-[#0ea5e9] bg-transparent' 
-                    : 'text-[#0ea5e9] bg-transparent hover:bg-[#e0f2fe] cursor-pointer'
-                }`}
-              >
-                &gt;
-              </button>
+                {getPaginationItems().map((p, index) => {
+                  if (p === '...') {
+                    return (
+                      <span key={`dots-${index}`} className="px-1 text-[var(--text-muted)] select-none">
+                        ...
+                      </span>
+                    );
+                  }
+                  return (
+                    <button
+                      key={p}
+                      onClick={() => setCurrentPage(p)}
+                      className={`h-6 w-6 rounded border flex items-center justify-center text-[11px] font-bold transition-all cursor-pointer ${
+                        p === activePage
+                          ? "bg-[#0ea5e9] text-white border-[#0ea5e9]"
+                          : "bg-transparent text-[#0ea5e9] border-[#0ea5e9] hover:bg-[#e0f2fe]"
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  );
+                })}
+                <button 
+                  disabled={activePage === totalPages} 
+                  onClick={() => setCurrentPage(activePage + 1)}
+                  className={`h-6 w-6 rounded border border-[#0ea5e9] flex items-center justify-center text-[11px] font-bold transition-all ${
+                    activePage === totalPages 
+                      ? 'opacity-40 cursor-not-allowed text-[#0ea5e9] bg-transparent' 
+                      : 'text-[#0ea5e9] bg-transparent hover:bg-[#e0f2fe] cursor-pointer'
+                  }`}
+                >
+                  &gt;
+                </button>
+              </div>
+
+              <div className="flex items-center gap-1.5 border-l border-[var(--border-color)] pl-3">
+                <span className="whitespace-nowrap">Số dòng:</span>
+                <select 
+                  value={pageSize} 
+                  onChange={e => setPageSize(Number(e.target.value))}
+                  className="h-7 text-[12px] px-2 py-0 border border-gray-300 rounded bg-white text-gray-700 outline-none w-[65px] font-medium cursor-pointer"
+                >
+                  <option value={10}>10</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
+              </div>
             </div>
-            <span>Hiển thị {filteredDrugs.length === 0 ? 0 : startIndex + 1} - {Math.min(endIndex, filteredDrugs.length)} trên tổng {filteredDrugs.length} thuốc</span>
+            <span>Hiển thị {totalCount === 0 ? 0 : startIndex + 1} - {Math.min(endIndex, totalCount)} trên tổng {totalCount} thuốc</span>
           </div>
         </div>
 
@@ -369,7 +543,7 @@ function KhoDanhMucThuoc() {
             <span>CHI TIẾT DANH MỤC THUỐC Y KHOA</span>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-6 bg-white">
+          <div className="flex-1 overflow-y-auto p-4 bg-white">
             {selectedDrug === null ? (
               <div className="h-full flex flex-col items-center justify-center text-[var(--text-muted)] text-center gap-3">
                 <Pill size={48} className="opacity-25 text-[var(--primary)]" />
@@ -380,13 +554,13 @@ function KhoDanhMucThuoc() {
               </div>
             ) : (
               <form onSubmit={handleSave} className="h-full flex flex-col justify-between">
-                <div className="flex flex-col gap-[18px]">
-                  <div className="border-b border-dashed border-[var(--border-color)] pb-4">
-                    <h4 className="text-[13px] font-bold text-[var(--primary)] mb-4 flex items-center gap-1.5">
+                <div className="flex flex-col gap-2.5">
+                  <div className="border-b border-dashed border-[var(--border-color)] pb-2.5">
+                    <h4 className="text-[13px] font-bold text-[var(--primary)] mb-2 flex items-center gap-1.5">
                       <Pill size={14} /> THÔNG TIN DƯỢC PHẨM CHUNG
                     </h4>
                     
-                    <div className="flex flex-col gap-[14px]">
+                    <div className="flex flex-col gap-2">
                       <div className="form-group m-0">
                         <label className="form-label text-[12.5px]">Mã thuốc <span className="text-red-500">*</span></label>
                         <input 
@@ -396,7 +570,7 @@ function KhoDanhMucThuoc() {
                           value={formData.maThuoc}
                           onChange={e => handleInputChange('maThuoc', e.target.value)}
                           required
-                          disabled={!selectedDrug.isNew}
+                          disabled={!selectedDrug.isNew || !isManager}
                         />
                       </div>
 
@@ -409,6 +583,7 @@ function KhoDanhMucThuoc() {
                           value={formData.tenThuoc}
                           onChange={e => handleInputChange('tenThuoc', e.target.value)}
                           required
+                          disabled={!isManager}
                         />
                       </div>
 
@@ -418,22 +593,38 @@ function KhoDanhMucThuoc() {
                           type="text" 
                           className="form-input h-9 text-[13px]" 
                           placeholder="Hoạt chất chính/hàm lượng (VD: Paracetamol 500mg)..."
-                          value={formData.hoatChat}
+                          value={formData.hoatChat || ''}
                           onChange={e => handleInputChange('hoatChat', e.target.value)}
+                          disabled={!isManager}
                         />
                       </div>
 
                       <div className="form-group m-0">
                         <label className="form-label text-[12.5px]">Đơn vị tính <span className="text-red-500">*</span></label>
                         <select 
-                          className="form-input h-9 text-[13px] px-2" 
+                          className="w-full h-9 text-[13px] px-3 border border-[var(--border-color)] rounded-[var(--radius-md)] bg-white text-[var(--text-main)] outline-none focus:border-[var(--primary)] transition-all cursor-pointer" 
                           value={formData.donViTinh}
                           onChange={e => handleInputChange('donViTinh', e.target.value)}
                           required
+                          disabled={!isManager}
                         >
                           {DON_VI_OPTIONS.map(opt => (
                             <option key={opt} value={opt}>{opt}</option>
                           ))}
+                        </select>
+                      </div>
+
+                      <div className="form-group m-0">
+                        <label className="form-label text-[12.5px]">Trạng thái <span className="text-red-500">*</span></label>
+                        <select 
+                          className="w-full h-9 text-[13px] px-3 border border-[var(--border-color)] rounded-[var(--radius-md)] bg-white text-[var(--text-main)] outline-none focus:border-[var(--primary)] transition-all cursor-pointer" 
+                          value={formData.isActive ? 'true' : 'false'}
+                          onChange={e => handleInputChange('isActive', e.target.value === 'true')}
+                          required
+                          disabled={!isManager || selectedDrug?.isActive === false}
+                        >
+                          <option value="true">Đang được sử dụng</option>
+                          <option value="false">Ngừng sử dụng</option>
                         </select>
                       </div>
                     </div>
@@ -441,20 +632,22 @@ function KhoDanhMucThuoc() {
                 </div>
 
                 {/* Các nút Hủy/Lưu */}
-                <div className="flex justify-end gap-2.5 border-t border-[var(--border-color)] pt-4 mt-6">
+                <div className="flex justify-end gap-2.5 border-t border-[var(--border-color)] pt-2.5 mt-3">
                   <button 
                     type="button" 
                     className="btn-outline w-[100px] h-9 flex items-center justify-center p-0 m-0" 
                     onClick={() => setSelectedDrug(null)}
                   >
-                    Hủy
+                    {isManager ? "Hủy" : "Đóng"}
                   </button>
-                  <button 
-                    type="submit" 
-                    className="btn-primary w-[120px] h-9 flex items-center justify-center gap-1.5 p-0 m-0" 
-                  >
-                    <Save size={16} /> Lưu
-                  </button>
+                  {isManager && (
+                    <button 
+                      type="submit" 
+                      className="btn-primary w-[120px] h-9 flex items-center justify-center gap-1.5 p-0 m-0" 
+                    >
+                      <Save size={16} /> Lưu
+                    </button>
+                  )}
                 </div>
               </form>
             )}

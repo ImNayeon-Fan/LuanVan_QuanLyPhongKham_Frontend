@@ -118,7 +118,8 @@ CREATE TABLE DanhMucThuoc (
     MaThuoc VARCHAR(20) PRIMARY KEY,
     TenThuoc NVARCHAR(255) NOT NULL,
     HoatChat NVARCHAR(255),
-    DonViTinh NVARCHAR(50) -- Viên, Vỉ, Hộp, Chai
+    DonViTinh NVARCHAR(50), -- Viên, Vỉ, Hộp, Chai
+    IsActive BIT NOT NULL DEFAULT 1
 );
 
 CREATE TABLE LoThuoc (

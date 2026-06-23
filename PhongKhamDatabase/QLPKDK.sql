@@ -150,6 +150,14 @@ CREATE TABLE ChiTietDonThuoc (
     PRIMARY KEY (MaDonThuoc, MaThuoc)
 );
 
+CREATE TABLE DanhMucVatTu (
+    MaVatTu VARCHAR(20) PRIMARY KEY,
+    TenVatTu NVARCHAR(255) NOT NULL,
+    QuyCach NVARCHAR(255) NULL,
+    DonViTinh NVARCHAR(50) NOT NULL,
+    IsActive BIT NOT NULL DEFAULT 1
+);
+
 -- =========================================================
 -- 5. PHÂN HỆ THANH TOÁN & HÓA ĐƠN
 -- =========================================================

@@ -12,6 +12,7 @@ import DanhMucDichVu from './pages/DanhMucDichVu';
 import KhoDanhMucThuoc from './pages/KhoDanhMucThuoc';
 import KhoDanhMucVatTu from './pages/KhoDanhMucVatTu';
 import KhoNhapKho from './pages/KhoNhapKho';
+import KhoNhaCungCap from './pages/KhoNhaCungCap';
 import ThanhToanHoaDon from './pages/ThanhToanHoaDon';
 import LichPhongKham from './pages/LichPhongKham';
 import DanhMucKhoa from './pages/DanhMucKhoa';
@@ -56,6 +57,7 @@ function App() {
           <Route path="/kho/danh-muc-thuoc" element={<ProtectedRoute><KhoDanhMucThuoc /></ProtectedRoute>} />
           <Route path="/kho/danh-muc-vat-tu" element={<ProtectedRoute><KhoDanhMucVatTu /></ProtectedRoute>} />
           <Route path="/kho/nhap-kho" element={<ProtectedRoute><KhoNhapKho /></ProtectedRoute>} />
+          <Route path="/kho/nha-cung-cap" element={<ProtectedRoute><KhoNhaCungCap /></ProtectedRoute>} />
           
           {/* Cổng đặt lịch khám công khai dành cho bệnh nhân tự đặt ngoài trang chủ (Không cần đăng nhập) */}
           <Route path="/dat-lich-kham" element={<DatLichPublic />} />

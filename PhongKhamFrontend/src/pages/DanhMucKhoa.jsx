@@ -29,7 +29,7 @@ function DanhMucKhoa() {
   const { showSuccess, showError, showWarning } = useToast();
 
   // Các state lưu danh sách khoa, danh sách bác sĩ, và khoa đang chọn
-  const [khoaList, setKhoaList] = useState([]);
+  const [allKhoaList, setAllKhoaList] = useState([]); // Chứa toàn bộ danh sách khoa phòng tải từ server
   const [doctorsList, setDoctorsList] = useState([]); // Chỉ chứa nhân sự có vai trò bác sĩ
   const [selectedKhoa, setSelectedKhoa] = useState(null);
   
@@ -39,13 +39,18 @@ function DanhMucKhoa() {
   // Các state phân trang & loading
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
   // Tải danh mục khoa và bác sĩ khi component mount
   useEffect(() => {
     loadDoctors();
+    loadKhoaList();
   }, []);
+
+  // Reset trang về 1 khi đổi bộ lọc tìm kiếm hoặc kích thước trang
+  useEffect(() => {
+    setPage(1);
+  }, [searchQuery, pageSize]);
 
   // Đồng bộ form khi người dùng chọn khoa thay đổi
   useEffect(() => {
@@ -63,17 +68,15 @@ function DanhMucKhoa() {
   const loadKhoaList = async () => {
     try {
       setIsLoading(true);
-      const response = await apiGetKhoaList('', searchQuery, page, pageSize);
+      const response = await apiGetKhoaList('', '', 1, 1000); // Tải toàn bộ khoa phòng về client
       if (response && response.data) {
         const mappedData = response.data.map(item => ({
           maKhoa: item.MaKhoa || item.maKhoa || '',
           tenKhoa: item.TenKhoa || item.tenKhoa || ''
         }));
-        setKhoaList(mappedData);
-        setTotalCount(response.total || 0);
+        setAllKhoaList(mappedData);
       } else {
-        setKhoaList([]);
-        setTotalCount(0);
+        setAllKhoaList([]);
       }
     } catch (e) {
       console.error('Lỗi tải danh mục khoa:', e);
@@ -83,14 +86,49 @@ function DanhMucKhoa() {
     }
   };
 
-  // Cơ chế Debounce (250ms) cho tìm kiếm và đồng bộ trang
-  useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      loadKhoaList();
-    }, 250);
+  // Lọc danh sách khoa phòng trên client theo cả mã hoặc tên (Khắc phục lỗi tìm kiếm của backend)
+  const filteredKhoaList = allKhoaList.filter(k => 
+    k.maKhoa.toLowerCase().includes(searchQuery.toLowerCase().trim()) ||
+    k.tenKhoa.toLowerCase().includes(searchQuery.toLowerCase().trim())
+  );
 
-    return () => clearTimeout(delayDebounceFn);
-  }, [searchQuery, page, pageSize]);
+  const totalCount = filteredKhoaList.length;
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+  const activePage = Math.min(page, totalPages);
+  const startIndex = (activePage - 1) * pageSize;
+  const khoaList = filteredKhoaList.slice(startIndex, startIndex + pageSize);
+
+  const getPaginationItems = () => {
+    const pages = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (activePage <= 4) {
+        for (let i = 1; i <= 5; i++) {
+          pages.push(i);
+        }
+        pages.push('...');
+        pages.push(totalPages);
+      } else if (activePage >= totalPages - 3) {
+        pages.push(1);
+        pages.push('...');
+        for (let i = totalPages - 4; i <= totalPages; i++) {
+          pages.push(i);
+        }
+      } else {
+        pages.push(1);
+        pages.push('...');
+        pages.push(activePage - 1);
+        pages.push(activePage);
+        pages.push(activePage + 1);
+        pages.push('...');
+        pages.push(totalPages);
+      }
+    }
+    return pages;
+  };
 
   // Tải danh sách bác sĩ từ hệ thống Backend API
   const loadDoctors = async () => {
@@ -124,7 +162,7 @@ function DanhMucKhoa() {
 
   // Khởi tạo thêm mới khoa phòng với mã khoa tự tăng
   const handleAddNew = () => {
-    const nextNum = totalCount + 1;
+    const nextNum = allKhoaList.length + 1;
     const newCode = `KHOA${String(nextNum).padStart(2, '0')}`;
 
     setSelectedKhoa({
@@ -326,27 +364,50 @@ function DanhMucKhoa() {
                 </select>
               </div>
             </div>
-            <div className="flex gap-[5px]">
+            <div className="flex gap-1 items-center">
               <button 
-                disabled={page === 1}
-                onClick={() => setPage(p => p - 1)}
-                className={`py-1 px-2 rounded border border-[var(--border-color)] ${
-                  page === 1 ? 'bg-[#f3f4f6] cursor-not-allowed' : 'bg-white cursor-pointer'
+                disabled={activePage === 1}
+                onClick={() => setPage(activePage - 1)}
+                className={`h-6 w-6 rounded border border-[#0ea5e9] flex items-center justify-center text-[11px] font-bold transition-all ${
+                  activePage === 1 
+                    ? 'opacity-40 cursor-not-allowed text-[#0ea5e9] bg-transparent' 
+                    : 'text-[#0ea5e9] bg-transparent hover:bg-[#e0f2fe] cursor-pointer'
                 }`}
               >
-                Trước
+                &lt;
               </button>
-              <span className="flex items-center px-2 font-semibold">
-                Trang {page} / {Math.max(1, Math.ceil(totalCount / pageSize))}
-              </span>
+              {getPaginationItems().map((p, index) => {
+                if (p === '...') {
+                  return (
+                    <span key={`dots-${index}`} className="px-1 text-[var(--text-muted)] select-none">
+                      ...
+                    </span>
+                  );
+                }
+                return (
+                  <button
+                    key={p}
+                    onClick={() => setPage(p)}
+                    className={`h-6 w-6 rounded border flex items-center justify-center text-[11px] font-bold transition-all cursor-pointer ${
+                      p === activePage
+                        ? "bg-[#0ea5e9] text-white border-[#0ea5e9]"
+                        : "bg-transparent text-[#0ea5e9] border-[#0ea5e9] hover:bg-[#e0f2fe]"
+                    }`}
+                  >
+                    {p}
+                  </button>
+                );
+              })}
               <button 
-                disabled={page === Math.max(1, Math.ceil(totalCount / pageSize))}
-                onClick={() => setPage(p => p + 1)}
-                className={`py-1 px-2 rounded border border-[var(--border-color)] ${
-                  page === Math.max(1, Math.ceil(totalCount / pageSize)) ? 'bg-[#f3f4f6] cursor-not-allowed' : 'bg-white cursor-pointer'
+                disabled={activePage === totalPages}
+                onClick={() => setPage(activePage + 1)}
+                className={`h-6 w-6 rounded border border-[#0ea5e9] flex items-center justify-center text-[11px] font-bold transition-all ${
+                  activePage === totalPages 
+                    ? 'opacity-40 cursor-not-allowed text-[#0ea5e9] bg-transparent' 
+                    : 'text-[#0ea5e9] bg-transparent hover:bg-[#e0f2fe] cursor-pointer'
                 }`}
               >
-                Sau
+                &gt;
               </button>
             </div>
           </div>

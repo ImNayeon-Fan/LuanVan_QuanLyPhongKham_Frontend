@@ -32,6 +32,7 @@ const subModules = [
 const subModulesKho = [
   { name: 'Quản lý danh mục thuốc',          icon: <Pill size={26} />,         route: '/kho/danh-muc-thuoc' },
   { name: 'Quản lý danh mục vật tư',         icon: <ClipboardList size={26} />,route: '/kho/danh-muc-vat-tu' },
+  { name: 'Quản lý nhà cung cấp',            icon: <Users size={26} />,        route: '/kho/nha-cung-cap' },
   { name: 'Quản lý nhập kho thuốc',          icon: <Database size={26} />,     route: '/kho/nhap-kho' },
 ];
 

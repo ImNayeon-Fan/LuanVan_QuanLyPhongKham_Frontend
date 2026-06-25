@@ -176,10 +176,10 @@ function PhanQuyenNhanSu() {
   const filteredStaff = staffList.filter(item => {
     const normalizedRoleName = ROLE_ID_TO_NAME[item.roleID] || item.roleName || '';
     return (
-      (item.maNV || '').toLowerCase().includes(filters.maNV.toLowerCase()) &&
-      (item.email || '').toLowerCase().includes(filters.email.toLowerCase()) &&
-      (item.hoTen || '').toLowerCase().includes(filters.hoTen.toLowerCase()) &&
-      normalizedRoleName.toLowerCase().includes(filters.roleName.toLowerCase())
+      (item.maNV || '').toLowerCase().includes((filters.maNV || '').toLowerCase().trim()) &&
+      (item.email || '').toLowerCase().includes((filters.email || '').toLowerCase().trim()) &&
+      (item.hoTen || '').toLowerCase().includes((filters.hoTen || '').toLowerCase().trim()) &&
+      normalizedRoleName.toLowerCase().includes((filters.roleName || '').toLowerCase().trim())
     );
   });
 
@@ -189,6 +189,38 @@ function PhanQuyenNhanSu() {
   const startIndex = (activePage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const displayedStaff = filteredStaff.slice(startIndex, endIndex);
+
+  const getPaginationItems = () => {
+    const pages = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (activePage <= 4) {
+        for (let i = 1; i <= 5; i++) {
+          pages.push(i);
+        }
+        pages.push('...');
+        pages.push(totalPages);
+      } else if (activePage >= totalPages - 3) {
+        pages.push(1);
+        pages.push('...');
+        for (let i = totalPages - 4; i <= totalPages; i++) {
+          pages.push(i);
+        }
+      } else {
+        pages.push(1);
+        pages.push('...');
+        pages.push(activePage - 1);
+        pages.push(activePage);
+        pages.push(activePage + 1);
+        pages.push('...');
+        pages.push(totalPages);
+      }
+    }
+    return pages;
+  };
 
   const isEdit = staffList.some(s => s.maNV === formData.maNV);
 
@@ -555,19 +587,28 @@ function PhanQuyenNhanSu() {
               >
                 &lt;
               </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-                <button
-                  key={p}
-                  onClick={() => setCurrentPage(p)}
-                  className={`h-6 w-6 rounded border flex items-center justify-center text-[11px] font-bold transition-all cursor-pointer ${
-                    p === activePage
-                      ? "bg-[#0ea5e9] text-white border-[#0ea5e9]"
-                      : "bg-transparent text-[#0ea5e9] border-[#0ea5e9] hover:bg-[#e0f2fe]"
-                  }`}
-                >
-                  {p}
-                </button>
-              ))}
+              {getPaginationItems().map((p, index) => {
+                if (p === '...') {
+                  return (
+                    <span key={`dots-${index}`} className="px-1 text-[var(--text-muted)] select-none">
+                      ...
+                    </span>
+                  );
+                }
+                return (
+                  <button
+                    key={p}
+                    onClick={() => setCurrentPage(p)}
+                    className={`h-6 w-6 rounded border flex items-center justify-center text-[11px] font-bold transition-all cursor-pointer ${
+                      p === activePage
+                        ? "bg-[#0ea5e9] text-white border-[#0ea5e9]"
+                        : "bg-transparent text-[#0ea5e9] border-[#0ea5e9] hover:bg-[#e0f2fe]"
+                    }`}
+                  >
+                    {p}
+                  </button>
+                );
+              })}
               <button
                 disabled={activePage === totalPages}
                 onClick={() => setCurrentPage(activePage + 1)}

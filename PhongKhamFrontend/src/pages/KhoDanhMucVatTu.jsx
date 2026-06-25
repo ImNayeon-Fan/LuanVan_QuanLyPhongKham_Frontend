@@ -5,17 +5,41 @@ import {
 } from 'lucide-react';
 import { useToast } from '../utils/ToastContext';
 
-// Dữ liệu mẫu danh mục vật tư y tế ban đầu
+// Dữ liệu mẫu danh mục vật tư y tế ban đầu (30 loai vat tu da dang, khong loi font chu)
 const DEFAULT_SUPPLIES = [
-  { maVT: 'VT001', tenVT: 'Găng tay y tế có bột', quyCach: 'Hộp 100 cái (size M)', donViTinh: 'Hộp' },
+  { maVT: 'VT001', tenVT: 'Găng tay y tế không bột (Size M)', quyCach: 'Hộp 100 cái', donViTinh: 'Hộp' },
   { maVT: 'VT002', tenVT: 'Băng thun cuộn y tế', quyCach: 'Cuộn 10cm x 5m', donViTinh: 'Cuộn' },
   { maVT: 'VT003', tenVT: 'Kim tiêm dùng một lần 5ml', quyCach: 'Hộp 100 cây (Vinahankook)', donViTinh: 'Hộp' },
   { maVT: 'VT004', tenVT: 'Bông gòn y tế kháng khuẩn', quyCach: 'Gói 500g', donViTinh: 'Gói' },
   { maVT: 'VT005', tenVT: 'Cồn sát trùng 70 độ', quyCach: 'Chai 500ml', donViTinh: 'Chai' },
   { maVT: 'VT006', tenVT: 'Khẩu trang y tế 4 lớp', quyCach: 'Hộp 50 cái', donViTinh: 'Hộp' },
+  { maVT: 'VT007', tenVT: 'Kim tiêm dùng một lần 3ml', quyCach: 'Hộp 100 cây (Vinahankook)', donViTinh: 'Hộp' },
+  { maVT: 'VT008', tenVT: 'Nước muối sinh lý NaCl 0.9%', quyCach: 'Chai 500ml', donViTinh: 'Chai' },
+  { maVT: 'VT009', tenVT: 'Băng cá nhân vô trùng Urgosteril', quyCach: 'Hộp 50 miếng', donViTinh: 'Hộp' },
+  { maVT: 'VT010', tenVT: 'Gạc phẫu thuật tiệt trùng', quyCach: 'Gói 10 miếng (8x10cm)', donViTinh: 'Gói' },
+  { maVT: 'VT011', tenVT: 'Dây truyền dịch vô trùng', quyCach: 'Bịch 1 bộ', donViTinh: 'Bộ' },
+  { maVT: 'VT012', tenVT: 'Que đè lưỡi gỗ tiệt trùng', quyCach: 'Hộp 100 cái', donViTinh: 'Hộp' },
+  { maVT: 'VT013', tenVT: 'Chỉ khâu phẫu thuật tự tiêu 3/0', quyCach: 'Hộp 12 tép (Vycril)', donViTinh: 'Hộp' },
+  { maVT: 'VT014', tenVT: 'Cồn đỏ Povidine 10%', quyCach: 'Chai 90ml', donViTinh: 'Chai' },
+  { maVT: 'VT015', tenVT: 'Bơm tiêm dùng một lần 10ml', quyCach: 'Hộp 100 cây (Vinahankook)', donViTinh: 'Hộp' },
+  { maVT: 'VT016', tenVT: 'Băng keo cuộn giấy y tế', quyCach: 'Cuộn 2.5cm x 5m', donViTinh: 'Cuộn' },
+  { maVT: 'VT017', tenVT: 'Khăn ướt cồn Alcohol Pads', quyCach: 'Hộp 100 miếng', donViTinh: 'Hộp' },
+  { maVT: 'VT018', tenVT: 'Ống lấy máu chân không EDTA', quyCach: 'Khay 100 ống (xanh dương)', donViTinh: 'Khay' },
+  { maVT: 'VT019', tenVT: 'Ống lấy máu chân không Serum', quyCach: 'Khay 100 ống (đỏ)', donViTinh: 'Khay' },
+  { maVT: 'VT020', tenVT: 'Que thử thai nhanh (Quickstrip)', quyCach: 'Hộp 1 cái', donViTinh: 'Hộp' },
+  { maVT: 'VT021', tenVT: 'Gel siêu âm y tế', quyCach: 'Bình 5 lít', donViTinh: 'Bình' },
+  { maVT: 'VT022', tenVT: 'Mũ phẫu thuật con sâu', quyCach: 'Bịch 100 cái', donViTinh: 'Bịch' },
+  { maVT: 'VT023', tenVT: 'Tấm lót y tế chống thấm', quyCach: 'Gói 10 miếng (60x90cm)', donViTinh: 'Gói' },
+  { maVT: 'VT024', tenVT: 'Ống thông tiểu Foley 2 nhánh', quyCach: 'Sợi', donViTinh: 'Sợi' },
+  { maVT: 'VT025', tenVT: 'Kim cánh bướm lấy máu 23G', quyCach: 'Hộp 100 cái', donViTinh: 'Hộp' },
+  { maVT: 'VT026', tenVT: 'Nhiệt kế điện tử hồng ngoại', quyCach: 'Cái (Microlife)', donViTinh: 'Cái' },
+  { maVT: 'VT027', tenVT: 'Dung dịch sát khuẩn tay nhanh', quyCach: 'Chai 500ml (vòi nhấn)', donViTinh: 'Chai' },
+  { maVT: 'VT028', tenVT: 'Băng cuộn y tế (băng gạc)', quyCach: 'Cuộn 0.08m x 2m', donViTinh: 'Cuộn' },
+  { maVT: 'VT029', tenVT: 'Kim châm cứu tiệt trùng', quyCach: 'Hộp 100 cây (Khánh Phong)', donViTinh: 'Hộp' },
+  { maVT: 'VT030', tenVT: 'Túi đựng rác thải y tế lây nhiễm', quyCach: 'Xấp 1kg (màu vàng)', donViTinh: 'Xấp' },
 ];
 
-const DON_VI_OPTIONS = ['Cái', 'Hộp', 'Cuộn', 'Gói', 'Chai', 'Thùng', 'Bộ'];
+const DON_VI_OPTIONS = ['Cái', 'Hộp', 'Cuộn', 'Gói', 'Chai', 'Thùng', 'Bộ', 'Sợi', 'Khay', 'Bình', 'Bịch', 'Xấp'];
 
 /**
  * Component Quản lý Danh mục Vật tư tiêu hao tại phòng khám
@@ -52,7 +76,14 @@ function KhoDanhMucVatTu() {
     try {
       const stored = localStorage.getItem('danhMucVatTu');
       if (stored) {
-        setSupplies(JSON.parse(stored));
+        const parsed = JSON.parse(stored);
+        // Neu danh sach cu chi co 6 hoac it hon phan tu, tu dong nang cap len danh sach 30 vat tu da dang moi
+        if (parsed.length <= 6) {
+          localStorage.setItem('danhMucVatTu', JSON.stringify(DEFAULT_SUPPLIES));
+          setSupplies(DEFAULT_SUPPLIES);
+        } else {
+          setSupplies(parsed);
+        }
       } else {
         localStorage.setItem('danhMucVatTu', JSON.stringify(DEFAULT_SUPPLIES));
         setSupplies(DEFAULT_SUPPLIES);
@@ -86,13 +117,13 @@ function KhoDanhMucVatTu() {
     }
   }, [selectedSupply]);
 
-  // Bộ lọc danh mục vật tư y tế
+  // Bộ lọc danh mục vật tư y tế trên client
   const filteredSupplies = supplies.filter(item => {
     return (
-      (item.maVT || '').toLowerCase().includes(filters.maVT.toLowerCase()) &&
-      (item.tenVT || '').toLowerCase().includes(filters.tenVT.toLowerCase()) &&
-      (item.quyCach || '').toLowerCase().includes(filters.quyCach.toLowerCase()) &&
-      (item.donViTinh || '').toLowerCase().includes(filters.donViTinh.toLowerCase())
+      (item.maVT || '').toLowerCase().includes((filters.maVT || '').toLowerCase().trim()) &&
+      (item.tenVT || '').toLowerCase().includes((filters.tenVT || '').toLowerCase().trim()) &&
+      (item.quyCach || '').toLowerCase().includes((filters.quyCach || '').toLowerCase().trim()) &&
+      (item.donViTinh || '').toLowerCase().includes((filters.donViTinh || '').toLowerCase().trim())
     );
   });
 
@@ -102,6 +133,38 @@ function KhoDanhMucVatTu() {
   const startIndex = (activePage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const displayedSupplies = filteredSupplies.slice(startIndex, endIndex);
+
+  const getPaginationItems = () => {
+    const pages = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (activePage <= 4) {
+        for (let i = 1; i <= 5; i++) {
+          pages.push(i);
+        }
+        pages.push('...');
+        pages.push(totalPages);
+      } else if (activePage >= totalPages - 3) {
+        pages.push(1);
+        pages.push('...');
+        for (let i = totalPages - 4; i <= totalPages; i++) {
+          pages.push(i);
+        }
+      } else {
+        pages.push(1);
+        pages.push('...');
+        pages.push(activePage - 1);
+        pages.push(activePage);
+        pages.push(activePage + 1);
+        pages.push('...');
+        pages.push(totalPages);
+      }
+    }
+    return pages;
+  };
 
   // Xử lý khi thay đổi input trên form nhập
   const handleInputChange = (key, val) => {
@@ -333,19 +396,28 @@ function KhoDanhMucVatTu() {
               >
                 &lt;
               </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
-                <button
-                  key={p}
-                  onClick={() => setCurrentPage(p)}
-                  className={`h-6 w-6 rounded border flex items-center justify-center text-[11px] font-bold transition-all cursor-pointer ${
-                    p === activePage
-                      ? "bg-[#0ea5e9] text-white border-[#0ea5e9]"
-                      : "bg-transparent text-[#0ea5e9] border-[#0ea5e9] hover:bg-[#e0f2fe]"
-                  }`}
-                >
-                  {p}
-                </button>
-              ))}
+              {getPaginationItems().map((p, index) => {
+                if (p === '...') {
+                  return (
+                    <span key={`dots-${index}`} className="px-1 text-[var(--text-muted)] select-none">
+                      ...
+                    </span>
+                  );
+                }
+                return (
+                  <button
+                    key={p}
+                    onClick={() => setCurrentPage(p)}
+                    className={`h-6 w-6 rounded border flex items-center justify-center text-[11px] font-bold transition-all cursor-pointer ${
+                      p === activePage
+                        ? "bg-[#0ea5e9] text-white border-[#0ea5e9]"
+                        : "bg-transparent text-[#0ea5e9] border-[#0ea5e9] hover:bg-[#e0f2fe]"
+                    }`}
+                  >
+                    {p}
+                  </button>
+                );
+              })}
               <button 
                 disabled={activePage === totalPages} 
                 onClick={() => setCurrentPage(activePage + 1)}

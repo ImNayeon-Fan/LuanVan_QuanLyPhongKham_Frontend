@@ -29,32 +29,29 @@ function DanhMucDichVu() {
   const { showSuccess, showError } = useToast();
 
   // Các state lưu trữ danh sách dịch vụ y tế và trạng thái thao tác
-  const [dvList, setDvList] = useState([]);
+  const [allDvList, setAllDvList] = useState([]);
   const [selectedDV, setSelectedDV] = useState(null);
   const [dvForm, setDvForm] = useState({ maDV: '', tenDV: '', giaTien: '', trangThai: true });
   const [dvFilters, setDvFilters] = useState({ maDV: '', tenDV: '' });
   const [dvPage, setDvPage] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  // Tải danh sách dịch vụ y tế từ Backend API
+  // Tải danh sách dịch vụ y tế từ Backend API (Tải 1 lần trên client)
   const loadDVList = async () => {
     try {
       setIsLoading(true);
-      const response = await apiGetDichVuCLSList(dvFilters.maDV, dvFilters.tenDV, null, dvPage, itemsPerPage);
+      const response = await apiGetDichVuCLSList('', '', null, 1, 1000);
       if (response && response.data) {
         const mappedData = response.data.map(item => ({
           maDV: item.MaDV || item.maDV || '',
           tenDV: item.TenDV || item.tenDV || '',
-          giaTien: item.GiaTien !== undefined && item.GiaTien !== null ? item.GiaTien : 0,
-          trangThai: item.TrangThai !== undefined ? item.TrangThai : true
+          giaTien: item.giaTien !== undefined && item.giaTien !== null ? item.giaTien : (item.GiaTien !== undefined && item.GiaTien !== null ? item.GiaTien : 0),
+          trangThai: item.trangThai !== undefined ? item.trangThai : (item.TrangThai !== undefined ? item.TrangThai : true)
         }));
-        setDvList(mappedData);
-        setTotalCount(response.total || 0);
+        setAllDvList(mappedData);
       } else {
-        setDvList([]);
-        setTotalCount(0);
+        setAllDvList([]);
       }
     } catch (error) {
       console.error('Lỗi tải danh mục dịch vụ CLS:', error);
@@ -69,14 +66,15 @@ function DanhMucDichVu() {
     }
   };
 
-  // Cơ chế Debounce (250ms) cho việc gõ bộ lọc tìm kiếm
+  // Tải danh sách khi component mount
   useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      loadDVList();
-    }, 250);
+    loadDVList();
+  }, []);
 
-    return () => clearTimeout(delayDebounceFn);
-  }, [dvFilters.maDV, dvFilters.tenDV, dvPage, itemsPerPage]);
+  // Reset trang về 1 khi đổi bộ lọc tìm kiếm hoặc kích thước trang
+  useEffect(() => {
+    setDvPage(1);
+  }, [dvFilters.maDV, dvFilters.tenDV, itemsPerPage]);
 
   // Đồng bộ thông tin form khi người dùng chọn một hàng trong danh sách
   useEffect(() => {
@@ -92,11 +90,49 @@ function DanhMucDichVu() {
     }
   }, [selectedDV]);
 
-  // Biến phục vụ hiển thị đồng bộ với mã JSX cũ
-  const displayedDV = dvList;
+  // Lọc danh sách dịch vụ y tế trên client theo cả mã hoặc tên
+  const filteredDvList = allDvList.filter(item => 
+    (item.maDV || '').toLowerCase().includes((dvFilters.maDV || '').toLowerCase().trim()) &&
+    (item.tenDV || '').toLowerCase().includes((dvFilters.tenDV || '').toLowerCase().trim())
+  );
+
+  const totalCount = filteredDvList.length;
   const totalDvPages = Math.max(1, Math.ceil(totalCount / itemsPerPage));
   const activeDvPage = Math.min(dvPage, totalDvPages);
   const dvStartIdx = (activeDvPage - 1) * itemsPerPage;
+  const displayedDV = filteredDvList.slice(dvStartIdx, dvStartIdx + itemsPerPage);
+
+  const getPaginationItems = () => {
+    const pages = [];
+    if (totalDvPages <= 7) {
+      for (let i = 1; i <= totalDvPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (activeDvPage <= 4) {
+        for (let i = 1; i <= 5; i++) {
+          pages.push(i);
+        }
+        pages.push('...');
+        pages.push(totalDvPages);
+      } else if (activeDvPage >= totalDvPages - 3) {
+        pages.push(1);
+        pages.push('...');
+        for (let i = totalDvPages - 4; i <= totalDvPages; i++) {
+          pages.push(i);
+        }
+      } else {
+        pages.push(1);
+        pages.push('...');
+        pages.push(activeDvPage - 1);
+        pages.push(activeDvPage);
+        pages.push(activeDvPage + 1);
+        pages.push('...');
+        pages.push(totalDvPages);
+      }
+    }
+    return pages;
+  };
 
   // Thay đổi bộ lọc tìm kiếm và reset trang về 1
   const handleDvFilterChange = (key, val) => {
@@ -106,7 +142,7 @@ function DanhMucDichVu() {
 
   // Khởi tạo một dịch vụ mới với mã tăng tự động
   const handleAddNewDv = () => {
-    const nextNum = totalCount + 1;
+    const nextNum = allDvList.length + 1;
     const newCode = `DV${String(nextNum).padStart(3, '0')}`;
     setSelectedDV({ maDV: newCode, tenDV: '', giaTien: 100000, trangThai: true, isNew: true });
   };
@@ -334,27 +370,50 @@ function DanhMucDichVu() {
                 </select>
               </div>
             </div>
-            <div className="flex gap-[5px]">
+            <div className="flex gap-1 items-center">
               <button 
-                disabled={dvPage === 1}
-                onClick={() => setDvPage(p => p - 1)}
-                className={`py-1 px-2 rounded border border-[var(--border-color)] ${
-                  dvPage === 1 ? 'bg-[#f3f4f6] cursor-not-allowed' : 'bg-white cursor-pointer'
+                disabled={activeDvPage === 1}
+                onClick={() => setDvPage(activeDvPage - 1)}
+                className={`h-6 w-6 rounded border border-[#0ea5e9] flex items-center justify-center text-[11px] font-bold transition-all ${
+                  activeDvPage === 1 
+                    ? 'opacity-40 cursor-not-allowed text-[#0ea5e9] bg-transparent' 
+                    : 'text-[#0ea5e9] bg-transparent hover:bg-[#e0f2fe] cursor-pointer'
                 }`}
               >
-                Trước
+                &lt;
               </button>
-              <span className="flex items-center px-2 font-semibold">
-                Trang {dvPage} / {totalDvPages}
-              </span>
+              {getPaginationItems().map((p, index) => {
+                if (p === '...') {
+                  return (
+                    <span key={`dots-${index}`} className="px-1 text-[var(--text-muted)] select-none">
+                      ...
+                    </span>
+                  );
+                }
+                return (
+                  <button
+                    key={p}
+                    onClick={() => setDvPage(p)}
+                    className={`h-6 w-6 rounded border flex items-center justify-center text-[11px] font-bold transition-all cursor-pointer ${
+                      p === activeDvPage
+                        ? "bg-[#0ea5e9] text-white border-[#0ea5e9]"
+                        : "bg-transparent text-[#0ea5e9] border-[#0ea5e9] hover:bg-[#e0f2fe]"
+                    }`}
+                  >
+                    {p}
+                  </button>
+                );
+              })}
               <button 
-                disabled={dvPage === totalDvPages}
-                onClick={() => setDvPage(p => p + 1)}
-                className={`py-1 px-2 rounded border border-[var(--border-color)] ${
-                  dvPage === totalDvPages ? 'bg-[#f3f4f6] cursor-not-allowed' : 'bg-white cursor-pointer'
+                disabled={activeDvPage === totalDvPages}
+                onClick={() => setDvPage(activeDvPage + 1)}
+                className={`h-6 w-6 rounded border border-[#0ea5e9] flex items-center justify-center text-[11px] font-bold transition-all ${
+                  activeDvPage === totalDvPages 
+                    ? 'opacity-40 cursor-not-allowed text-[#0ea5e9] bg-transparent' 
+                    : 'text-[#0ea5e9] bg-transparent hover:bg-[#e0f2fe] cursor-pointer'
                 }`}
               >
-                Sau
+                &gt;
               </button>
             </div>
           </div>

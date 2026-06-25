@@ -19,31 +19,27 @@ function DanhMucICD() {
   const { showSuccess, showError } = useToast();
 
   // Các state quản lý danh sách ICD, form biểu mẫu và bộ lọc tìm kiếm
-  const [icdList, setIcdList] = useState([]);
+  const [allIcdList, setAllIcdList] = useState([]);
   const [selectedICD, setSelectedICD] = useState(null);
   const [icdForm, setIcdForm] = useState({ maICD: '', tenBenh: '' });
   const [icdFilters, setIcdFilters] = useState({ maICD: '', tenBenh: '' });
   const [icdPage, setIcdPage] = useState(1);
-  const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
-
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  // Tải danh sách bệnh lý từ Backend API (Server-side Pagination & Filtering)
+  // Tải danh sách bệnh lý từ Backend API (Tải 1 lần về client)
   const loadICDList = async () => {
     try {
       setIsLoading(true);
-      const response = await apiGetICDList(icdFilters.maICD, icdFilters.tenBenh, icdPage, itemsPerPage);
+      const response = await apiGetICDList('', '', 1, 1000);
       if (response && response.data) {
         const mappedData = response.data.map(item => ({
           maICD: item.MaICD || item.maICD || '',
           tenBenh: item.TenBenh || item.tenBenh || ''
         }));
-        setIcdList(mappedData);
-        setTotalCount(response.total || 0);
+        setAllIcdList(mappedData);
       } else {
-        setIcdList([]);
-        setTotalCount(0);
+        setAllIcdList([]);
       }
     } catch (error) {
       console.error('Lỗi tải danh mục ICD:', error);
@@ -58,14 +54,15 @@ function DanhMucICD() {
     }
   };
 
-  // Cơ chế Debounce (250ms) cho việc gõ bộ lọc tìm kiếm
+  // Tải danh sách khi component mount
   useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      loadICDList();
-    }, 250);
+    loadICDList();
+  }, []);
 
-    return () => clearTimeout(delayDebounceFn);
-  }, [icdFilters.maICD, icdFilters.tenBenh, icdPage, itemsPerPage]);
+  // Reset trang về 1 khi đổi bộ lọc tìm kiếm hoặc kích thước trang
+  useEffect(() => {
+    setIcdPage(1);
+  }, [icdFilters.maICD, icdFilters.tenBenh, itemsPerPage]);
 
   // Cập nhật form khi chọn bệnh lý thay đổi
   useEffect(() => {
@@ -79,11 +76,49 @@ function DanhMucICD() {
     }
   }, [selectedICD]);
 
-  // Biến phục vụ hiển thị đồng bộ với mã JSX cũ
-  const displayedICD = icdList;
+  // Lọc danh sách ICD trên client theo cả mã hoặc tên
+  const filteredIcdList = allIcdList.filter(item => 
+    (item.maICD || '').toLowerCase().includes((icdFilters.maICD || '').toLowerCase().trim()) &&
+    (item.tenBenh || '').toLowerCase().includes((icdFilters.tenBenh || '').toLowerCase().trim())
+  );
+
+  const totalCount = filteredIcdList.length;
   const totalIcdPages = Math.max(1, Math.ceil(totalCount / itemsPerPage));
   const activeIcdPage = Math.min(icdPage, totalIcdPages);
   const icdStartIdx = (activeIcdPage - 1) * itemsPerPage;
+  const displayedICD = filteredIcdList.slice(icdStartIdx, icdStartIdx + itemsPerPage);
+
+  const getPaginationItems = () => {
+    const pages = [];
+    if (totalIcdPages <= 7) {
+      for (let i = 1; i <= totalIcdPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      if (activeIcdPage <= 4) {
+        for (let i = 1; i <= 5; i++) {
+          pages.push(i);
+        }
+        pages.push('...');
+        pages.push(totalIcdPages);
+      } else if (activeIcdPage >= totalIcdPages - 3) {
+        pages.push(1);
+        pages.push('...');
+        for (let i = totalIcdPages - 4; i <= totalIcdPages; i++) {
+          pages.push(i);
+        }
+      } else {
+        pages.push(1);
+        pages.push('...');
+        pages.push(activeIcdPage - 1);
+        pages.push(activeIcdPage);
+        pages.push(activeIcdPage + 1);
+        pages.push('...');
+        pages.push(totalIcdPages);
+      }
+    }
+    return pages;
+  };
 
   // Xử lý khi bộ lọc thay đổi
   const handleIcdFilterChange = (key, val) => {
@@ -286,27 +321,50 @@ function DanhMucICD() {
                 </select>
               </div>
             </div>
-            <div className="flex gap-[5px]">
+            <div className="flex gap-1 items-center">
               <button 
-                disabled={icdPage === 1}
-                onClick={() => setIcdPage(p => p - 1)}
-                className={`py-1 px-2 rounded border border-[var(--border-color)] ${
-                  icdPage === 1 ? 'bg-[#f3f4f6] cursor-not-allowed' : 'bg-white cursor-pointer'
+                disabled={activeIcdPage === 1}
+                onClick={() => setIcdPage(activeIcdPage - 1)}
+                className={`h-6 w-6 rounded border border-[#0ea5e9] flex items-center justify-center text-[11px] font-bold transition-all ${
+                  activeIcdPage === 1 
+                    ? 'opacity-40 cursor-not-allowed text-[#0ea5e9] bg-transparent' 
+                    : 'text-[#0ea5e9] bg-transparent hover:bg-[#e0f2fe] cursor-pointer'
                 }`}
               >
-                Trước
+                &lt;
               </button>
-              <span className="flex items-center px-2 font-semibold">
-                Trang {icdPage} / {totalIcdPages}
-              </span>
+              {getPaginationItems().map((p, index) => {
+                if (p === '...') {
+                  return (
+                    <span key={`dots-${index}`} className="px-1 text-[var(--text-muted)] select-none">
+                      ...
+                    </span>
+                  );
+                }
+                return (
+                  <button
+                    key={p}
+                    onClick={() => setIcdPage(p)}
+                    className={`h-6 w-6 rounded border flex items-center justify-center text-[11px] font-bold transition-all cursor-pointer ${
+                      p === activeIcdPage
+                        ? "bg-[#0ea5e9] text-white border-[#0ea5e9]"
+                        : "bg-transparent text-[#0ea5e9] border-[#0ea5e9] hover:bg-[#e0f2fe]"
+                    }`}
+                  >
+                    {p}
+                  </button>
+                );
+              })}
               <button 
-                disabled={icdPage === totalIcdPages}
-                onClick={() => setIcdPage(p => p + 1)}
-                className={`py-1 px-2 rounded border border-[var(--border-color)] ${
-                  icdPage === totalIcdPages ? 'bg-[#f3f4f6] cursor-not-allowed' : 'bg-white cursor-pointer'
+                disabled={activeIcdPage === totalIcdPages}
+                onClick={() => setIcdPage(activeIcdPage + 1)}
+                className={`h-6 w-6 rounded border border-[#0ea5e9] flex items-center justify-center text-[11px] font-bold transition-all ${
+                  activeIcdPage === totalIcdPages 
+                    ? 'opacity-40 cursor-not-allowed text-[#0ea5e9] bg-transparent' 
+                    : 'text-[#0ea5e9] bg-transparent hover:bg-[#e0f2fe] cursor-pointer'
                 }`}
               >
-                Sau
+                &gt;
               </button>
             </div>
           </div>

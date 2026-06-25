@@ -376,4 +376,89 @@ export const apiDeleteThuoc = async (maThuoc) => {
   });
 };
 
+// ==========================================
+// API NHÀ CUNG CẤP KẾT NỐI VỚI BACKEND THỰC TẾ
+// ==========================================
+
+// API Lấy danh sách nhà cung cấp kết nối với Backend thực tế
+export const apiGetNhaCungCapList = async (tenNCC = '', page = 1, pageSize = 10) => {
+  const queryParams = new URLSearchParams();
+  if (tenNCC) queryParams.append('tenNCC', tenNCC);
+  queryParams.append('page', page);
+  queryParams.append('pageSize', pageSize);
+
+  return await apiFetch(`/NhaCungCap?${queryParams.toString()}`);
+};
+
+// API Thêm mới nhà cung cấp kết nối với Backend thực tế
+export const apiAddNhaCungCap = async (nhaCungCapData) => {
+  return await apiFetch('/NhaCungCap', {
+    method: 'POST',
+    body: JSON.stringify(nhaCungCapData)
+  });
+};
+
+// API Cập nhật nhà cung cấp kết nối với Backend thực tế
+export const apiUpdateNhaCungCap = async (maNCC, nhaCungCapData) => {
+  return await apiFetch(`/NhaCungCap/${maNCC}`, {
+    method: 'PUT',
+    body: JSON.stringify(nhaCungCapData)
+  });
+};
+
+// API Xóa nhà cung cấp kết nối với Backend thực tế
+export const apiDeleteNhaCungCap = async (maNCC) => {
+  return await apiFetch(`/NhaCungCap/${maNCC}`, {
+    method: 'DELETE'
+  });
+};
+
+// ==========================================
+// API LÔ THUỐC (KHOTHUOC) KẾT NỐI VỚI BACKEND THỰC TẾ
+// ==========================================
+
+// API Lấy danh sách lô thuốc
+export const apiGetLoThuocList = async (maLo = '', tenThuoc = '', tenNCC = '', hanSuDung = '', page = 1, pageSize = 10) => {
+  const queryParams = new URLSearchParams();
+  if (maLo) queryParams.append('maLo', maLo);
+  if (tenThuoc) queryParams.append('tenThuoc', tenThuoc);
+  if (tenNCC) queryParams.append('tenNCC', tenNCC);
+  if (hanSuDung && hanSuDung !== 'All' && hanSuDung !== 'Tất cả') {
+    let mapping = hanSuDung;
+    if (hanSuDung === 'Safe') mapping = 'An toàn';
+    else if (hanSuDung === 'Expiring') mapping = 'Hạn ngắn (<6 th)';
+    else if (hanSuDung === 'Expired') mapping = 'Đã hết hạn';
+    queryParams.append('hanSuDung', mapping);
+  } else if (hanSuDung === 'All' || hanSuDung === 'Tất cả') {
+    queryParams.append('hanSuDung', 'Tất cả');
+  }
+  queryParams.append('page', page);
+  queryParams.append('pageSize', pageSize);
+
+  return await apiFetch(`/KhoThuoc?${queryParams.toString()}`);
+};
+
+// API Thêm mới lô thuốc
+export const apiAddLoThuoc = async (loThuocData) => {
+  return await apiFetch('/KhoThuoc', {
+    method: 'POST',
+    body: JSON.stringify(loThuocData)
+  });
+};
+
+// API Cập nhật thông tin lô thuốc
+export const apiUpdateLoThuoc = async (maLo, loThuocData) => {
+  return await apiFetch(`/KhoThuoc/${maLo}`, {
+    method: 'PUT',
+    body: JSON.stringify(loThuocData)
+  });
+};
+
+// API Xóa lô thuốc (Hard Delete)
+export const apiDeleteLoThuoc = async (maLo) => {
+  return await apiFetch(`/KhoThuoc/${maLo}`, {
+    method: 'DELETE'
+  });
+};
+
 

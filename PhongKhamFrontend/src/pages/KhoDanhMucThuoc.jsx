@@ -30,8 +30,7 @@ function KhoDanhMucThuoc() {
   const navigate = useNavigate();
   const { showSuccess, showError } = useToast();
   
-  const [drugs, setDrugs] = useState([]);
-  const [totalCount, setTotalCount] = useState(0);
+  const [allDrugsList, setAllDrugsList] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedDrug, setSelectedDrug] = useState(null);
 
@@ -73,24 +72,22 @@ function KhoDanhMucThuoc() {
     }
   }, []);
 
-  // Lấy danh sách thuốc từ Backend API
+  // Lấy danh sách thuốc từ Backend API (Tải 1 lần về client)
   const loadDrugs = async () => {
     setIsLoading(true);
     try {
-      const res = await apiGetThuocList(
-        filters.maThuoc.trim(),
-        filters.tenThuoc.trim(),
-        filters.hoatChat.trim(),
-        filters.donViTinh,
-        currentPage,
-        pageSize
-      );
+      const res = await apiGetThuocList('', '', '', '', 1, 1000);
       if (res && res.data) {
-        setDrugs(res.data);
-        setTotalCount(res.total || 0);
+        const mappedData = res.data.map(item => ({
+          maThuoc: item.maThuoc || item.MaThuoc || '',
+          tenThuoc: item.tenThuoc || item.TenThuoc || '',
+          hoatChat: item.hoatChat || item.HoatChat || '',
+          donViTinh: item.donViTinh || item.DonViTinh || 'Viên',
+          isActive: item.isActive !== false && item.IsActive !== false
+        }));
+        setAllDrugsList(mappedData);
       } else {
-        setDrugs([]);
-        setTotalCount(0);
+        setAllDrugsList([]);
       }
     } catch (err) {
       console.error('Lỗi tải danh mục thuốc từ máy chủ:', err);
@@ -105,19 +102,15 @@ function KhoDanhMucThuoc() {
     }
   };
 
+  // Tải danh sách khi component mount
+  useEffect(() => {
+    loadDrugs();
+  }, []);
+
   // Reset trang về 1 khi đổi bộ lọc hoặc đổi kích thước trang
   useEffect(() => {
     setCurrentPage(1);
   }, [filters.maThuoc, filters.tenThuoc, filters.hoatChat, filters.donViTinh, pageSize]);
-
-  // Bộ lọc tìm kiếm debounce (250ms) để tránh spam API
-  useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      loadDrugs();
-    }, 250);
-
-    return () => clearTimeout(delayDebounceFn);
-  }, [filters.maThuoc, filters.tenThuoc, filters.hoatChat, filters.donViTinh, currentPage, pageSize]);
 
   // Điền thông tin vào form mỗi khi chọn một loại thuốc khác
   useEffect(() => {
@@ -140,12 +133,20 @@ function KhoDanhMucThuoc() {
     }
   }, [selectedDrug]);
 
-  // Các biến tính phân trang phục vụ đồng bộ UI
+  // Lọc danh sách thuốc trên client theo các tiêu chí (mã, tên, hoạt chất, đơn vị tính)
+  const filteredDrugs = allDrugsList.filter(item => 
+    (item.maThuoc || '').toLowerCase().includes((filters.maThuoc || '').toLowerCase().trim()) &&
+    (item.tenThuoc || '').toLowerCase().includes((filters.tenThuoc || '').toLowerCase().trim()) &&
+    (item.hoatChat || '').toLowerCase().includes((filters.hoatChat || '').toLowerCase().trim()) &&
+    (filters.donViTinh === '' || (item.donViTinh || '').toLowerCase() === filters.donViTinh.toLowerCase())
+  );
+
+  const totalCount = filteredDrugs.length;
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const activePage = Math.min(currentPage, totalPages);
   const startIndex = (activePage - 1) * pageSize;
-  const endIndex = startIndex + drugs.length;
-  const displayedDrugs = drugs;
+  const endIndex = Math.min(startIndex + pageSize, totalCount);
+  const displayedDrugs = filteredDrugs.slice(startIndex, startIndex + pageSize);
 
   // Tính toán danh sách các trang hiển thị (collapsed pagination với dấu ba chấm)
   const getPaginationItems = () => {
@@ -191,39 +192,22 @@ function KhoDanhMucThuoc() {
   };
 
   // Khởi tạo thêm mới thuốc với mã tự sinh tăng dần dạng THxxx dựa trên toàn bộ thuốc hiện tại
-  const handleAddNew = async () => {
-    setIsLoading(true);
-    try {
-      // Tải tối đa 1000 thuốc để tính toán mã số tiếp theo chính xác nhất
-      const res = await apiGetThuocList('', '', '', '', 1, 1000);
-      const allDrugs = res.data || [];
-      const drugNumbers = allDrugs
-        .map(d => d.maThuoc)
-        .filter(id => /^TH\d+$/i.test(id))
-        .map(id => parseInt(id.replace(/^TH/i, ''), 10));
-      const nextNum = drugNumbers.length > 0 ? Math.max(...drugNumbers) + 1 : 1;
-      const newCode = `TH${String(nextNum).padStart(3, '0')}`;
+  const handleAddNew = () => {
+    const drugNumbers = allDrugsList
+      .map(d => d.maThuoc)
+      .filter(id => /^TH\d+$/i.test(id))
+      .map(id => parseInt(id.replace(/^TH/i, ''), 10));
+    const nextNum = drugNumbers.length > 0 ? Math.max(...drugNumbers) + 1 : 1;
+    const newCode = `TH${String(nextNum).padStart(3, '0')}`;
 
-      setSelectedDrug({
-        maThuoc: newCode,
-        tenThuoc: '',
-        hoatChat: '',
-        donViTinh: 'Viên',
-        isNew: true
-      });
-    } catch (error) {
-      console.error('Lỗi khi tự động tính toán mã thuốc tiếp theo:', error);
-      showError('Không thể tự động tính toán mã thuốc tiếp theo. Hãy nhập thủ công!');
-      setSelectedDrug({
-        maThuoc: '',
-        tenThuoc: '',
-        hoatChat: '',
-        donViTinh: 'Viên',
-        isNew: true
-      });
-    } finally {
-      setIsLoading(false);
-    }
+    setSelectedDrug({
+      maThuoc: newCode,
+      tenThuoc: '',
+      hoatChat: '',
+      donViTinh: 'Viên',
+      isActive: true,
+      isNew: true
+    });
   };
 
   // Lưu thông tin thuốc (Thêm mới hoặc Cập nhật) gọi qua API Backend

@@ -128,7 +128,7 @@ function ThanhToanHoaDon() {
           sdt: '0901234567',
           diaChi: '123 Nguyễn Trãi, Phường 2, Quận 5, TP. Hồ Chí Minh',
           tienSuBenh: 'Tăng huyết áp, Đái tháo đường typ 2',
-          maBacSi: 'BS001',
+          maNV: 'NV002',
           tenBacSi: 'BS. CK1. Nguyễn Văn An (Nội tổng quát)',
           lyDoKham: 'Đau đầu, chóng mặt, mệt mỏi kéo dài',
           chanDoan: 'Tăng huyết áp vô căn (nguyên phát)',
@@ -158,7 +158,7 @@ function ThanhToanHoaDon() {
           sdt: '0918765432',
           diaChi: '456 Lê Lợi, Bến Nghé, Quận 1, TP. Hồ Chí Minh',
           tienSuBenh: 'Dị ứng thuốc Penicillin',
-          maBacSi: 'BS002',
+          maNV: 'NV003',
           tenBacSi: 'BS. CK2. Trần Thị Bình (Tim mạch)',
           lyDoKham: 'Tức ngực nhẹ, khó thở khi gắng sức',
           chanDoan: 'Nhịp tim nhanh không xác định',
@@ -618,7 +618,19 @@ function ThanhToanHoaDon() {
                     <div>Mã hồ sơ: <b>{selectedPhieu.maPhieu}</b></div>
                     <div>Họ tên: <b>{selectedPhieu.hoTen}</b></div>
                     <div>Ngày sinh: {selectedPhieu.ngaySinh} — Nam/Nữ: {selectedPhieu.gioiTinh}</div>
-                    <div>Chẩn đoán: {selectedPhieu.chanDoan || 'Khám tự nguyện'}</div>
+                    <div>
+                      Chẩn đoán: {selectedPhieu.icdList && selectedPhieu.icdList.length > 0 ? (
+                        <span>
+                          [{selectedPhieu.icdList.map(x => x.maICD).join(', ')}] {selectedPhieu.chanDoan || 'Khám tự nguyện'}
+                        </span>
+                      ) : selectedPhieu.maICD ? (
+                        <span>
+                          [{selectedPhieu.maICD}] {selectedPhieu.chanDoan || 'Khám tự nguyện'}
+                        </span>
+                      ) : (
+                        selectedPhieu.chanDoan || 'Khám tự nguyện'
+                      )}
+                    </div>
                     <div>BS chỉ định: {selectedPhieu.tenBacSi}</div>
                   </div>
 
@@ -737,9 +749,24 @@ function ThanhToanHoaDon() {
 
                 {/* 2. Thông tin chẩn đoán lâm sàng */}
                 <div className="grid grid-cols-[1.2fr_1fr_1fr] gap-4 border border-[var(--border-color)] rounded-[var(--radius-lg)] p-4 text-[13px]">
-                  <div>
-                    <span className="text-[var(--text-muted)]">Chẩn đoán bệnh lý:</span>
-                    <p className="m-0 mt-1 font-semibold text-[var(--text-main)]">{selectedPhieu.chanDoan || 'Bác sĩ chưa ghi chẩn đoán'}</p>
+                   <div>
+                    <span className="text-[var(--text-muted)]">Chẩn đoán bệnh lý (ICD):</span>
+                    {selectedPhieu.icdList && selectedPhieu.icdList.length > 0 ? (
+                      <div className="flex flex-wrap gap-1 mt-1 mb-1">
+                        {selectedPhieu.icdList.map(item => (
+                          <span key={item.maICD} className="bg-[#eff6ff] border border-[#bfdbfe] text-[#1e40af] px-1.5 py-[1px] rounded text-[11px] font-medium" title={item.tenBenh}>
+                            {item.maICD}
+                          </span>
+                        ))}
+                      </div>
+                    ) : selectedPhieu.maICD ? (
+                      <p className="m-0 mt-1 font-semibold text-[var(--text-main)] text-[12.5px]">
+                        [{selectedPhieu.maICD}] {selectedPhieu.tenBenhICD}
+                      </p>
+                    ) : (
+                      <p className="m-0 mt-1 text-[var(--text-muted)] italic text-[12.5px]">Chưa có ICD</p>
+                    )}
+                    <p className="m-0 mt-1.5 font-semibold text-[var(--text-main)]">{selectedPhieu.chanDoan || 'Bác sĩ chưa ghi chẩn đoán'}</p>
                   </div>
                   <div>
                     <span className="text-[var(--text-muted)]">Bác sĩ khám bệnh:</span>

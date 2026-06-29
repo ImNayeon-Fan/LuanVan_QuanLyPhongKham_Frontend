@@ -200,7 +200,7 @@ export const apiTiepNhanBenhNhan = async (payload) => {
 };
 
 // API Lấy danh sách bệnh nhân đã tiếp đón giả lập
-export const apiGetDanhSachTiepNhan = async ({ search = '', maBacSi = '', trangThai = '', ngayKham = '', page = 1, limit = 50 } = {}) => {
+export const apiGetDanhSachTiepNhan = async ({ search = '', maNV = '', trangThai = '', ngayKham = '', page = 1, limit = 50 } = {}) => {
   await new Promise(resolve => setTimeout(resolve, 200));
   
   const stored = localStorage.getItem('danhSachPhieuKham') || '[]';
@@ -212,8 +212,8 @@ export const apiGetDanhSachTiepNhan = async ({ search = '', maBacSi = '', trangT
     const q = search.toLowerCase();
     filtered = filtered.filter(p => p.hoTen.toLowerCase().includes(q) || p.maBN?.includes(search) || p.maPhieu?.includes(search));
   }
-  if (maBacSi) {
-    filtered = filtered.filter(p => p.maBacSi === maBacSi);
+  if (maNV) {
+    filtered = filtered.filter(p => p.maNV === maNV || p.maBacSi === maNV);
   }
   if (trangThai !== '' && trangThai !== null && trangThai !== undefined) {
     filtered = filtered.filter(p => p.trangThai === Number(trangThai));

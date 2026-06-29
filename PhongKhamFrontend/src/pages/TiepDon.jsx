@@ -196,8 +196,10 @@ function TiepDon() {
       diaChi: formData.diaChi.trim() || null,
       tienSuBenh: formData.tienSuBenh.trim() || null,
       maBacSi: formData.maBacSi || null,
+      maNV: formData.maBacSi || null,
       lyDoKham: formData.lyDoKham.trim(),
-      maICD: formData.maICD || null
+      maICD: formData.maICD || null,
+      icdList: formData.maICD ? [{ maICD: formData.maICD, tenBenh: formData.tenBenhICD }] : []
     };
 
     try {

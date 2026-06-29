@@ -331,8 +331,24 @@ function HoSoBenhAn() {
                             <span className="text-[var(--text-muted)]">Bác sĩ khám: </span>
                             <strong className="text-[var(--text-main)]">{rec.tenBacSi || 'Chưa phân công'}</strong>
                           </div>
-                          <div className="text-[13px]">
-                            <span className="text-[var(--text-muted)]">Chẩn đoán: </span>
+                          <div className="text-[13px] flex flex-wrap gap-1.5 mt-1 items-center">
+                            <span className="text-[var(--text-muted)]">Mã bệnh (ICD): </span>
+                            {rec.icdList && rec.icdList.length > 0 ? (
+                              rec.icdList.map(item => (
+                                <span key={item.maICD} className="bg-[#eff6ff] border border-[#bfdbfe] text-[#1e40af] px-1.5 py-[1px] rounded text-[11.5px] font-medium" title={item.tenBenh}>
+                                  {item.maICD}
+                                </span>
+                              ))
+                            ) : rec.maICD ? (
+                              <span className="bg-[#eff6ff] border border-[#bfdbfe] text-[#1e40af] px-1.5 py-[1px] rounded text-[11.5px] font-medium" title={rec.tenBenhICD}>
+                                {rec.maICD}
+                              </span>
+                            ) : (
+                              <span className="text-[var(--text-muted)] italic text-[12px]">Không có</span>
+                            )}
+                          </div>
+                          <div className="text-[13px] mt-1 text-left">
+                            <span className="text-[var(--text-muted)]">Chẩn đoán lâm sàng: </span>
                             <strong className="text-[var(--text-main)]">{rec.chanDoan || 'Chưa cập nhật'}</strong>
                           </div>
                         </div>

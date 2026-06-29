@@ -10,10 +10,10 @@ import { useToast } from '../utils/ToastContext';
 
 // Danh sách Bác sĩ mặc định nếu API không trả về
 const DEFAULT_DOCTORS = [
-  { maNV: 'BS001', hoTen: 'BS. CK1. Nguyễn Văn An', chuyenMon: 'Nội tổng quát' },
-  { maNV: 'BS002', hoTen: 'BS. CK2. Trần Thị Bình', chuyenMon: 'Tim mạch' },
-  { maNV: 'BS003', hoTen: 'ThS. BS. Phạm Minh Cường', chuyenMon: 'Nhi khoa' },
-  { maNV: 'BS004', hoTen: 'BS. Lê Hoài Nam', chuyenMon: 'Tai Mũi Họng' },
+  { maNV: 'NV002', hoTen: 'BS. CK1. Nguyễn Văn An', chuyenMon: 'Nội tổng quát' },
+  { maNV: 'NV003', hoTen: 'BS. CK2. Trần Thị Bình', chuyenMon: 'Tim mạch' },
+  { maNV: 'NV004', hoTen: 'ThS. BS. Phạm Minh Cường', chuyenMon: 'Nhi khoa' },
+  { maNV: 'NV005', hoTen: 'BS. Lê Hoài Nam', chuyenMon: 'Tai Mũi Họng' },
 ];
 
 /**
@@ -186,8 +186,8 @@ function LichPhongKham() {
         const todayStr = new Date().toISOString().split('T')[0];
         const defaultDocSchedules = [
           {
-            maLich: 'LBS001',
-            maNV: 'BS001',
+            maLich: 'LNV002',
+            maNV: 'NV002',
             tenBacSi: 'BS. CK1. Nguyễn Văn An',
             ngayLamViec: todayStr,
             caLamViec: 'Sang',
@@ -195,8 +195,8 @@ function LichPhongKham() {
             ghiChu: 'Trực phòng nội'
           },
           {
-            maLich: 'LBS002',
-            maNV: 'BS002',
+            maLich: 'LNV003',
+            maNV: 'NV003',
             tenBacSi: 'BS. CK2. Trần Thị Bình',
             ngayLamViec: todayStr,
             caLamViec: 'Chieu',

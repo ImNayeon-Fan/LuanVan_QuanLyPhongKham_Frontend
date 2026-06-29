@@ -86,7 +86,7 @@ function Home() {
   })();
 
   // Giá trị hiển thị ưu tiên lấy từ danh sách nhân viên mới nhất, sau đó đến session và cuối cùng là mặc định
-  const userMaNV = (latestUserInfo && latestUserInfo.maNV) || userInfo.maNV || (userInfo.role === 'Bác sĩ' ? 'BS001' : 'NV003');
+  const userMaNV = (latestUserInfo && latestUserInfo.maNV) || userInfo.maNV || (userInfo.role === 'Bác sĩ' ? 'NV002' : 'NV003');
   const userHoTen = (latestUserInfo && latestUserInfo.hoTen) || userInfo.hoTen || userInfo.name || 'Mai Xuân Phát';
   const userSdt = (latestUserInfo && latestUserInfo.sdt) || userInfo.sdt || '0909090909';
   const userEmail = (latestUserInfo && latestUserInfo.email) || userInfo.email || `${userInfo.username || 'maixuanphat'}@phongkham.vn`;

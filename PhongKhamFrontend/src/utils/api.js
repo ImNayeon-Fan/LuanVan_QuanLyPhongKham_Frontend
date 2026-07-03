@@ -164,75 +164,116 @@ export const apiDeleteStaff = async (maNV) => {
   });
 };
 
-// API Tra cứu bệnh nhân cũ theo SĐT giả lập
+// API Tra cứu bệnh nhân cũ theo SĐT kết nối với Backend thực tế
 export const apiTraCuuBenhNhan = async (sdt) => {
-  await new Promise(resolve => setTimeout(resolve, 150));
-  
-  const stored = localStorage.getItem('danhSachPhieuKham') || '[]';
-  let list = [];
-  try { list = JSON.parse(stored); } catch(e) {}
-  
-  const found = list.find(item => item.sdt === sdt);
-  if (found) {
-    return { data: found };
-  }
-  return { data: null };
+  return await apiFetch(`/TiepDon/tra-cuu?sdt=${encodeURIComponent(sdt)}`);
 };
 
-// API Tiếp nhận bệnh nhân mới/cũ giả lập
+// API Tiếp nhận bệnh nhân mới/cũ kết nối với Backend thực tế
 export const apiTiepNhanBenhNhan = async (payload) => {
-  await new Promise(resolve => setTimeout(resolve, 250));
-  
-  const stored = localStorage.getItem('danhSachPhieuKham') || '[]';
-  let list = [];
-  try { list = JSON.parse(stored); } catch(e) {}
-  
-  const newPhieu = {
-    maPhieu: 'PK_' + new Date().toISOString().slice(2,10).replace(/-/g,'') + '_' + String(list.length + 1).padStart(3, '0'),
-    trangThai: 1, // 1: Chờ khám
-    daThanhToan: false,
-    ngayKham: new Date().toISOString(),
-    ...payload
+  let ngaySinhFormatted = payload.ngaySinh;
+  if (payload.ngaySinh && payload.ngaySinh.includes('-')) {
+    const parts = payload.ngaySinh.split('-');
+    if (parts.length === 3) {
+      ngaySinhFormatted = `${parts[2]}/${parts[1]}/${parts[0]}`;
+    }
+  }
+
+  const requestData = {
+    maBN: payload.maBN,
+    hoTen: payload.hoTen,
+    ngaySinh: ngaySinhFormatted,
+    gioiTinh: payload.gioiTinh,
+    sdt: payload.sdt,
+    diaChi: payload.diaChi,
+    tienSuBenh: payload.tienSuBenh,
+    maNVBacSi: payload.maBacSi || payload.maNV,
+    lyDoKham: payload.lyDoKham,
+    danhSachICD: payload.icdList ? payload.icdList.map(x => x.maICD) : (payload.maICD ? [payload.maICD] : [])
   };
-  list.push(newPhieu);
-  localStorage.setItem('danhSachPhieuKham', JSON.stringify(list));
-  return newPhieu;
+
+  const res = await apiFetch('/TiepDon', {
+    method: 'POST',
+    body: JSON.stringify(requestData)
+  });
+
+  if (res && res.data) {
+    // Đồng bộ vào localStorage để KhamBenh.jsx và ThanhToanHoaDon.jsx có thể sử dụng (giả lập liên thông)
+    const stored = localStorage.getItem('danhSachPhieuKham') || '[]';
+    let list = [];
+    try { list = JSON.parse(stored); } catch(e) {}
+
+    const newPhieu = {
+      maPhieu: res.data.maPhieu,
+      maBN: res.data.maBN,
+      hoTen: res.data.hoTen,
+      ngaySinh: ngaySinhFormatted,
+      gioiTinh: payload.gioiTinh,
+      sdt: payload.sdt,
+      diaChi: payload.diaChi,
+      tienSuBenh: payload.tienSuBenh,
+      maBacSi: requestData.maNVBacSi,
+      maNV: requestData.maNVBacSi,
+      lyDoKham: res.data.lyDoKham,
+      trangThai: 0, // Chờ khám
+      trangThaiKham: 0,
+      daThanhToan: false,
+      ngayKham: res.data.ngayKham,
+      icdList: payload.icdList || (payload.maICD ? [{ maICD: payload.maICD, tenBenh: payload.tenBenhICD }] : [])
+    };
+    list.push(newPhieu);
+    localStorage.setItem('danhSachPhieuKham', JSON.stringify(list));
+  }
+
+  return res;
 };
 
-// API Lấy danh sách bệnh nhân đã tiếp đón giả lập
+// API Lấy danh sách bệnh nhân đã tiếp đón từ Backend thực tế
 export const apiGetDanhSachTiepNhan = async ({ search = '', maNV = '', trangThai = '', ngayKham = '', page = 1, limit = 50 } = {}) => {
-  await new Promise(resolve => setTimeout(resolve, 200));
-  
-  const stored = localStorage.getItem('danhSachPhieuKham') || '[]';
-  let list = [];
-  try { list = JSON.parse(stored); } catch(e) {}
+  const queryParams = new URLSearchParams();
+  if (search) queryParams.append('search', search);
+  if (maNV) queryParams.append('maBacSi', maNV);
+  if (trangThai !== '' && trangThai !== null && trangThai !== undefined) queryParams.append('trangThai', trangThai);
+  if (ngayKham) queryParams.append('ngayKham', ngayKham);
+  queryParams.append('page', page);
+  queryParams.append('limit', limit);
 
-  let filtered = list;
-  if (search) {
-    const q = search.toLowerCase();
-    filtered = filtered.filter(p => p.hoTen.toLowerCase().includes(q) || p.maBN?.includes(search) || p.maPhieu?.includes(search));
+  const res = await apiFetch(`/TiepDon/danh-sach?${queryParams.toString()}`);
+  if (res && res.data) {
+    res.data = res.data.map(item => ({
+      ...item,
+      maBacSi: item.maNV,
+      tenBacSi: item.tenNhanVien,
+      trangThai: item.trangThaiKham,
+      trangThaiKham: item.trangThaiKham
+    }));
   }
-  if (maNV) {
-    filtered = filtered.filter(p => p.maNV === maNV || p.maBacSi === maNV);
-  }
-  if (trangThai !== '' && trangThai !== null && trangThai !== undefined) {
-    filtered = filtered.filter(p => p.trangThai === Number(trangThai));
-  }
-  
-  return { data: filtered, total: filtered.length };
+  return res;
 };
 
-// API Lấy chi tiết hồ sơ bệnh nhân theo mã phiếu khám giả lập
+// API Lấy chi tiết hồ sơ bệnh nhân từ Backend thực tế
 export const apiGetChiTietPhieuKham = async (maPhieu) => {
-  await new Promise(resolve => setTimeout(resolve, 150));
-  
-  const stored = localStorage.getItem('danhSachPhieuKham') || '[]';
-  let list = [];
-  try { list = JSON.parse(stored); } catch(e) {}
-  
-  const found = list.find(p => p.maPhieu === maPhieu);
-  if (found) return found;
-  throw new Error('Không tìm thấy hồ sơ bệnh án');
+  const data = await apiFetch(`/TiepDon/${maPhieu}`);
+  if (data) {
+    return {
+      ...data,
+      trangThaiKham: data.trangThaiKham,
+      trangThai: data.trangThaiKham,
+      tenBacSi: data.tenNhanVien,
+      maBacSi: data.maNV,
+      maICD: data.danhSachICD && data.danhSachICD.length > 0 ? data.danhSachICD[0].maICD : null,
+      tenBenhICD: data.danhSachICD && data.danhSachICD.length > 0 ? data.danhSachICD[0].tenBenh : null,
+      icdList: data.danhSachICD || [],
+      canLamSang: data.dichVuYTe ? data.dichVuYTe.map(dv => ({
+        maChiTiet: dv.maChiTiet,
+        maDV: dv.maDV,
+        tenDV: dv.tenDV,
+        ketQua: dv.ketQua,
+        trangThaiCLS: dv.trangThaiDichVu
+      })) : []
+    };
+  }
+  return data;
 };
 
 // API Lấy danh sách danh mục bệnh lý ICD-10 kết nối với Backend thực tế

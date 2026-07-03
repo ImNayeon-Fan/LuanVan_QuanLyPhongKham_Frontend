@@ -323,7 +323,7 @@ function KhoDanhMucVatTu() {
                   </td>
                   <td className="p-1">
                     <select 
-                      className="form-input h-[26px] text-[12px] px-1" 
+                      className="form-input h-[26px] text-[12px] px-1 py-0" 
                       value={filters.donViTinh}
                       onChange={e => handleFilterChange('donViTinh', e.target.value)}
                     >
@@ -498,7 +498,7 @@ function KhoDanhMucVatTu() {
                       <div className="form-group m-0">
                         <label className="form-label text-[12.5px]">Đơn vị tính <span className="text-red-500">*</span></label>
                         <select 
-                          className="form-input h-9 text-[13px] px-2" 
+                          className="form-input h-9 text-[13px] px-2 py-0" 
                           value={formData.donViTinh}
                           onChange={e => handleInputChange('donViTinh', e.target.value)}
                           required

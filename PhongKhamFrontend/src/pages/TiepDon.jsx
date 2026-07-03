@@ -4,7 +4,7 @@ import {
   ArrowLeft, User, Stethoscope, Save, UserPlus, CheckCircle, AlertCircle
 } from 'lucide-react';
 import { useToast } from '../utils/ToastContext';
-import { apiTraCuuBenhNhan, apiTiepNhanBenhNhan, apiGetStaffList } from '../utils/api';
+import { apiTraCuuBenhNhan, apiTiepNhanBenhNhan, apiGetStaffList, apiGetICDList, apiGetKhoaList } from '../utils/api';
 
 // Hàm kiểm tra định dạng ngày sinh hợp lệ (DD/MM/YYYY)
 const isValidDate = (dateStr) => {
@@ -43,7 +43,8 @@ function TiepDon() {
   
   // Danh sách bác sĩ tải động từ backend và các danh mục gợi ý
   const [danhSachBacSi, setDanhSachBacSi] = useState([]);
-  const [danhMucICD] = useState(() => {
+  const [khoaMapping, setKhoaMapping] = useState({});
+  const [danhMucICD, setDanhMucICD] = useState(() => {
     try {
       const stored = localStorage.getItem('danhMucICD');
       return stored ? JSON.parse(stored) : defaultICDData;
@@ -69,7 +70,6 @@ function TiepDon() {
     };
   });
 
-  const [notification, setNotification] = useState(null); // Banner thông báo thành công
   const [foundPatient, setFoundPatient] = useState(null); // Thông tin bệnh nhân cũ tìm thấy
   const [icdQuery, setIcdQuery] = useState('');
   const [showIcdDropdown, setShowIcdDropdown] = useState(false);
@@ -84,7 +84,7 @@ function TiepDon() {
         const res = await apiTraCuuBenhNhan(cleanVal);
         if (res && res.found && res.data) {
           setFoundPatient(res.data);
-          showSuccess(`Tìm thấy BN cũ: ${res.data.hoTen}! Bấm F2 để điền nhanh.`);
+          showSuccess(`Tìm thấy bệnh nhân cũ: ${res.data.hoTen}`);
         } else {
           setFoundPatient(null);
         }
@@ -137,12 +137,8 @@ function TiepDon() {
         diaChi: foundPatient.diaChi || '',
         tienSuBenh: foundPatient.tienSuBenh || ''
       }));
-      setNotification({
-        type: 'success',
-        message: `Đã điền thông tin bệnh nhân cũ: ${foundPatient.hoTen} (${foundPatient.maBN})`
-      });
+      showSuccess(`Đã điền thông tin bệnh nhân cũ: ${foundPatient.hoTen} (${foundPatient.maBN})`);
       setFoundPatient(null);
-      setTimeout(() => setNotification(null), 4000);
     }
   };
 
@@ -205,20 +201,15 @@ function TiepDon() {
     try {
       const res = await apiTiepNhanBenhNhan(payload);
       if (res && res.data) {
-        setNotification({
-          type: 'success',
-          message: `Lưu tiếp nhận thành công! Mã BN: ${res.data.maBN}, Mã Phiếu: ${res.data.maPhieu}`
-        });
-        showSuccess('Tiếp nhận bệnh nhân thành công!');
+        showSuccess(`Tiếp nhận bệnh nhân thành công! Mã BN: ${res.data.maBN}, Mã Phiếu: ${res.data.maPhieu}`, 5000);
         handleCancel();
-        setTimeout(() => setNotification(null), 5000);
       }
     } catch (err) {
       showError(err.message || 'Lỗi kết nối máy chủ, vui lòng thử lại.');
     }
   };
 
-  // 1. Tải danh sách bác sĩ đang hoạt động từ backend
+  // 1. Tải danh sách bác sĩ, danh mục khoa phòng và danh mục bệnh lý ICD-10 đang hoạt động từ backend
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
@@ -229,7 +220,31 @@ function TiepDon() {
         showError('Không thể tải danh sách bác sĩ từ máy chủ!');
       }
     };
+    const fetchKhoas = async () => {
+      try {
+        const res = await apiGetKhoaList('', '', 1, 1000);
+        if (res && res.data) {
+          const mapping = {};
+          res.data.forEach(k => {
+            mapping[k.maKhoa] = k.tenKhoa;
+          });
+          setKhoaMapping(mapping);
+        }
+      } catch (err) {
+        console.error('Không thể tải danh sách khoa:', err);
+      }
+    };
+    const fetchICDs = async () => {
+      try {
+        const res = await apiGetICDList('', '', 1, 1000);
+        if (res && res.data) setDanhMucICD(res.data);
+      } catch (err) {
+        console.error('Không thể tải danh mục ICD:', err);
+      }
+    };
     fetchDoctors();
+    fetchKhoas();
+    fetchICDs();
   }, []);
 
   // 2. Tự động điền dữ liệu nếu chuyển hướng từ trang Lịch đặt khám
@@ -265,10 +280,13 @@ function TiepDon() {
   }, [formData, foundPatient]);
 
   const dateWarning = formData.ngaySinh.length === 10 && !isValidDate(formData.ngaySinh) ? 'Ngày sinh không hợp lệ' : '';
-  const filteredICDs = danhMucICD.filter(item => 
-    item.maICD.toLowerCase().includes((icdQuery || formData.maICD).toLowerCase()) ||
-    item.tenBenh.toLowerCase().includes((icdQuery || formData.tenBenhICD).toLowerCase())
-  );
+  const query = icdQuery.trim().toLowerCase();
+  const filteredICDs = query 
+    ? danhMucICD.filter(item => 
+        item.maICD.toLowerCase().includes(query) ||
+        item.tenBenh.toLowerCase().includes(query)
+      )
+    : danhMucICD.slice(0, 10);
 
   return (
     <div className="kb-wrapper h-screen overflow-hidden">
@@ -287,15 +305,10 @@ function TiepDon() {
       </div>
 
       {/* Vùng thân chính chứa biểu mẫu */}
-      <div className="kb-body p-4 bg-[var(--bg-main)] h-[calc(100vh-118px)] overflow-y-auto block">
-        {notification && (
-          <div className="bg-[#dcfce7] border-l-4 border-l-[#22c55e] text-[#15803d] py-2 px-3 rounded-[6px] mb-3 flex items-center gap-2 text-[13px] animate-[fadeIn_0.2s_ease-in-out]">
-            <CheckCircle size={16} />
-            <span className="font-medium">{notification.message}</span>
-          </div>
-        )}
+      <div className="kb-body p-4 bg-[var(--bg-main)] h-[calc(100vh-106px)] overflow-y-auto block">
 
-        <div className="grid grid-cols-[repeat(auto-fit,minmax(400px,1fr))] gap-4 h-full">
+
+        <div className="grid grid-cols-2 gap-4 h-full">
           {/* CỘT TRÁI: NHẬP THÔNG TIN CÁ NHÂN */}
           <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius-lg)] py-4 px-5 shadow-[var(--shadow-sm)] flex flex-col justify-between">
             <div>
@@ -304,9 +317,9 @@ function TiepDon() {
                 <h3 className="text-[14px] font-semibold text-[var(--text-main)]">Thông tin cá nhân (Hành chính)</h3>
               </div>
 
-              <div className="grid grid-cols-2 gap-x-[14px] gap-y-[10px]">
+              <div className="grid grid-cols-3 gap-x-[14px] gap-y-[10px]">
                 {/* Số điện thoại & nút F2 điền nhanh */}
-                <div className="form-group col-span-2 mb-0">
+                <div className="form-group col-span-3 mb-0">
                   <div className="flex justify-between items-center">
                     <label className="form-label font-semibold text-[13px]">
                       Số điện thoại <span className="text-red-500">*</span>
@@ -325,7 +338,7 @@ function TiepDon() {
                 </div>
 
                 {/* Họ và tên (Tự động in hoa) */}
-                <div className="form-group col-span-2 mb-0">
+                <div className="form-group col-span-3 mb-0">
                   <label className="form-label font-semibold text-[13px]">
                     Họ và tên bệnh nhân <span className="text-red-500">*</span>
                   </label>
@@ -341,7 +354,7 @@ function TiepDon() {
                 <div className="form-group mb-0">
                   <label className="form-label font-semibold text-[13px]">Giới tính *</label>
                   <select
-                    className="form-input pl-3 h-9"
+                    className="form-input pl-3 h-10 py-1.5"
                     value={formData.gioiTinh} onChange={e => setFormData({ ...formData, gioiTinh: e.target.value })}
                   >
                     <option value="Nam">Nam</option>
@@ -352,10 +365,10 @@ function TiepDon() {
 
                 {/* Ngày sinh */}
                 <div className="form-group mb-0">
-                  <label className="form-label font-semibold text-[13px]">Ngày sinh (DD/MM/YYYY) *</label>
+                  <label className="form-label font-semibold text-[13px]">Ngày sinh *</label>
                   <input
                     type="text" className={`form-input pl-3 h-9 ${dateWarning ? 'form-input-warning' : ''}`}
-                    placeholder="VD: 15/03/1980" maxLength={10}
+                    placeholder="DD/MM/YYYY" maxLength={10}
                     value={formData.ngaySinh} onChange={handleNgaySinhChange} onBlur={handleNgaySinhBlur}
                   />
                   {dateWarning && <span className="form-warning">{dateWarning}</span>}
@@ -371,7 +384,7 @@ function TiepDon() {
                 </div>
 
                 {/* Địa chỉ */}
-                <div className="form-group col-span-2 mb-0">
+                <div className="form-group col-span-3 mb-0">
                   <label className="form-label text-[13px]">Địa chỉ thường trú</label>
                   <input
                     type="text" className="form-input pl-3 h-9"
@@ -381,7 +394,7 @@ function TiepDon() {
                 </div>
 
                 {/* Tiền sử bệnh */}
-                <div className="form-group col-span-2 mb-0">
+                <div className="form-group col-span-3 mb-0">
                   <label className="form-label text-[13px]">Tiền sử bệnh án</label>
                   <textarea
                     className="form-input pl-3 min-h-[44px] h-[44px] resize-none py-1.5 px-3"
@@ -415,44 +428,36 @@ function TiepDon() {
               <div className="form-group mb-3">
                 <label className="form-label font-semibold text-[13px]">Bác sĩ khám (Phòng khám chỉ định)</label>
                 <select
-                  className="form-input pl-3 h-9"
+                  className="form-input pl-3 h-10 py-1.5"
                   value={formData.maBacSi} onChange={e => setFormData({ ...formData, maBacSi: e.target.value })}
                 >
                   <option value="">-- Chọn Bác sĩ khám / Tự động phân phòng --</option>
-                  {danhSachBacSi.map(doc => (
-                    <option key={doc.maNV} value={doc.maNV}>{doc.hoTen}</option>
-                  ))}
+                  {danhSachBacSi.map(doc => {
+                    const tenKhoa = khoaMapping[doc.maKhoa] || doc.maKhoa || 'Khoa lâm sàng';
+                    return (
+                      <option key={doc.maNV} value={doc.maNV}>
+                        {doc.hoTen} - {tenKhoa}
+                      </option>
+                    );
+                  })}
                 </select>
               </div>
 
               {/* Nhập mã ICD gợi ý */}
               <div className="form-group mb-0 relative">
                 <label className="form-label font-semibold text-[13px]">Mã bệnh & Chẩn đoán ban đầu (ICD)</label>
-                <div className="flex gap-2">
-                  <input
-                    type="text" className="form-input pl-2.5 h-9 flex-[0.3] uppercase"
-                    placeholder="Mã bệnh" value={formData.maICD}
-                    onChange={e => {
-                      const val = e.target.value.toUpperCase();
-                      const found = danhMucICD.find(item => item.maICD.toUpperCase() === val);
-                      setFormData(prev => ({ 
-                        ...prev, maICD: val, tenBenhICD: found ? found.tenBenh : prev.tenBenhICD 
-                      }));
-                    }}
-                  />
-                  <input
-                    type="text" className="form-input pl-2.5 h-9 flex-[0.7]"
-                    placeholder="Tìm chẩn đoán bệnh lý hoặc nhập tay..."
-                    value={icdQuery || formData.tenBenhICD}
-                    onFocus={() => setShowIcdDropdown(true)}
-                    onChange={e => {
-                      const val = e.target.value;
-                      setIcdQuery(val);
-                      setFormData(prev => ({ ...prev, tenBenhICD: val }));
-                      setShowIcdDropdown(true);
-                    }}
-                  />
-                </div>
+                <input
+                  type="text" className="form-input pl-3 h-9 w-full"
+                  placeholder="Tìm kiếm mã bệnh, tên bệnh chẩn đoán hoặc tự nhập..."
+                  value={icdQuery || (formData.maICD ? `[${formData.maICD}] ${formData.tenBenhICD}` : formData.tenBenhICD)}
+                  onFocus={() => setShowIcdDropdown(true)}
+                  onChange={e => {
+                    const val = e.target.value;
+                    setIcdQuery(val);
+                    setFormData(prev => ({ ...prev, tenBenhICD: val, maICD: '' }));
+                    setShowIcdDropdown(true);
+                  }}
+                />
 
                 {/* Dropdown danh sách gợi ý ICD */}
                 {showIcdDropdown && (
@@ -482,20 +487,23 @@ function TiepDon() {
               </div>
             </div>
 
-            <div className="bg-[var(--bg-main)] border border-[var(--border-color)] rounded-[var(--radius-md)] py-2.5 px-3 mt-4 text-[12px] text-[var(--text-muted)] leading-[1.4]">
-              <strong>Hướng dẫn nhanh:</strong> Nhấn <strong>F4</strong> để lưu tiếp nhận hiện tại, nhấn <strong>F2</strong> để tự động điền thông tin khi phát hiện số điện thoại bệnh nhân cũ.
-            </div>
           </div>
         </div>
       </div>
 
       {/* THANH THAO TÁC CỐ ĐỊNH Ở DƯỚI */}
-      <div className="fixed bottom-0 left-0 right-0 h-[68px] bg-white border-t border-[var(--border-color)] flex items-center justify-end px-6 gap-3 z-[100] shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
-        <button className="btn-outline w-auto py-2.5 px-5 m-0" onClick={handleCancel}>
+      <div className="fixed bottom-0 left-0 right-0 h-[56px] bg-white border-t border-[var(--border-color)] flex items-center justify-end px-6 gap-3 z-[100] shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+        <button 
+          className="!w-auto !h-9 !px-4 !py-0 !m-0 !text-[13px] !font-semibold flex items-center justify-center bg-transparent border border-[var(--primary)] text-[var(--primary)] rounded-[var(--radius-md)] hover:bg-[var(--primary-light)] transition-all cursor-pointer" 
+          onClick={handleCancel}
+        >
           Hủy tiếp nhận
         </button>
-        <button className="btn-primary w-auto py-2.5 px-6 m-0 flex items-center gap-2 bg-[#22c55e] border-[#22c55e]" onClick={handleSave}>
-          <Save size={16} /> Lưu tiếp đón [F4]
+        <button 
+          className="!w-auto !h-9 !px-5 !py-0 !m-0 !text-[13px] !font-semibold flex items-center justify-center gap-1.5 bg-[#22c55e] hover:bg-[#16a34a] text-white border-none rounded-[var(--radius-md)] transition-all cursor-pointer" 
+          onClick={handleSave}
+        >
+          <Save size={14} /> Lưu tiếp đón
         </button>
       </div>
     </div>

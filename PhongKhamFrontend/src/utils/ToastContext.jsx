@@ -12,20 +12,20 @@ export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([]);
 
   // Hàm tạo và hiển thị thông báo mới
-  const showToast = useCallback((message, type = 'success') => {
+  const showToast = useCallback((message, type = 'success', duration = 4000) => {
     const id = Date.now() + Math.random(); // Tạo ID ngẫu nhiên cho mỗi toast
     setToasts((prev) => [...prev, { id, message, type }]); // Thêm toast mới vào mảng
     
-    // Tự động xóa thông báo sau 4 giây
+    // Tự động xóa thông báo sau khoảng thời gian chỉ định
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 4000);
+    }, duration);
   }, []);
 
   // Các hàm định dạng nhanh loại thông báo
-  const showSuccess = useCallback((msg) => showToast(msg, 'success'), [showToast]);
-  const showError = useCallback((msg) => showToast(msg, 'error'), [showToast]);
-  const showWarning = useCallback((msg) => showToast(msg, 'warning'), [showToast]);
+  const showSuccess = useCallback((msg, duration = 4000) => showToast(msg, 'success', duration), [showToast]);
+  const showError = useCallback((msg, duration = 4000) => showToast(msg, 'error', duration), [showToast]);
+  const showWarning = useCallback((msg, duration = 4000) => showToast(msg, 'warning', duration), [showToast]);
 
   // Hàm xóa chủ động một thông báo (khi người dùng click dấu x)
   const removeToast = useCallback((id) => {

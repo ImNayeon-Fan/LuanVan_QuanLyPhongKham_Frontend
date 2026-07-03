@@ -84,7 +84,7 @@ function ChiTietBenhNhan() {
               soNgay: 7, // Mặc định kê đơn 7 ngày
               soLuong: `${ct.soLuong} ${ct.donViTinh || ''} (${ct.cachDung || ''})`
             })) : [],
-            chanDoan: data.maICD ? `[${data.maICD}] ${data.tenBenh || ''}${data.ketLuan ? ` - ${data.ketLuan}` : ''}` : data.ketLuan
+            chanDoan: data.maICD ? `[${data.maICD}] ${data.tenBenhICD || data.tenBenh || ''}${data.ketLuan ? ` - ${data.ketLuan}` : ''}` : data.ketLuan
           });
         }
       } catch (err) {

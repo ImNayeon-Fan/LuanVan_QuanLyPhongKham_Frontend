@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Search, User, Calendar, RefreshCw, ClipboardList, Eye
 } from 'lucide-react';
-import { apiGetDanhSachTiepNhan, apiGetStaffList } from '../utils/api';
+import { apiGetDanhSachTiepNhan, apiGetStaffList, apiGetKhoaList } from '../utils/api';
 import { useToast } from '../utils/ToastContext';
 
 // Cấu hình nhãn trạng thái và màu sắc đi kèm
@@ -26,9 +26,10 @@ function DanhSachTiepNhan() {
 
   const [dsPhieuKham, setDsPhieuKham] = useState([]); // Danh sách phiếu khám tải từ backend
   const [docList, setDocList] = useState([]); // Danh sách bác sĩ phục vụ bộ lọc
+  const [khoaMapping, setKhoaMapping] = useState({}); // Bản đồ ánh xạ khoa phòng
   const [loading, setLoading] = useState(false);
 
-  // 1. Tải danh sách bác sĩ đang hoạt động để đưa vào bộ lọc
+  // 1. Tải danh sách bác sĩ và danh mục khoa phòng để đưa vào bộ lọc
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
@@ -38,7 +39,22 @@ function DanhSachTiepNhan() {
         console.error('Lỗi tải danh sách bác sĩ:', err);
       }
     };
+    const fetchKhoas = async () => {
+      try {
+        const res = await apiGetKhoaList('', '', 1, 1000);
+        if (res && res.data) {
+          const mapping = {};
+          res.data.forEach(k => {
+            mapping[k.maKhoa] = k.tenKhoa;
+          });
+          setKhoaMapping(mapping);
+        }
+      } catch (err) {
+        console.error('Lỗi tải danh sách khoa:', err);
+      }
+    };
     fetchDoctors();
+    fetchKhoas();
   }, []);
 
   // 2. Tải danh sách bệnh nhân đã tiếp tiếp nhận từ Backend
@@ -47,7 +63,7 @@ function DanhSachTiepNhan() {
     try {
       const res = await apiGetDanhSachTiepNhan({
         search: searchQuery,
-        maBacSi: selectedDoctor,
+        maNV: selectedDoctor,
         trangThai: selectedStatus,
         ngayKham: selectedDate,
         page: 1,
@@ -112,7 +128,7 @@ function DanhSachTiepNhan() {
           <div className="flex items-center gap-2 flex-[2] min-w-[240px] relative">
             <Search size={16} className="absolute left-3 text-[var(--text-muted)]" />
             <input
-              type="text" className="form-input pl-[34px] h-9"
+              type="text" className="form-input pl-[34px] h-10 py-1.5"
               placeholder="Tìm họ tên, SĐT, mã bệnh nhân..."
               value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
             />
@@ -121,13 +137,18 @@ function DanhSachTiepNhan() {
           {/* Lọc theo bác sĩ */}
           <div className="flex-1 min-w-[180px]">
             <select
-              className="form-input pl-3 h-9"
+              className="form-input pl-3 h-10 py-1.5"
               value={selectedDoctor} onChange={e => setSelectedDoctor(e.target.value)}
             >
               <option value="">-- Lọc theo Bác sĩ chỉ định --</option>
-              {docList.map(doc => (
-                <option key={doc.maNV} value={doc.maNV}>{doc.hoTen}</option>
-              ))}
+              {docList.map(doc => {
+                const tenKhoa = khoaMapping[doc.maKhoa] || doc.maKhoa || 'Khoa lâm sàng';
+                return (
+                  <option key={doc.maNV} value={doc.maNV}>
+                    {doc.hoTen} - {tenKhoa}
+                  </option>
+                );
+              })}
             </select>
           </div>
 
@@ -135,7 +156,7 @@ function DanhSachTiepNhan() {
           <div className="flex-1 min-w-[160px] flex items-center gap-2 relative">
             <Calendar size={16} className="absolute left-3 text-[var(--text-muted)]" />
             <input
-              type="date" className="form-input pl-[34px] h-9"
+              type="date" className="form-input pl-[34px] h-10 py-1.5"
               value={selectedDate} onChange={e => setSelectedDate(e.target.value)}
             />
           </div>
@@ -143,7 +164,7 @@ function DanhSachTiepNhan() {
           {/* Lọc theo trạng thái khám */}
           <div className="flex-1 min-w-[160px]">
             <select
-              className="form-input pl-3 h-9"
+              className="form-input pl-3 h-10 py-1.5"
               value={selectedStatus} onChange={e => setSelectedStatus(e.target.value)}
             >
               <option value="">-- Tất cả trạng thái --</option>

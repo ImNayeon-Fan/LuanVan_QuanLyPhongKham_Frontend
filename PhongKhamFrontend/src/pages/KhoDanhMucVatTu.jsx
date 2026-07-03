@@ -298,7 +298,7 @@ function KhoDanhMucVatTu() {
                     <input 
                       type="text" 
                       placeholder="Lọc..." 
-                      className="form-input h-[26px] text-[12px] py-0.5 px-1.5" 
+                      className="form-input h-[30px] text-[12px] py-1 px-1.5" 
                       value={filters.maVT}
                       onChange={e => handleFilterChange('maVT', e.target.value)}
                     />
@@ -307,7 +307,7 @@ function KhoDanhMucVatTu() {
                     <input 
                       type="text" 
                       placeholder="Lọc..." 
-                      className="form-input h-[26px] text-[12px] py-0.5 px-1.5" 
+                      className="form-input h-[30px] text-[12px] py-1 px-1.5" 
                       value={filters.tenVT}
                       onChange={e => handleFilterChange('tenVT', e.target.value)}
                     />
@@ -316,14 +316,14 @@ function KhoDanhMucVatTu() {
                     <input 
                       type="text" 
                       placeholder="Lọc..." 
-                      className="form-input h-[26px] text-[12px] py-0.5 px-1.5" 
+                      className="form-input h-[30px] text-[12px] py-1 px-1.5" 
                       value={filters.quyCach}
                       onChange={e => handleFilterChange('quyCach', e.target.value)}
                     />
                   </td>
                   <td className="p-1">
                     <select 
-                      className="form-input h-[26px] text-[12px] px-1 py-0" 
+                      className="form-input h-[30px] text-[12px] px-1 py-0.5" 
                       value={filters.donViTinh}
                       onChange={e => handleFilterChange('donViTinh', e.target.value)}
                     >
@@ -498,7 +498,7 @@ function KhoDanhMucVatTu() {
                       <div className="form-group m-0">
                         <label className="form-label text-[12.5px]">Đơn vị tính <span className="text-red-500">*</span></label>
                         <select 
-                          className="form-input h-9 text-[13px] px-2 py-0" 
+                          className="form-input h-10 text-[13px] px-2 py-1" 
                           value={formData.donViTinh}
                           onChange={e => handleInputChange('donViTinh', e.target.value)}
                           required

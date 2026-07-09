@@ -330,11 +330,7 @@ function KhamBenh() {
         soLuong: parseInt(t.soLuong, 10),
         cachDung: t.cachDung.trim()
       })),
-      ketLuan: (ketLuan.chanDoan ? ketLuan.chanDoan.trim() : '') + (
-        chiDinh.length > 0
-          ? ` [CLS_STATUS:${chiDinh.map(c => `${c.maDV}=${c.trangThaiDichVu || 0}`).join(',')}]`
-          : ''
-      ),
+      ketLuan: ketLuan.chanDoan ? ketLuan.chanDoan.trim() : null,
       icdList: selectedIcdList.map(x => x.maICD),
       trangThaiKham: newTrangThai
     };
@@ -343,12 +339,14 @@ function KhamBenh() {
       const res = await apiCapNhatKhamBenh(selectedBN.maPhieu, payload);
       if (res && res.data) {
         showSuccess(res.message || 'Lưu thông tin khám bệnh thành công!');
-        fetchPatientList(search);
+        // Cập nhật lại trạng thái bệnh nhân đang chọn ngay lập tức
         setSelectedBN(prev => ({
           ...prev,
           trangThai: newTrangThai,
           trangThaiKham: newTrangThai
         }));
+        // Tải lại danh sách bệnh nhân để sidebar phản ánh trạng thái mới
+        fetchPatientList(search);
       }
     } catch (err) {
       showError(err.message || 'Không thể lưu thông tin khám bệnh, vui lòng thử lại.');

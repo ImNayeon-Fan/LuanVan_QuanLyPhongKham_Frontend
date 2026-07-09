@@ -90,6 +90,14 @@ function KhamBenh() {
   const { showSuccess, showError } = useToast();
   const [search, setSearch]       = useState('');
 
+  // Mặc định Từ ngày là 30 ngày trước, Đến ngày là hôm nay
+  const [tuNgay, setTuNgay] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 30);
+    return d.toISOString().split('T')[0];
+  });
+  const [denNgay, setDenNgay] = useState(() => new Date().toISOString().split('T')[0]);
+
   const [dsBenhNhan, setDsBenhNhan] = useState([]);
   const [loadingList, setLoadingList] = useState(false);
   const [loadingDetail, setLoadingDetail] = useState(false);
@@ -115,23 +123,66 @@ function KhamBenh() {
   const [danhMucCLS, setDanhMucCLS] = useState([]);
   const [danhMucThuoc, setDanhMucThuoc] = useState([]);
 
-  // Tải danh sách bệnh nhân chờ khám từ API
+  // Hàm chuyển đổi ngày tháng định dạng Việt Nam
+  const formatDateVN = (dateStr) => {
+    if (!dateStr) return '';
+    const parts = dateStr.split('-');
+    if (parts.length !== 3) return dateStr;
+    return `${parts[2]}/${parts[1]}/${parts[0]}`;
+  };
+
+  // Lấy danh sách các ngày trong khoảng
+  const getDatesInRange = (startDate, endDate) => {
+    if (!startDate || !endDate) return [];
+    const dates = [];
+    let curr = new Date(startDate);
+    const end = new Date(endDate);
+    let limitCount = 0;
+    while (curr <= end && limitCount < 45) {
+      dates.push(curr.toISOString().split('T')[0]);
+      curr.setDate(curr.getDate() + 1);
+      limitCount++;
+    }
+    return dates;
+  };
+
+  // Tải danh sách bệnh nhân chờ khám từ API theo khoảng ngày
   const fetchPatientList = async (searchQuery = '') => {
     setLoadingList(true);
     try {
-      const res = await apiGetDSBenhNhanChoKham({ search: searchQuery });
-      if (res && res.data) {
-        const patients = res.data.map(item => ({
-          ...item,
-          trangThai: item.trangThaiKham
-        }));
-        setDsBenhNhan(patients);
-        // Tự động chọn bệnh nhân đầu tiên nếu chưa chọn ai
-        if (patients.length > 0 && !selectedBN) {
-          setSelectedBN(patients[0]);
-        }
-      } else {
+      const dates = getDatesInRange(tuNgay, denNgay);
+      if (dates.length === 0) {
         setDsBenhNhan([]);
+        return;
+      }
+
+      // Gọi đồng thời API cho từng ngày trong khoảng đã chọn
+      const requests = dates.map(date => 
+        apiGetDSBenhNhanChoKham({ 
+          search: searchQuery,
+          ngayKham: date
+        })
+      );
+
+      const responses = await Promise.all(requests);
+      let mergedData = [];
+      responses.forEach(res => {
+        if (res && res.data) {
+          mergedData = mergedData.concat(res.data);
+        }
+      });
+
+      // Map trường trạng thái và sắp xếp theo ngày khám giảm dần
+      const patients = mergedData.map(item => ({
+        ...item,
+        trangThai: item.trangThaiKham
+      })).sort((a, b) => new Date(b.ngayKham) - new Date(a.ngayKham));
+
+      setDsBenhNhan(patients);
+      
+      // Tự động chọn bệnh nhân đầu tiên nếu chưa chọn ai
+      if (patients.length > 0 && !selectedBN) {
+        setSelectedBN(patients[0]);
       }
     } catch (err) {
       console.error('Lỗi tải danh sách bệnh nhân chờ khám:', err);
@@ -144,7 +195,7 @@ function KhamBenh() {
 
   useEffect(() => {
     fetchPatientList(search);
-  }, [search]);
+  }, [search, tuNgay, denNgay]);
 
   // Tải danh mục ICD, CLS, Thuốc từ API khi component mount
   useEffect(() => {
@@ -683,6 +734,37 @@ function KhamBenh() {
             <Search size={16} className="kb-search-icon" />
             <input type="text" placeholder="Tìm bệnh nhân..." value={search}
               onChange={e => setSearch(e.target.value)} className="kb-search-input" />
+          </div>
+
+          {/* Lọc theo khoảng ngày tiếp nhận */}
+          <div className="px-4 py-2.5 border-b border-[var(--border-color)] flex flex-col gap-2 bg-[#f8fafc]">
+            <div className="flex items-center gap-2">
+              <div className="flex-1 relative h-8">
+                <span className="text-[9px] text-[var(--text-muted)] absolute -top-3.5 left-1 font-bold">Từ ngày</span>
+                <input
+                  type="date" 
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
+                  value={tuNgay} 
+                  onChange={e => setTuNgay(e.target.value)}
+                />
+                <div className="form-input pl-2 pr-1 h-8 flex items-center text-[11px] bg-white border border-[var(--border-color)] rounded-[var(--radius-md)] pointer-events-none w-full font-medium">
+                  {formatDateVN(tuNgay)}
+                </div>
+              </div>
+              <span className="text-[var(--text-muted)] text-[11px] pt-1">đến</span>
+              <div className="flex-1 relative h-8">
+                <span className="text-[9px] text-[var(--text-muted)] absolute -top-3.5 left-1 font-bold">Đến ngày</span>
+                <input
+                  type="date" 
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
+                  value={denNgay} 
+                  onChange={e => setDenNgay(e.target.value)}
+                />
+                <div className="form-input pl-2 pr-1 h-8 flex items-center text-[11px] bg-white border border-[var(--border-color)] rounded-[var(--radius-md)] pointer-events-none w-full font-medium">
+                  {formatDateVN(denNgay)}
+                </div>
+              </div>
+            </div>
           </div>
           <p className="kb-section-label">Danh sách chờ khám</p>
           <div className="kb-patient-list">

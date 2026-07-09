@@ -452,6 +452,11 @@ function KhamBenh() {
                 <Plus size={16} /> Thêm
               </button>
             </div>
+            <div className="kb-action-row mt-4 border-t border-[var(--border-color)] pt-3.5">
+              <button className="btn-primary !w-fit !mt-0 py-[10px] px-6 flex items-center gap-2" onClick={() => luuPhieuKham(2)}>
+                <Save size={16} /> Lưu chỉ định CLS
+              </button>
+            </div>
           </div>
         );
 
@@ -518,6 +523,11 @@ function KhamBenh() {
                 placeholder="Cách dùng (Ví dụ: Ngày uống 2 lần, mỗi lần 1 viên)" value={thuocMoi.cachDung}
                 onChange={e => setThuocMoi({ ...thuocMoi, cachDung: e.target.value })} />
               <button className="kb-add-btn h-[38px]" onClick={themThuoc}><Plus size={16} /> Thêm</button>
+            </div>
+            <div className="kb-action-row mt-4 border-t border-[var(--border-color)] pt-3.5">
+              <button className="btn-primary !w-fit !mt-0 py-[10px] px-6 flex items-center gap-2" onClick={() => luuPhieuKham(1)}>
+                <Save size={16} /> Lưu đơn thuốc
+              </button>
             </div>
           </div>
         );

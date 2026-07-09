@@ -737,32 +737,29 @@ function KhamBenh() {
           </div>
 
           {/* Lọc theo khoảng ngày tiếp nhận */}
-          <div className="px-4 py-2.5 border-b border-[var(--border-color)] flex flex-col gap-2 bg-[#f8fafc]">
-            <div className="flex items-center gap-2">
-              <div className="flex-1 relative h-8">
-                <span className="text-[9px] text-[var(--text-muted)] absolute -top-3.5 left-1 font-bold">Từ ngày</span>
-                <input
-                  type="date" 
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
-                  value={tuNgay} 
-                  onChange={e => setTuNgay(e.target.value)}
-                />
-                <div className="form-input pl-2 pr-1 h-8 flex items-center text-[11px] bg-white border border-[var(--border-color)] rounded-[var(--radius-md)] pointer-events-none w-full font-medium">
-                  {formatDateVN(tuNgay)}
-                </div>
+          <div className="px-4 py-2.5 border-b border-[var(--border-color)] flex items-center justify-between gap-1.5 bg-[#f8fafc]">
+            <span className="text-[var(--text-muted)] text-[12px] font-semibold shrink-0">Từ</span>
+            <div className="relative w-[110px] h-8">
+              <input
+                type="date" 
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
+                value={tuNgay} 
+                onChange={e => setTuNgay(e.target.value)}
+              />
+              <div className="form-input pl-1 pr-1 h-8 flex items-center justify-center text-[12px] bg-white border border-[var(--border-color)] rounded-[var(--radius-md)] pointer-events-none w-full font-medium shadow-[var(--shadow-sm)]">
+                {formatDateVN(tuNgay)}
               </div>
-              <span className="text-[var(--text-muted)] text-[11px] pt-1">đến</span>
-              <div className="flex-1 relative h-8">
-                <span className="text-[9px] text-[var(--text-muted)] absolute -top-3.5 left-1 font-bold">Đến ngày</span>
-                <input
-                  type="date" 
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
-                  value={denNgay} 
-                  onChange={e => setDenNgay(e.target.value)}
-                />
-                <div className="form-input pl-2 pr-1 h-8 flex items-center text-[11px] bg-white border border-[var(--border-color)] rounded-[var(--radius-md)] pointer-events-none w-full font-medium">
-                  {formatDateVN(denNgay)}
-                </div>
+            </div>
+            <span className="text-[var(--text-muted)] text-[12px] font-semibold shrink-0">đến</span>
+            <div className="relative w-[110px] h-8">
+              <input
+                type="date" 
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
+                value={denNgay} 
+                onChange={e => setDenNgay(e.target.value)}
+              />
+              <div className="form-input pl-1 pr-1 h-8 flex items-center justify-center text-[12px] bg-white border border-[var(--border-color)] rounded-[var(--radius-md)] pointer-events-none w-full font-medium shadow-[var(--shadow-sm)]">
+                {formatDateVN(denNgay)}
               </div>
             </div>
           </div>

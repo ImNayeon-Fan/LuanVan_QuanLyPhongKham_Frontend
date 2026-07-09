@@ -202,9 +202,9 @@ function DanhSachTiepNhan() {
           </div>
 
           {/* Lọc theo khoảng thời gian tiếp đón */}
-          <div className="flex items-center gap-2 flex-1 min-w-[320px]">
-            <div className="flex-1 relative h-10">
-              <span className="text-[11px] text-[var(--text-muted)] absolute -top-[18px] left-1 font-semibold">Từ ngày</span>
+          <div className="flex items-center gap-2">
+            <span className="text-[var(--text-muted)] text-[13.5px] font-semibold shrink-0">Từ</span>
+            <div className="relative w-[130px] h-10">
               <Calendar size={14} className="absolute left-2.5 top-[13px] text-[var(--text-muted)] z-10 pointer-events-none" />
               <input
                 type="date" 
@@ -212,13 +212,12 @@ function DanhSachTiepNhan() {
                 value={tuNgay} 
                 onChange={e => setTuNgay(e.target.value)}
               />
-              <div className="form-input pl-[30px] h-10 flex items-center text-[13px] bg-white border border-[var(--border-color)] rounded-[var(--radius-md)] pointer-events-none w-full">
+              <div className="form-input pl-[28px] pr-2 h-10 flex items-center justify-center text-[13px] bg-white border border-[var(--border-color)] rounded-[var(--radius-md)] pointer-events-none w-full font-medium shadow-[var(--shadow-sm)]">
                 {formatDateVN(tuNgay)}
               </div>
             </div>
-            <span className="text-[var(--text-muted)] text-[13px] font-semibold pt-1">đến</span>
-            <div className="flex-1 relative h-10">
-              <span className="text-[11px] text-[var(--text-muted)] absolute -top-[18px] left-1 font-semibold">Đến ngày</span>
+            <span className="text-[var(--text-muted)] text-[13.5px] font-semibold shrink-0">đến</span>
+            <div className="relative w-[130px] h-10">
               <Calendar size={14} className="absolute left-2.5 top-[13px] text-[var(--text-muted)] z-10 pointer-events-none" />
               <input
                 type="date" 
@@ -226,7 +225,7 @@ function DanhSachTiepNhan() {
                 value={denNgay} 
                 onChange={e => setDenNgay(e.target.value)}
               />
-              <div className="form-input pl-[30px] h-10 flex items-center text-[13px] bg-white border border-[var(--border-color)] rounded-[var(--radius-md)] pointer-events-none w-full">
+              <div className="form-input pl-[28px] pr-2 h-10 flex items-center justify-center text-[13px] bg-white border border-[var(--border-color)] rounded-[var(--radius-md)] pointer-events-none w-full font-medium shadow-[var(--shadow-sm)]">
                 {formatDateVN(denNgay)}
               </div>
             </div>

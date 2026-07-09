@@ -5,7 +5,14 @@ import {
   Pill, ClipboardCheck, Plus, Trash2, Save, ChevronRight, X
 } from 'lucide-react';
 import { useToast } from '../utils/ToastContext';
-import { apiGetICDList } from '../utils/api';
+import { 
+  apiGetICDList, 
+  apiGetDSBenhNhanChoKham, 
+  apiGetChiTietPhieuKhamBenh, 
+  apiCapNhatKhamBenh, 
+  apiGetDichVuCLSList, 
+  apiGetThuocList 
+} from '../utils/api';
 
 // Khớp với PhieuKham.TrangThaiKham trong C# SQL Database:
 // 0: Chờ khám, 1: Đang khám, 2: Chờ CLS, 3: Hoàn thành
@@ -59,14 +66,7 @@ const getSinhHieuWarning = (key, value) => {
       if (num < 36.0) return 'Thân nhiệt thấp (< 36.0 °C)';
       if (num > 37.5) return 'Sốt (> 37.5 °C)';
       break;
-    case 'spo2':
-      if (num < 95) return 'SpO2 thấp (< 95%)';
-      if (num > 100) return 'SpO2 không hợp lệ (> 100%)';
-      break;
-    case 'nhipTho':
-      if (num < 12) return 'Nhịp thở chậm (< 12 lần/phút)';
-      if (num > 20) return 'Nhịp thở nhanh (> 20 lần/phút)';
-      break;
+
     default:
       return '';
   }
@@ -90,50 +90,21 @@ function KhamBenh() {
   const { showSuccess, showError } = useToast();
   const [search, setSearch]       = useState('');
 
-  // Tải danh sách bệnh nhân chờ khám từ LocalStorage
-  const [dsBenhNhan, setDsBenhNhan] = useState(() => {
-    let list = [];
-    try {
-      list = JSON.parse(localStorage.getItem('danhSachPhieuKham') || '[]');
-    } catch(e) {
-      list = [];
-    }
-    if (list.length === 0) {
-      // Dữ liệu mẫu ban đầu nếu localStorage chưa có dữ liệu phiếu khám nào
-      const defaultData = [
-        {
-          maPhieu: 'PK_250525_001',
-          maBN: 'BN260001',
-          hoTen: 'NGUYỄN VĂN AN',
-          ngaySinh: '15/03/1980',
-          gioiTinh: 'Nam',
-          sdt: '0901234567',
-          diaChi: '123 Nguyễn Trãi, Phường 2, Quận 5, TP. Hồ Chí Minh',
-          tienSuBenh: 'Tăng huyết áp, Đái tháo đường typ 2',
-          maNV: 'NV001',
-          tenBacSi: 'BS. CK1. Nguyễn Văn An (Nội tổng quát)',
-          lyDoKham: 'Đau đầu, chóng mặt, mệt mỏi kéo dài',
-          ngayKham: '2026-05-25T12:00:00.000Z',
-          trangThai: 1
-        }
-      ];
-      localStorage.setItem('danhSachPhieuKham', JSON.stringify(defaultData));
-      return defaultData;
-    }
-    return list;
-  });
-
-  const [selectedBN, setSelectedBN] = useState(dsBenhNhan[0] || null);
+  const [dsBenhNhan, setDsBenhNhan] = useState([]);
+  const [loadingList, setLoadingList] = useState(false);
+  const [loadingDetail, setLoadingDetail] = useState(false);
+  
+  const [selectedBN, setSelectedBN] = useState(null);
   const [activeMenu, setActiveMenu] = useState('sinhHieu');
 
   // Khai báo các state thông tin sinh hiệu, cận lâm sàng, đơn thuốc, kết luận
   const [sinhHieu, setSinhHieu] = useState({
-    mach: '', nhietDo: '', huyetAp: '', canNang: '', chieuCao: '', spo2: '', nhipTho: ''
+    mach: '', nhietDo: '', huyetAp: '', canNang: '', chieuCao: ''
   });
   const [chiDinh, setChiDinh]   = useState([]);
   const [chiDinhMoi, setChiDinhMoi] = useState('');
   const [donThuoc, setDonThuoc] = useState([]);
-  const [thuocMoi, setThuocMoi] = useState({ tenThuoc: '', soLuong: '', soNgay: '' });
+  const [thuocMoi, setThuocMoi] = useState({ maThuoc: '', tenThuoc: '', soLuong: '', cachDung: '' });
   const [ketLuan, setKetLuan]   = useState({ chanDoan: '', loiDan: '' });
 
   const [danhMucICD, setDanhMucICD] = useState([]);
@@ -141,47 +112,120 @@ function KhamBenh() {
   const [icdQuery, setIcdQuery] = useState('');
   const [showIcdDropdown, setShowIcdDropdown] = useState(false);
 
-  // Tải danh mục ICD từ API khi component mount
+  const [danhMucCLS, setDanhMucCLS] = useState([]);
+  const [danhMucThuoc, setDanhMucThuoc] = useState([]);
+
+  // Tải danh sách bệnh nhân chờ khám từ API
+  const fetchPatientList = async (searchQuery = '') => {
+    setLoadingList(true);
+    try {
+      const res = await apiGetDSBenhNhanChoKham({ search: searchQuery });
+      if (res && res.data) {
+        const patients = res.data.map(item => ({
+          ...item,
+          trangThai: item.trangThaiKham
+        }));
+        setDsBenhNhan(patients);
+        // Tự động chọn bệnh nhân đầu tiên nếu chưa chọn ai
+        if (patients.length > 0 && !selectedBN) {
+          setSelectedBN(patients[0]);
+        }
+      } else {
+        setDsBenhNhan([]);
+      }
+    } catch (err) {
+      console.error('Lỗi tải danh sách bệnh nhân chờ khám:', err);
+      showError('Không thể tải danh sách bệnh nhân chờ khám từ máy chủ!');
+      setDsBenhNhan([]);
+    } finally {
+      setLoadingList(false);
+    }
+  };
+
   useEffect(() => {
-    const fetchICD = async () => {
+    fetchPatientList(search);
+  }, [search]);
+
+  // Tải danh mục ICD, CLS, Thuốc từ API khi component mount
+  useEffect(() => {
+    const fetchCatalogs = async () => {
       try {
-        const res = await apiGetICDList('', '', 1, 1000);
-        if (res && res.data) {
-          setDanhMucICD(res.data.map(item => ({
+        const resIcd = await apiGetICDList('', '', 1, 1000);
+        if (resIcd && resIcd.data) {
+          setDanhMucICD(resIcd.data.map(item => ({
             maICD: item.MaICD || item.maICD || '',
             tenBenh: item.TenBenh || item.tenBenh || ''
           })));
         }
+
+        const resCls = await apiGetDichVuCLSList('', '', true, 1, 1000);
+        if (resCls && resCls.data) {
+          setDanhMucCLS(resCls.data);
+        }
+
+        const resThuoc = await apiGetThuocList('', '', '', '', 1, 1000);
+        if (resThuoc && resThuoc.data) {
+          setDanhMucThuoc(resThuoc.data);
+        }
       } catch (err) {
-        console.error('Lỗi tải danh mục ICD:', err);
+        console.error('Lỗi tải danh mục hệ thống:', err);
       }
     };
-    fetchICD();
+    fetchCatalogs();
   }, []);
 
-  // Cập nhật thông tin chi tiết khám bệnh mỗi khi đổi bệnh nhân
+  // Cập nhật thông tin chi tiết khám bệnh mỗi khi đổi bệnh nhân từ API
   useEffect(() => {
-    if (selectedBN) {
-      setSinhHieu({
-        mach: selectedBN.mach || '',
-        nhietDo: selectedBN.nhietDo || '',
-        huyetAp: selectedBN.huyetAp || '',
-        canNang: selectedBN.canNang || '',
-        chieuCao: selectedBN.chieuCao || '',
-        spo2: selectedBN.spo2 || '',
-        nhipTho: selectedBN.nhipTho || ''
-      });
-      setChiDinh(selectedBN.chiDinh || []);
-      setDonThuoc(selectedBN.donThuoc || []);
-      setKetLuan({
-        chanDoan: selectedBN.chanDoan || '',
-        loiDan: selectedBN.loiDan || ''
-      });
-      setSelectedIcdList(selectedBN.icdList || (selectedBN.maICD ? [{ maICD: selectedBN.maICD, tenBenh: selectedBN.tenBenhICD }] : []));
-      setIcdQuery('');
-      setShowIcdDropdown(false);
+    if (selectedBN && selectedBN.maPhieu) {
+      const fetchDetail = async () => {
+        setLoadingDetail(true);
+        try {
+          const res = await apiGetChiTietPhieuKhamBenh(selectedBN.maPhieu);
+          if (res && res.data) {
+            const data = res.data;
+            setSinhHieu({
+              mach: data.sinhHieu?.mach || '',
+              nhietDo: data.sinhHieu?.nhietDo || '',
+              huyetAp: data.sinhHieu?.huyetAp || '',
+              canNang: data.sinhHieu?.canNang || '',
+              chieuCao: data.sinhHieu?.chieuCao || ''
+            });
+            setChiDinh(data.chiDinhCLS ? data.chiDinhCLS.map(c => ({
+              id: c.maChiTiet,
+              maDV: c.maDV,
+              tenXN: c.tenDV,
+              ketQua: c.ketQua,
+              trangThaiDichVu: c.trangThaiDichVu
+            })) : []);
+            setDonThuoc(data.donThuoc && data.donThuoc.chiTiet ? data.donThuoc.chiTiet.map(t => ({
+              id: t.maThuoc,
+              maThuoc: t.maThuoc,
+              tenThuoc: t.tenThuoc,
+              soLuong: t.soLuong,
+              cachDung: t.cachDung,
+              trangThaiPhatThuoc: t.trangThaiPhatThuoc
+            })) : []);
+            setKetLuan({
+              chanDoan: data.ketLuan || '',
+              loiDan: data.donThuoc?.loiDan || ''
+            });
+            setSelectedIcdList(data.icdList ? data.icdList.map(icd => ({
+              maICD: icd.maICD,
+              tenBenh: icd.tenBenh
+            })) : []);
+            setIcdQuery('');
+            setShowIcdDropdown(false);
+          }
+        } catch (err) {
+          console.error('Lỗi tải chi tiết phiếu khám:', err);
+          showError('Không thể tải chi tiết bệnh án của bệnh nhân này!');
+        } finally {
+          setLoadingDetail(false);
+        }
+      };
+      fetchDetail();
     } else {
-      setSinhHieu({ mach: '', nhietDo: '', huyetAp: '', canNang: '', chieuCao: '', spo2: '', nhipTho: '' });
+      setSinhHieu({ mach: '', nhietDo: '', huyetAp: '', canNang: '', chieuCao: '' });
       setChiDinh([]);
       setDonThuoc([]);
       setKetLuan({ chanDoan: '', loiDan: '' });
@@ -189,34 +233,56 @@ function KhamBenh() {
       setIcdQuery('');
       setShowIcdDropdown(false);
     }
-  }, [selectedBN]);
+  }, [selectedBN?.maPhieu]);
 
-  // Lưu thông tin khám bệnh (đồng bộ với danh sách bệnh nhân và lưu vào LocalStorage)
-  const luuPhieuKham = (updatedTrangThai = null) => {
+  // Lưu thông tin khám bệnh lên Backend C#
+  const luuPhieuKham = async (updatedTrangThai = null) => {
     if (!selectedBN) return;
 
-    const newTrangThai = updatedTrangThai !== null ? updatedTrangThai : selectedBN.trangThai;
-    const updatedRecord = {
-      ...selectedBN,
-      ...sinhHieu,
-      chiDinh,
-      donThuoc,
-      ...ketLuan,
-      trangThai: newTrangThai,
-      icdList: selectedIcdList,
-      maICD: selectedIcdList.length > 0 ? selectedIcdList[0].maICD : null,
-      tenBenhICD: selectedIcdList.length > 0 ? selectedIcdList[0].tenBenh : null
+    const newTrangThai = updatedTrangThai !== null ? updatedTrangThai : (selectedBN.trangThaiKham ?? selectedBN.trangThai);
+    
+    if (sinhHieu.huyetAp && !/^\d{2,3}\/\d{2,3}$/.test(sinhHieu.huyetAp.trim())) {
+      showError('Huyết áp không đúng định dạng (VD: 120/80)!');
+      return;
+    }
+
+    if (newTrangThai === 3 && !ketLuan.chanDoan.trim()) {
+      showError('Vui lòng nhập kết luận chẩn đoán trước khi hoàn thành khám!');
+      return;
+    }
+
+    const payload = {
+      mach: sinhHieu.mach ? parseInt(sinhHieu.mach, 10) : null,
+      nhietDo: sinhHieu.nhietDo ? parseFloat(sinhHieu.nhietDo) : null,
+      huyetAp: sinhHieu.huyetAp ? sinhHieu.huyetAp.trim() : null,
+      canNang: sinhHieu.canNang ? parseFloat(sinhHieu.canNang) : null,
+      chieuCao: sinhHieu.chieuCao ? parseFloat(sinhHieu.chieuCao) : null,
+      chiDinhCLSMoi: chiDinh.map(c => c.maDV),
+      loiDan: ketLuan.loiDan ? ketLuan.loiDan.trim() : null,
+      donThuoc: donThuoc.map(t => ({
+        maThuoc: t.maThuoc,
+        soLuong: parseInt(t.soLuong, 10),
+        cachDung: t.cachDung.trim()
+      })),
+      ketLuan: ketLuan.chanDoan ? ketLuan.chanDoan.trim() : null,
+      icdList: selectedIcdList.map(x => x.maICD),
+      trangThaiKham: newTrangThai
     };
 
-    const updatedList = dsBenhNhan.map(bn => 
-      bn.maPhieu === selectedBN.maPhieu ? updatedRecord : bn
-    );
-
-    setDsBenhNhan(updatedList);
-    setSelectedBN(updatedRecord);
-
-    localStorage.setItem('danhSachPhieuKham', JSON.stringify(updatedList));
-    showSuccess('Đã lưu thông tin khám bệnh thành công!');
+    try {
+      const res = await apiCapNhatKhamBenh(selectedBN.maPhieu, payload);
+      if (res && res.data) {
+        showSuccess(res.message || 'Lưu thông tin khám bệnh thành công!');
+        fetchPatientList(search);
+        setSelectedBN(prev => ({
+          ...prev,
+          trangThai: newTrangThai,
+          trangThaiKham: newTrangThai
+        }));
+      }
+    } catch (err) {
+      showError(err.message || 'Không thể lưu thông tin khám bệnh, vui lòng thử lại.');
+    }
   };
 
   // Bộ lọc tìm kiếm bệnh nhân trong danh sách chờ theo Tên, Mã BN, Mã Phiếu
@@ -228,23 +294,51 @@ function KhamBenh() {
 
   // Thêm một chỉ định cận lâm sàng mới vào danh sách
   const themChiDinh = () => {
-    if (!chiDinhMoi.trim()) return;
-    setChiDinh([...chiDinh, { id: Date.now(), tenXN: chiDinhMoi }]);
-    setChiDinhMoi('');
+    if (!chiDinhMoi) return;
+    const selectedCLS = danhMucCLS.find(x => x.maDV === chiDinhMoi);
+    if (selectedCLS) {
+      if (chiDinh.some(x => x.maDV === selectedCLS.maDV)) {
+        showError('Dịch vụ cận lâm sàng này đã được chỉ định rồi!');
+        return;
+      }
+      setChiDinh([...chiDinh, {
+        id: selectedCLS.maDV,
+        maDV: selectedCLS.maDV,
+        tenXN: selectedCLS.tenDV,
+        ketQua: null,
+        trangThaiDichVu: 0
+      }]);
+      setChiDinhMoi('');
+    }
   };
   
   // Xóa chỉ định cận lâm sàng khỏi danh sách
-  const xoaChiDinh = (id) => setChiDinh(chiDinh.filter(c => c.id !== id));
+  const xoaChiDinh = (id) => setChiDinh(chiDinh.filter(c => c.id !== id || c.maDV !== id));
 
   // Thêm thuốc mới kê toa vào đơn thuốc của bệnh nhân
   const themThuoc = () => {
-    if (!thuocMoi.tenThuoc.trim()) return;
-    setDonThuoc([...donThuoc, { id: Date.now(), ...thuocMoi }]);
-    setThuocMoi({ tenThuoc: '', soLuong: '', soNgay: '' });
+    if (!thuocMoi.maThuoc) return showError('Vui lòng chọn thuốc!');
+    if (!thuocMoi.soLuong || parseInt(thuocMoi.soLuong, 10) <= 0) return showError('Số lượng thuốc phải là số nguyên dương lớn hơn 0!');
+    if (!thuocMoi.cachDung.trim()) return showError('Vui lòng nhập hướng dẫn cách dùng thuốc!');
+
+    if (donThuoc.some(x => x.maThuoc === thuocMoi.maThuoc)) {
+      showError('Thuốc này đã được kê trong đơn thuốc của bệnh nhân!');
+      return;
+    }
+
+    setDonThuoc([...donThuoc, {
+      id: thuocMoi.maThuoc,
+      maThuoc: thuocMoi.maThuoc,
+      tenThuoc: thuocMoi.tenThuoc,
+      soLuong: parseInt(thuocMoi.soLuong, 10),
+      cachDung: thuocMoi.cachDung.trim()
+    }]);
+
+    setThuocMoi({ maThuoc: '', tenThuoc: '', soLuong: '', cachDung: '' });
   };
   
   // Xóa thuốc đã kê khỏi đơn thuốc
-  const xoaThuoc = (id) => setDonThuoc(donThuoc.filter(t => t.id !== id));
+  const xoaThuoc = (id) => setDonThuoc(donThuoc.filter(t => t.id !== id && t.maThuoc !== id));
 
   // Render giao diện nghiệp vụ theo menu bác sĩ đang chọn
   const renderContent = () => {
@@ -295,8 +389,6 @@ function KhamBenh() {
                 { label: 'Huyết áp (mmHg)',     key: 'huyetAp',  placeholder: '' },
                 { label: 'Cân nặng (kg)',        key: 'canNang',  placeholder: '' },
                 { label: 'Chiều cao (cm)',       key: 'chieuCao', placeholder: '' },
-                { label: 'SpO2 (%)',             key: 'spo2',     placeholder: '' },
-                { label: 'Nhịp thở (lần/phút)', key: 'nhipTho',  placeholder: '' },
               ].map(f => {
                 const warning = getSinhHieuWarning(f.key, sinhHieu[f.key]);
                 return (
@@ -315,7 +407,7 @@ function KhamBenh() {
               })}
             </div>
             <div className="kb-action-row">
-              <button className="btn-primary w-auto py-[10px] px-6 flex items-center gap-2" onClick={() => luuPhieuKham(1)}>
+              <button className="btn-primary !w-fit !mt-0 py-[10px] px-6 flex items-center gap-2" onClick={() => luuPhieuKham(1)}>
                 <Save size={16} /> Lưu sinh hiệu
               </button>
             </div>
@@ -344,15 +436,19 @@ function KhamBenh() {
               </div>
             )}
             <div className="kb-add-row mt-3">
-              <input
-                type="text"
-                className="form-input pl-3 flex-1"
-                placeholder="Nhập tên xét nghiệm / dịch vụ CLS..."
+              <select
+                className="form-select flex-1 h-[38px] border border-[var(--border-color)] rounded-[var(--radius-md)] px-3 text-[13px] bg-white cursor-pointer"
                 value={chiDinhMoi}
                 onChange={e => setChiDinhMoi(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && themChiDinh()}
-              />
-              <button className="kb-add-btn" onClick={themChiDinh}>
+              >
+                <option value="">-- Chọn dịch vụ cận lâm sàng / kỹ thuật --</option>
+                {danhMucCLS.map(cls => (
+                  <option key={cls.maDV} value={cls.maDV}>
+                    [{cls.maDV}] {cls.tenDV} ({cls.giaTien?.toLocaleString('vi-VN')}đ)
+                  </option>
+                ))}
+              </select>
+              <button className="kb-add-btn h-[38px]" onClick={themChiDinh}>
                 <Plus size={16} /> Thêm
               </button>
             </div>
@@ -373,8 +469,8 @@ function KhamBenh() {
                   <tr>
                     <th>STT</th>
                     <th>Tên thuốc</th>
+                    <th>Số lượng</th>
                     <th>Cách dùng</th>
-                    <th>Số ngày</th>
                     <th></th>
                   </tr>
                 </thead>
@@ -382,9 +478,9 @@ function KhamBenh() {
                   {donThuoc.map((t, i) => (
                     <tr key={t.id}>
                       <td>{i + 1}</td>
-                      <td>{t.tenThuoc}</td>
+                      <td>[{t.maThuoc}] {t.tenThuoc}</td>
                       <td>{t.soLuong}</td>
-                      <td>{t.soNgay} ngày</td>
+                      <td>{t.cachDung}</td>
                       <td>
                         <button className="kb-icon-btn kb-icon-btn--danger" onClick={() => xoaThuoc(t.id)}>
                           <Trash2 size={14} />
@@ -396,16 +492,32 @@ function KhamBenh() {
               </table>
             )}
             <div className="kb-add-row flex-wrap gap-2 mt-3">
-              <input type="text" className="form-input pl-3 flex-[2] min-w-[160px]"
-                placeholder="Tên thuốc..." value={thuocMoi.tenThuoc}
-                onChange={e => setThuocMoi({ ...thuocMoi, tenThuoc: e.target.value })} />
-              <input type="text" className="form-input pl-3 flex-[2] min-w-[140px]"
-                placeholder="Cách dùng (VD: 1 viên x 3 lần)" value={thuocMoi.soLuong}
-                onChange={e => setThuocMoi({ ...thuocMoi, soLuong: e.target.value })} />
+              <select
+                className="form-select flex-[2] min-w-[160px] h-[38px] border border-[var(--border-color)] rounded-[var(--radius-md)] px-3 text-[13px] bg-white cursor-pointer"
+                value={thuocMoi.maThuoc}
+                onChange={e => {
+                  const matched = danhMucThuoc.find(x => x.maThuoc === e.target.value);
+                  setThuocMoi({
+                    ...thuocMoi,
+                    maThuoc: e.target.value,
+                    tenThuoc: matched ? matched.tenThuoc : ''
+                  });
+                }}
+              >
+                <option value="">-- Chọn thuốc kê đơn --</option>
+                {danhMucThuoc.map(t => (
+                  <option key={t.maThuoc} value={t.maThuoc}>
+                    [{t.maThuoc}] {t.tenThuoc} ({t.donViTinh || 'đơn vị'})
+                  </option>
+                ))}
+              </select>
               <input type="number" className="form-input pl-3 flex-1 min-w-[80px]"
-                placeholder="Số ngày" value={thuocMoi.soNgay}
-                onChange={e => setThuocMoi({ ...thuocMoi, soNgay: e.target.value })} />
-              <button className="kb-add-btn" onClick={themThuoc}><Plus size={16} /> Thêm</button>
+                placeholder="Số lượng" value={thuocMoi.soLuong}
+                onChange={e => setThuocMoi({ ...thuocMoi, ...thuocMoi, soLuong: e.target.value })} />
+              <input type="text" className="form-input pl-3 flex-[2] min-w-[140px]"
+                placeholder="Cách dùng (Ví dụ: Ngày uống 2 lần, mỗi lần 1 viên)" value={thuocMoi.cachDung}
+                onChange={e => setThuocMoi({ ...thuocMoi, cachDung: e.target.value })} />
+              <button className="kb-add-btn h-[38px]" onClick={themThuoc}><Plus size={16} /> Thêm</button>
             </div>
           </div>
         );
@@ -526,7 +638,7 @@ function KhamBenh() {
             </div>
             <div className="kb-action-row">
               <button className="btn-outline" onClick={() => setSelectedBN(null)}>Hủy</button>
-              <button className="btn-primary w-auto py-[10px] px-6 flex items-center gap-2" onClick={() => luuPhieuKham(3)}>
+              <button className="btn-primary !w-fit !mt-0 py-[10px] px-6 flex items-center gap-2" onClick={() => luuPhieuKham(3)}>
                 <Save size={16} /> Hoàn thành khám
               </button>
             </div>

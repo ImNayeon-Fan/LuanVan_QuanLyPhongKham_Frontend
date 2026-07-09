@@ -502,4 +502,29 @@ export const apiDeleteLoThuoc = async (maLo) => {
   });
 };
 
+// API Lấy danh sách bệnh nhân chờ khám (phân trang & lọc)
+export const apiGetDSBenhNhanChoKham = async ({ search = '', trangThai = '', maBacSi = '', ngayKham = '', page = 1, limit = 50 } = {}) => {
+  const queryParams = new URLSearchParams();
+  if (search) queryParams.append('search', search);
+  if (trangThai !== '' && trangThai !== null) queryParams.append('trangThai', trangThai);
+  if (maBacSi) queryParams.append('maBacSi', maBacSi);
+  if (ngayKham) queryParams.append('ngayKham', ngayKham);
+  queryParams.append('page', page);
+  queryParams.append('limit', limit);
+  return await apiFetch(`/KhamBenh/LayDSBenhNhan?` + queryParams.toString());
+};
+
+// API Lấy chi tiết phiếu khám bệnh lâm sàng
+export const apiGetChiTietPhieuKhamBenh = async (maPhieu) => {
+  return await apiFetch(`/KhamBenh/${maPhieu}`);
+};
+
+// API Cập nhật thông tin khám bệnh (sinh hiệu, chẩn đoán, toa thuốc, CLS)
+export const apiCapNhatKhamBenh = async (maPhieu, payload) => {
+  return await apiFetch(`/KhamBenh/${maPhieu}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload)
+  });
+};
+
 

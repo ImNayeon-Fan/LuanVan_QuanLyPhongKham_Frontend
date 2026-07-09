@@ -43,13 +43,7 @@ const getVitalStatus = (key, value) => {
       if (num < 36.0) return { status: 'warning', text: 'Thân nhiệt thấp', color: '#f59e0b', bg: '#fef3c7' };
       if (num > 37.5) return { status: 'danger', text: 'Sốt (>37.5°C)', color: '#ef4444', bg: '#fee2e2' };
       return { status: 'success', text: 'Bình thường', color: '#10b981', bg: '#d1fae5' };
-    case 'spo2':
-      if (num < 95) return { status: 'danger', text: 'SpO2 thấp (<95%)', color: '#ef4444', bg: '#fee2e2' };
-      return { status: 'success', text: 'Bình thường', color: '#10b981', bg: '#d1fae5' };
-    case 'nhipTho':
-      if (num < 12) return { status: 'warning', text: 'Thở chậm (<12)', color: '#f59e0b', bg: '#fef3c7' };
-      if (num > 20) return { status: 'danger', text: 'Thở nhanh (>20)', color: '#ef4444', bg: '#fee2e2' };
-      return { status: 'success', text: 'Bình thường', color: '#10b981', bg: '#d1fae5' };
+
     default:
       return { status: 'success', text: 'Bình thường', color: '#10b981', bg: '#d1fae5' };
   }
@@ -123,7 +117,7 @@ function ChiTietBenhNhan() {
     });
   };
 
-  const hasVitalSigns = patient.mach || patient.nhietDo || patient.huyetAp || patient.canNang || patient.chieuCao || patient.spo2 || patient.nhipTho;
+  const hasVitalSigns = patient.mach || patient.nhietDo || patient.huyetAp || patient.canNang || patient.chieuCao;
 
   return (
     <div className="kb-wrapper h-screen overflow-hidden">
@@ -237,10 +231,8 @@ function ChiTietBenhNhan() {
                     { label: 'Mạch', val: patient.mach, unit: 'lần/phút', icon: <Activity size={16} color="#ef4444" />, key: 'mach' },
                     { label: 'Nhiệt độ', val: patient.nhietDo, unit: '°C', icon: <Thermometer size={16} color="#f97316" />, key: 'nhietDo' },
                     { label: 'Huyết áp', val: patient.huyetAp, unit: 'mmHg', icon: <Heart size={16} color="#db2777" />, key: 'huyetAp' },
-                    { label: 'SpO2', val: patient.spo2, unit: '%', icon: <Wind size={16} color="#0ea5e9" />, key: 'spo2' },
                     { label: 'Cân nặng', val: patient.canNang, unit: 'kg', icon: <Scale size={16} color="#6366f1" />, key: 'canNang' },
-                    { label: 'Chiều cao', val: patient.chieuCao, unit: 'cm', icon: <Ruler size={16} color="#22c55e" />, key: 'chieuCao' },
-                    { label: 'Nhịp thở', val: patient.nhipTho, unit: 'lần/phút', icon: <Timer size={16} color="#8b5cf6" />, key: 'nhipTho' }
+                    { label: 'Chiều cao', val: patient.chieuCao, unit: 'cm', icon: <Ruler size={16} color="#22c55e" />, key: 'chieuCao' }
                   ].map(item => {
                     const vitalState = getVitalStatus(item.key, item.val);
                     return (

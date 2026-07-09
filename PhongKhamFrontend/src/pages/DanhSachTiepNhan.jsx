@@ -22,12 +22,34 @@ function DanhSachTiepNhan() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDoctor, setSelectedDoctor] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
-  const [selectedDate, setSelectedDate] = useState(() => new Date().toISOString().split('T')[0]); // Mặc định là ngày hôm nay
+  
+  // Mặc định Từ ngày là 30 ngày trước, Đến ngày là hôm nay
+  const [tuNgay, setTuNgay] = useState(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - 30);
+    return d.toISOString().split('T')[0];
+  });
+  const [denNgay, setDenNgay] = useState(() => new Date().toISOString().split('T')[0]);
 
   const [dsPhieuKham, setDsPhieuKham] = useState([]); // Danh sách phiếu khám tải từ backend
   const [docList, setDocList] = useState([]); // Danh sách bác sĩ phục vụ bộ lọc
   const [khoaMapping, setKhoaMapping] = useState({}); // Bản đồ ánh xạ khoa phòng
   const [loading, setLoading] = useState(false);
+
+  // Lấy danh sách các ngày trong khoảng
+  const getDatesInRange = (startDate, endDate) => {
+    if (!startDate || !endDate) return [];
+    const dates = [];
+    let curr = new Date(startDate);
+    const end = new Date(endDate);
+    let limitCount = 0;
+    while (curr <= end && limitCount < 45) {
+      dates.push(curr.toISOString().split('T')[0]);
+      curr.setDate(curr.getDate() + 1);
+      limitCount++;
+    }
+    return dates;
+  };
 
   // 1. Tải danh sách bác sĩ và danh mục khoa phòng để đưa vào bộ lọc
   useEffect(() => {
@@ -57,19 +79,39 @@ function DanhSachTiepNhan() {
     fetchKhoas();
   }, []);
 
-  // 2. Tải danh sách bệnh nhân đã tiếp tiếp nhận từ Backend
+  // 2. Tải danh sách bệnh nhân đã tiếp nhận từ Backend theo khoảng ngày
   const fetchDanhSachTiepNhan = async () => {
     setLoading(true);
     try {
-      const res = await apiGetDanhSachTiepNhan({
-        search: searchQuery,
-        maNV: selectedDoctor,
-        trangThai: selectedStatus,
-        ngayKham: selectedDate,
-        page: 1,
-        limit: 100
+      const dates = getDatesInRange(tuNgay, denNgay);
+      if (dates.length === 0) {
+        setDsPhieuKham([]);
+        return;
+      }
+
+      // Gọi đồng thời API cho từng ngày trong khoảng đã chọn
+      const requests = dates.map(date => 
+        apiGetDanhSachTiepNhan({
+          search: searchQuery,
+          maNV: selectedDoctor,
+          trangThai: selectedStatus,
+          ngayKham: date,
+          page: 1,
+          limit: 100
+        })
+      );
+
+      const responses = await Promise.all(requests);
+      let mergedData = [];
+      responses.forEach(res => {
+        if (res && res.data) {
+          mergedData = mergedData.concat(res.data);
+        }
       });
-      if (res && res.data) setDsPhieuKham(res.data);
+
+      // Sắp xếp giảm dần theo ngày khám để các lượt khám mới nhất hiển thị lên đầu
+      mergedData.sort((a, b) => new Date(b.ngayKham) - new Date(a.ngayKham));
+      setDsPhieuKham(mergedData);
     } catch (err) {
       console.error('Lỗi tải danh sách tiếp nhận:', err);
       showError('Không thể kết nối dữ liệu từ máy chủ. Xin hãy thử lại.');
@@ -81,7 +123,7 @@ function DanhSachTiepNhan() {
   // 3. Tự động tải lại khi bất kỳ bộ lọc nào thay đổi
   useEffect(() => {
     fetchDanhSachTiepNhan();
-  }, [searchQuery, selectedDoctor, selectedStatus, selectedDate]);
+  }, [searchQuery, selectedDoctor, selectedStatus, tuNgay, denNgay]);
 
   // Hỗ trợ hàm format thời gian tiếp nhận
   const formatTime = (isoString) => {
@@ -152,13 +194,25 @@ function DanhSachTiepNhan() {
             </select>
           </div>
 
-          {/* Lọc theo ngày tiếp đón */}
-          <div className="flex-1 min-w-[160px] flex items-center gap-2 relative">
-            <Calendar size={16} className="absolute left-3 text-[var(--text-muted)]" />
-            <input
-              type="date" className="form-input pl-[34px] h-10 py-1.5"
-              value={selectedDate} onChange={e => setSelectedDate(e.target.value)}
-            />
+          {/* Lọc theo khoảng thời gian tiếp đón */}
+          <div className="flex items-center gap-2 flex-1 min-w-[320px]">
+            <div className="flex-1 relative">
+              <span className="text-[11px] text-[var(--text-muted)] absolute -top-[18px] left-1 font-semibold">Từ ngày</span>
+              <Calendar size={14} className="absolute left-2.5 top-[13px] text-[var(--text-muted)]" />
+              <input
+                type="date" className="form-input pl-[30px] h-10 py-1.5 text-[13px]"
+                value={tuNgay} onChange={e => setTuNgay(e.target.value)}
+              />
+            </div>
+            <span className="text-[var(--text-muted)] text-[13px] font-semibold pt-1">đến</span>
+            <div className="flex-1 relative">
+              <span className="text-[11px] text-[var(--text-muted)] absolute -top-[18px] left-1 font-semibold">Đến ngày</span>
+              <Calendar size={14} className="absolute left-2.5 top-[13px] text-[var(--text-muted)]" />
+              <input
+                type="date" className="form-input pl-[30px] h-10 py-1.5 text-[13px]"
+                value={denNgay} onChange={e => setDenNgay(e.target.value)}
+              />
+            </div>
           </div>
 
           {/* Lọc theo trạng thái khám */}

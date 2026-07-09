@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   ArrowLeft, Search, User, Clock, ChevronRight, AlertCircle, RefreshCw, ClipboardList, FileText
 } from 'lucide-react';
+import { apiTraCuuHoSoBenhAn, apiGetBenhNhanGanDay, apiGetLichSuKhamBenh } from '../utils/api';
 
 // Cấu hình nhãn trạng thái của phiếu khám
 const trangThaiLabel = {
@@ -18,129 +19,115 @@ const trangThaiLabel = {
 function HoSoBenhAn() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
-  const [allRecords, setAllRecords] = useState([]);
   
-  // Trạng thái tìm kiếm
+  // Trạng thái tìm kiếm và tải dữ liệu
+  const [recentPatients, setRecentPatients] = useState([]); // 5 bệnh nhân khám gần đây từ API
   const [selectedPatient, setSelectedPatient] = useState(null); // Thông tin hành chính bệnh nhân đang chọn
   const [patientHistory, setPatientHistory] = useState([]); // Danh sách các lượt khám của bệnh nhân đó
   const [searchError, setSearchError] = useState('');
   const [hasSearched, setHasSearched] = useState(false);
+  const [loadingList, setLoadingList] = useState(false);
+  const [loadingHistory, setLoadingHistory] = useState(false);
 
-  // Load danh sách từ localStorage khi component mount
+  // Load danh sách bệnh nhân khám gần đây từ API khi component mount
   useEffect(() => {
     loadData();
   }, []);
 
-  // Tải danh sách tất cả phiếu khám từ bộ nhớ LocalStorage
-  const loadData = () => {
+  // Tải danh sách bệnh nhân gần đây từ API
+  const loadData = async () => {
+    setLoadingList(true);
     try {
-      const list = JSON.parse(localStorage.getItem('danhSachPhieuKham') || '[]');
-      setAllRecords(list);
-    } catch (e) {
-      console.error(e);
-      setAllRecords([]);
+      const res = await apiGetBenhNhanGanDay();
+      if (res && res.data) {
+        setRecentPatients(res.data);
+      } else {
+        setRecentPatients([]);
+      }
+    } catch (err) {
+      console.error('Lỗi tải danh sách bệnh nhân gần đây:', err);
+      setRecentPatients([]);
+    } finally {
+      setLoadingList(false);
     }
   };
 
-  // Trích xuất danh sách bệnh nhân duy nhất vừa khám gần nhất
-  const getRecentPatients = () => {
-    const patientsMap = {};
-    const sortedRecords = [...allRecords].sort((a, b) => new Date(b.ngayKham) - new Date(a.ngayKham));
-    
-    sortedRecords.forEach(rec => {
-      const key = rec.maBN || `${rec.hoTen}_${rec.sdt}`;
-      if (!patientsMap[key]) {
-        patientsMap[key] = {
-          maBN: rec.maBN,
-          hoTen: rec.hoTen,
-          ngaySinh: rec.ngaySinh,
-          gioiTinh: rec.gioiTinh,
-          sdt: rec.sdt,
-          diaChi: rec.diaChi,
-          tienSuBenh: rec.tienSuBenh,
-          lastVisit: rec.ngayKham
-        };
-      }
-    });
-    return Object.values(patientsMap).slice(0, 5); // Lấy tối đa 5 bệnh nhân gần đây
-  };
-
-  // Tìm kiếm bệnh nhân theo mã, số điện thoại, tên, hoặc mã phiếu
-  const handleSearch = (e) => {
+  // Tìm kiếm bệnh nhân theo mã, số điện thoại, tên, hoặc mã phiếu từ API
+  const handleSearch = async (e) => {
     if (e) e.preventDefault();
     setSearchError('');
     setHasSearched(true);
 
-    const query = searchQuery.trim().toLowerCase();
+    const query = searchQuery.trim();
     if (!query) {
-      setSearchError('Vui lòng nhập mã bệnh nhân hoặc mã hồ sơ khám bệnh!');
+      setSearchError('Vui lòng nhập mã bệnh nhân hoặc mã hồ sơ khám bệnh để tìm kiếm!');
       setSelectedPatient(null);
       setPatientHistory([]);
       return;
     }
 
-    const matchedRecord = allRecords.find(rec => 
-      (rec.maPhieu && rec.maPhieu.toLowerCase() === query) ||
-      (rec.maBN && rec.maBN.toLowerCase() === query)
-    ) || allRecords.find(rec =>
-      (rec.maPhieu && rec.maPhieu.toLowerCase().includes(query)) ||
-      (rec.maBN && rec.maBN.toLowerCase().includes(query)) ||
-      (rec.hoTen && rec.hoTen.toLowerCase().includes(query)) ||
-      (rec.sdt && rec.sdt.includes(query))
-    );
-
-    if (!matchedRecord) {
-      setSearchError('Không tìm thấy thông tin bệnh nhân nào trùng khớp!');
-      setSelectedPatient(null);
-      setPatientHistory([]);
-      return;
-    }
-
-    const targetPatient = {
-      maBN: matchedRecord.maBN,
-      hoTen: matchedRecord.hoTen,
-      ngaySinh: matchedRecord.ngaySinh,
-      gioiTinh: matchedRecord.gioiTinh,
-      sdt: matchedRecord.sdt,
-      diaChi: matchedRecord.diaChi,
-      tienSuBenh: matchedRecord.tienSuBenh
-    };
-    setSelectedPatient(targetPatient);
-
-    // Lọc toàn bộ lịch sử các lượt khám cũ của bệnh nhân này
-    const history = allRecords.filter(rec => {
-      if (targetPatient.maBN && rec.maBN) {
-        return rec.maBN === targetPatient.maBN;
+    setLoadingHistory(true);
+    try {
+      const resSearch = await apiTraCuuHoSoBenhAn(query);
+      if (resSearch && resSearch.found && resSearch.data) {
+        const patient = resSearch.data;
+        // Chuẩn hóa ngày sinh
+        if (patient.ngaySinh && patient.ngaySinh.includes('-')) {
+          const parts = patient.ngaySinh.split('-');
+          patient.ngaySinh = parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : patient.ngaySinh;
+        }
+        setSelectedPatient(patient);
+        
+        // Tải lịch sử khám bệnh của bệnh nhân
+        const resHistory = await apiGetLichSuKhamBenh(patient.maBN);
+        if (resHistory && resHistory.data) {
+          setPatientHistory(resHistory.data);
+        } else {
+          setPatientHistory([]);
+        }
+      } else {
+        setSearchError(resSearch.message || 'Không tìm thấy thông tin bệnh nhân nào trùng khớp!');
+        setSelectedPatient(null);
+        setPatientHistory([]);
       }
-      return rec.hoTen === targetPatient.hoTen && rec.sdt === targetPatient.sdt;
-    }).sort((a, b) => new Date(b.ngayKham) - new Date(a.ngayKham));
-
-    setPatientHistory(history);
+    } catch (err) {
+      console.error('Lỗi tra cứu hồ sơ bệnh án:', err);
+      setSearchError(err.message || 'Lỗi kết nối máy chủ, vui lòng thử lại.');
+      setSelectedPatient(null);
+      setPatientHistory([]);
+    } finally {
+      setLoadingHistory(false);
+    }
   };
 
   // Chọn nhanh bệnh nhân từ danh sách vừa tiếp nhận gần đây
-  const handleSelectRecent = (pat) => {
+  const handleSelectRecent = async (pat) => {
     setSearchQuery(pat.maBN || pat.hoTen);
-    setSelectedPatient({
-      maBN: pat.maBN,
-      hoTen: pat.hoTen,
-      ngaySinh: pat.ngaySinh,
-      gioiTinh: pat.gioiTinh,
-      sdt: pat.sdt,
-      diaChi: pat.diaChi,
-      tienSuBenh: pat.tienSuBenh
-    });
-
-    const history = allRecords.filter(rec => {
-      if (pat.maBN && rec.maBN) {
-        return rec.maBN === pat.maBN;
-      }
-      return rec.hoTen === pat.hoTen && rec.sdt === pat.sdt;
-    }).sort((a, b) => new Date(b.ngayKham) - new Date(a.ngayKham));
-
-    setPatientHistory(history);
+    
+    // Chuẩn hóa ngày sinh nếu cần
+    const patientData = { ...pat };
+    if (patientData.ngaySinh && patientData.ngaySinh.includes('-')) {
+      const parts = patientData.ngaySinh.split('-');
+      patientData.ngaySinh = parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : patientData.ngaySinh;
+    }
+    
+    setSelectedPatient(patientData);
     setHasSearched(true);
     setSearchError('');
+    setLoadingHistory(true);
+    try {
+      const resHistory = await apiGetLichSuKhamBenh(pat.maBN);
+      if (resHistory && resHistory.data) {
+        setPatientHistory(resHistory.data);
+      } else {
+        setPatientHistory([]);
+      }
+    } catch (err) {
+      console.error('Lỗi tải lịch sử khám bệnh:', err);
+      setPatientHistory([]);
+    } finally {
+      setLoadingHistory(false);
+    }
   };
 
   // Định dạng hiển thị ngày giờ thân thiện
@@ -155,8 +142,6 @@ function HoSoBenhAn() {
       year: 'numeric' 
     });
   };
-
-  const recentPatients = getRecentPatients();
 
   return (
     <div className="kb-wrapper h-screen overflow-hidden">

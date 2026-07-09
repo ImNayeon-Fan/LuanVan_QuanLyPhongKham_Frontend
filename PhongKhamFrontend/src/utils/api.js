@@ -527,4 +527,19 @@ export const apiCapNhatKhamBenh = async (maPhieu, payload) => {
   });
 };
 
+// API Tra cứu hồ sơ bệnh án hành chính theo mã/họ tên/SĐT
+export const apiTraCuuHoSoBenhAn = async (query) => {
+  return await apiFetch(`/HoSoBenhAn/tra-cuu?query=${encodeURIComponent(query)}`);
+};
+
+// API Lấy danh sách bệnh nhân khám gần đây (tối đa 5 người)
+export const apiGetBenhNhanGanDay = async () => {
+  return await apiFetch('/HoSoBenhAn/gan-day');
+};
+
+// API Lấy lịch sử khám bệnh của bệnh nhân theo mã bệnh nhân
+export const apiGetLichSuKhamBenh = async (maBN) => {
+  return await apiFetch(`/HoSoBenhAn/${maBN}/lich-su`);
+};
+
 

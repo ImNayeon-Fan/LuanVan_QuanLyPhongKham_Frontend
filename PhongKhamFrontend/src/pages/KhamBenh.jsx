@@ -272,7 +272,7 @@ function KhamBenh() {
               trangThaiPhatThuoc: t.trangThaiPhatThuoc
             })) : []);
             setKetLuan({
-              chanDoan: data.ketLuan || '',
+              chanDoan: data.ketLuan ? data.ketLuan.replace(/\s*\[CLS_STATUS:.*?\]/g, '') : '',
               loiDan: data.donThuoc?.loiDan || ''
             });
             setSelectedIcdList(data.icdList ? data.icdList.map(icd => ({
@@ -323,14 +323,18 @@ function KhamBenh() {
       huyetAp: sinhHieu.huyetAp ? sinhHieu.huyetAp.trim() : null,
       canNang: sinhHieu.canNang ? parseFloat(sinhHieu.canNang) : null,
       chieuCao: sinhHieu.chieuCao ? parseFloat(sinhHieu.chieuCao) : null,
-      chiDinhCLSMoi: chiDinh.map(c => c.maDV),
+      chiDinhCLSMoi: chiDinh.filter(c => c.isNew).map(c => c.maDV),
       loiDan: ketLuan.loiDan ? ketLuan.loiDan.trim() : null,
       donThuoc: donThuoc.map(t => ({
         maThuoc: t.maThuoc,
         soLuong: parseInt(t.soLuong, 10),
         cachDung: t.cachDung.trim()
       })),
-      ketLuan: ketLuan.chanDoan ? ketLuan.chanDoan.trim() : null,
+      ketLuan: (ketLuan.chanDoan ? ketLuan.chanDoan.trim() : '') + (
+        chiDinh.length > 0
+          ? ` [CLS_STATUS:${chiDinh.map(c => `${c.maDV}=${c.trangThaiDichVu || 0}`).join(',')}]`
+          : ''
+      ),
       icdList: selectedIcdList.map(x => x.maICD),
       trangThaiKham: newTrangThai
     };
@@ -371,7 +375,8 @@ function KhamBenh() {
       maDV: cls.maDV,
       tenXN: cls.tenDV,
       ketQua: null,
-      trangThaiDichVu: 0
+      trangThaiDichVu: 0,
+      isNew: true
     }]);
     setClsQuery('');
     setShowClsDropdown(false);
@@ -379,6 +384,15 @@ function KhamBenh() {
   
   // Xóa chỉ định cận lâm sàng khỏi danh sách
   const xoaChiDinh = (id) => setChiDinh(chiDinh.filter(c => c.id !== id && c.maDV !== id));
+
+  // Thay đổi trạng thái thực hiện của dịch vụ cận lâm sàng (Đã làm / Chưa thực hiện)
+  const toggleTrangThaiCLS = (id) => {
+    setChiDinh(prev => prev.map(c => 
+      c.id === id || c.maDV === id 
+        ? { ...c, trangThaiDichVu: c.trangThaiDichVu === 1 ? 0 : 1 } 
+        : c
+    ));
+  };
 
   // Chọn thuốc mới từ gợi ý tìm kiếm (tự động thêm vào đơn thuốc)
   const chonThuocMoi = (thuoc) => {
@@ -501,10 +515,22 @@ function KhamBenh() {
                 {chiDinh.map((c, i) => (
                   <div key={c.id} className="kb-list-item">
                     <span className="kb-list-no">{i + 1}</span>
-                    <span className="kb-list-text">{c.tenXN}</span>
-                    <button className="kb-icon-btn kb-icon-btn--danger" onClick={() => xoaChiDinh(c.id)}>
-                      <Trash2 size={14} />
-                    </button>
+                    <span className="kb-list-text flex-1 text-left">{c.tenXN}</span>
+                    <div className="flex items-center gap-2">
+                      <button 
+                        className={`px-3 py-1 text-[11px] font-semibold rounded-full border transition-all ${
+                          c.trangThaiDichVu === 1
+                            ? 'bg-[#e2fbeb] text-[#14532d] border-[#bbf7d0] hover:bg-[#bbf7d0] cursor-pointer'
+                            : 'bg-[#fef9c3] text-[#713f12] border-[#fef08a] hover:bg-[#fef08a] cursor-pointer'
+                        }`}
+                        onClick={() => toggleTrangThaiCLS(c.id)}
+                      >
+                        {c.trangThaiDichVu === 1 ? 'Đã làm CLS' : 'Chưa thực hiện'}
+                      </button>
+                      <button className="kb-icon-btn kb-icon-btn--danger" onClick={() => xoaChiDinh(c.id)}>
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>

@@ -110,15 +110,19 @@ function KhamBenh() {
     mach: '', nhietDo: '', huyetAp: '', canNang: '', chieuCao: ''
   });
   const [chiDinh, setChiDinh]   = useState([]);
-  const [chiDinhMoi, setChiDinhMoi] = useState('');
   const [donThuoc, setDonThuoc] = useState([]);
-  const [thuocMoi, setThuocMoi] = useState({ maThuoc: '', tenThuoc: '', soLuong: '', cachDung: '' });
   const [ketLuan, setKetLuan]   = useState({ chanDoan: '', loiDan: '' });
 
   const [danhMucICD, setDanhMucICD] = useState([]);
   const [selectedIcdList, setSelectedIcdList] = useState([]);
   const [icdQuery, setIcdQuery] = useState('');
   const [showIcdDropdown, setShowIcdDropdown] = useState(false);
+
+  const [clsQuery, setClsQuery] = useState('');
+  const [showClsDropdown, setShowClsDropdown] = useState(false);
+
+  const [thuocQuery, setThuocQuery] = useState('');
+  const [showThuocDropdown, setShowThuocDropdown] = useState(false);
 
   const [danhMucCLS, setDanhMucCLS] = useState([]);
   const [danhMucThuoc, setDanhMucThuoc] = useState([]);
@@ -200,6 +204,7 @@ function KhamBenh() {
   // Tải danh mục ICD, CLS, Thuốc từ API khi component mount
   useEffect(() => {
     const fetchCatalogs = async () => {
+      // 1. Tải danh mục ICD
       try {
         const resIcd = await apiGetICDList('', '', 1, 1000);
         if (resIcd && resIcd.data) {
@@ -208,18 +213,28 @@ function KhamBenh() {
             tenBenh: item.TenBenh || item.tenBenh || ''
           })));
         }
+      } catch (err) {
+        console.error('Lỗi tải danh mục ICD:', err);
+      }
 
-        const resCls = await apiGetDichVuCLSList('', '', true, 1, 1000);
+      // 2. Tải danh mục CLS (đổi true thành 1 để phù hợp kiểu dữ liệu int của C# Backend)
+      try {
+        const resCls = await apiGetDichVuCLSList('', '', 1, 1, 1000);
         if (resCls && resCls.data) {
           setDanhMucCLS(resCls.data);
         }
+      } catch (err) {
+        console.error('Lỗi tải danh mục CLS:', err);
+      }
 
+      // 3. Tải danh mục thuốc
+      try {
         const resThuoc = await apiGetThuocList('', '', '', '', 1, 1000);
         if (resThuoc && resThuoc.data) {
           setDanhMucThuoc(resThuoc.data);
         }
       } catch (err) {
-        console.error('Lỗi tải danh mục hệ thống:', err);
+        console.error('Lỗi tải danh mục thuốc:', err);
       }
     };
     fetchCatalogs();
@@ -343,49 +358,57 @@ function KhamBenh() {
     bn.maPhieu?.includes(search)
   );
 
-  // Thêm một chỉ định cận lâm sàng mới vào danh sách
-  const themChiDinh = () => {
-    if (!chiDinhMoi) return;
-    const selectedCLS = danhMucCLS.find(x => x.maDV === chiDinhMoi);
-    if (selectedCLS) {
-      if (chiDinh.some(x => x.maDV === selectedCLS.maDV)) {
-        showError('Dịch vụ cận lâm sàng này đã được chỉ định rồi!');
-        return;
-      }
-      setChiDinh([...chiDinh, {
-        id: selectedCLS.maDV,
-        maDV: selectedCLS.maDV,
-        tenXN: selectedCLS.tenDV,
-        ketQua: null,
-        trangThaiDichVu: 0
-      }]);
-      setChiDinhMoi('');
+  // Chọn một dịch vụ cận lâm sàng mới từ gợi ý tìm kiếm
+  const chonCLS = (cls) => {
+    if (chiDinh.some(x => x.maDV === cls.maDV)) {
+      showError('Dịch vụ cận lâm sàng này đã được chỉ định rồi!');
+      setClsQuery('');
+      setShowClsDropdown(false);
+      return;
     }
+    setChiDinh([...chiDinh, {
+      id: cls.maDV,
+      maDV: cls.maDV,
+      tenXN: cls.tenDV,
+      ketQua: null,
+      trangThaiDichVu: 0
+    }]);
+    setClsQuery('');
+    setShowClsDropdown(false);
   };
   
   // Xóa chỉ định cận lâm sàng khỏi danh sách
-  const xoaChiDinh = (id) => setChiDinh(chiDinh.filter(c => c.id !== id || c.maDV !== id));
+  const xoaChiDinh = (id) => setChiDinh(chiDinh.filter(c => c.id !== id && c.maDV !== id));
 
-  // Thêm thuốc mới kê toa vào đơn thuốc của bệnh nhân
-  const themThuoc = () => {
-    if (!thuocMoi.maThuoc) return showError('Vui lòng chọn thuốc!');
-    if (!thuocMoi.soLuong || parseInt(thuocMoi.soLuong, 10) <= 0) return showError('Số lượng thuốc phải là số nguyên dương lớn hơn 0!');
-    if (!thuocMoi.cachDung.trim()) return showError('Vui lòng nhập hướng dẫn cách dùng thuốc!');
-
-    if (donThuoc.some(x => x.maThuoc === thuocMoi.maThuoc)) {
+  // Chọn thuốc mới từ gợi ý tìm kiếm (tự động thêm vào đơn thuốc)
+  const chonThuocMoi = (thuoc) => {
+    if (donThuoc.some(x => x.maThuoc === thuoc.maThuoc)) {
       showError('Thuốc này đã được kê trong đơn thuốc của bệnh nhân!');
+      setThuocQuery('');
+      setShowThuocDropdown(false);
       return;
     }
 
     setDonThuoc([...donThuoc, {
-      id: thuocMoi.maThuoc,
-      maThuoc: thuocMoi.maThuoc,
-      tenThuoc: thuocMoi.tenThuoc,
-      soLuong: parseInt(thuocMoi.soLuong, 10),
-      cachDung: thuocMoi.cachDung.trim()
+      id: thuoc.maThuoc,
+      maThuoc: thuoc.maThuoc,
+      tenThuoc: thuoc.tenThuoc,
+      soLuong: 1, // Mặc định số lượng là 1
+      cachDung: 'Ngày uống 2 lần, mỗi lần 1 viên' // Mặc định hướng dẫn cách dùng
     }]);
 
-    setThuocMoi({ maThuoc: '', tenThuoc: '', soLuong: '', cachDung: '' });
+    setThuocQuery('');
+    setShowThuocDropdown(false);
+  };
+
+  // Cập nhật số lượng thuốc trực tiếp trên dòng bảng kê đơn
+  const capNhatSoLuongThuoc = (id, val) => {
+    setDonThuoc(prev => prev.map(t => t.id === id || t.maThuoc === id ? { ...t, soLuong: val } : t));
+  };
+
+  // Cập nhật hướng dẫn sử dụng thuốc trực tiếp trên dòng bảng kê đơn
+  const capNhatCachDungThuoc = (id, val) => {
+    setDonThuoc(prev => prev.map(t => t.id === id || t.maThuoc === id ? { ...t, cachDung: val } : t));
   };
   
   // Xóa thuốc đã kê khỏi đơn thuốc
@@ -486,22 +509,50 @@ function KhamBenh() {
                 ))}
               </div>
             )}
-            <div className="kb-add-row mt-3">
-              <select
-                className="form-select flex-1 h-[38px] border border-[var(--border-color)] rounded-[var(--radius-md)] px-3 text-[13px] bg-white cursor-pointer"
-                value={chiDinhMoi}
-                onChange={e => setChiDinhMoi(e.target.value)}
-              >
-                <option value="">-- Chọn dịch vụ cận lâm sàng / kỹ thuật --</option>
-                {danhMucCLS.map(cls => (
-                  <option key={cls.maDV} value={cls.maDV}>
-                    [{cls.maDV}] {cls.tenDV} ({cls.giaTien?.toLocaleString('vi-VN')}đ)
-                  </option>
-                ))}
-              </select>
-              <button className="kb-add-btn h-[38px]" onClick={themChiDinh}>
-                <Plus size={16} /> Thêm
-              </button>
+            <div className="form-group relative mt-3">
+              <label className="form-label font-semibold text-[13px] text-left block mb-1">Tìm kiếm dịch vụ cận lâm sàng</label>
+              <div className="relative">
+                <input
+                  type="text"
+                  className="form-input pl-3 w-full h-[38px] text-[13px]"
+                  placeholder="Nhập mã hoặc tên dịch vụ siêu âm, xét nghiệm..."
+                  value={clsQuery}
+                  onFocus={() => setShowClsDropdown(true)}
+                  onChange={e => {
+                    setClsQuery(e.target.value);
+                    setShowClsDropdown(true);
+                  }}
+                />
+                {showClsDropdown && (
+                  <>
+                    <div onClick={() => setShowClsDropdown(false)} className="fixed inset-0 z-[998]" />
+                    <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-[var(--border-color)] rounded-[6px] shadow-lg max-h-[220px] overflow-y-auto z-[999] text-left">
+                      {danhMucCLS
+                        .filter(item => 
+                          item.maDV.toLowerCase().includes(clsQuery.toLowerCase()) || 
+                          item.tenDV.toLowerCase().includes(clsQuery.toLowerCase())
+                        )
+                        .map(item => (
+                          <div
+                            key={item.maDV}
+                            className="p-2.5 hover:bg-[#f1f5f9] cursor-pointer border-b border-[#f1f5f9] text-[13px] transition-colors"
+                            onClick={() => chonCLS(item)}
+                          >
+                            <span className="font-semibold text-[var(--primary)] mr-1">[{item.maDV}]</span>
+                            <span>{item.tenDV}</span>
+                            <span className="text-[var(--text-muted)] text-[12px] ml-2">({item.giaTien?.toLocaleString('vi-VN')}đ)</span>
+                          </div>
+                        ))}
+                      {danhMucCLS.filter(item => 
+                        item.maDV.toLowerCase().includes(clsQuery.toLowerCase()) || 
+                        item.tenDV.toLowerCase().includes(clsQuery.toLowerCase())
+                      ).length === 0 && (
+                        <div className="p-3 text-[13px] text-[var(--text-muted)] text-center italic">Không tìm thấy dịch vụ nào phù hợp</div>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
             <div className="kb-action-row mt-4 border-t border-[var(--border-color)] pt-3.5">
               <button className="btn-primary !w-fit !mt-0 py-[10px] px-6 flex items-center gap-2" onClick={() => luuPhieuKham(2)}>
@@ -523,21 +574,37 @@ function KhamBenh() {
               <table className="kb-table">
                 <thead>
                   <tr>
-                    <th>STT</th>
-                    <th>Tên thuốc</th>
-                    <th>Số lượng</th>
+                    <th style={{ width: '50px' }}>STT</th>
+                    <th style={{ width: '220px' }}>Tên thuốc</th>
+                    <th style={{ width: '100px' }}>Số lượng</th>
                     <th>Cách dùng</th>
-                    <th></th>
+                    <th style={{ width: '50px' }}></th>
                   </tr>
                 </thead>
                 <tbody>
                   {donThuoc.map((t, i) => (
                     <tr key={t.id}>
-                      <td>{i + 1}</td>
-                      <td>[{t.maThuoc}] {t.tenThuoc}</td>
-                      <td>{t.soLuong}</td>
-                      <td>{t.cachDung}</td>
+                      <td className="text-center">{i + 1}</td>
+                      <td><span className="font-semibold text-[var(--primary)]">[{t.maThuoc}]</span> {t.tenThuoc}</td>
                       <td>
+                        <input 
+                          type="number" 
+                          min="1"
+                          className="form-input py-1 px-2 text-[13px] w-20 text-center border border-[var(--border-color)] rounded-[var(--radius-md)]" 
+                          value={t.soLuong} 
+                          onChange={e => capNhatSoLuongThuoc(t.id, e.target.value)} 
+                        />
+                      </td>
+                      <td>
+                        <input 
+                          type="text" 
+                          className="form-input py-1 px-3 text-[13px] w-full border border-[var(--border-color)] rounded-[var(--radius-md)]" 
+                          placeholder="Cách dùng (Ví dụ: Ngày uống 2 lần, mỗi lần 1 viên)..."
+                          value={t.cachDung} 
+                          onChange={e => capNhatCachDungThuoc(t.id, e.target.value)} 
+                        />
+                      </td>
+                      <td className="text-center">
                         <button className="kb-icon-btn kb-icon-btn--danger" onClick={() => xoaThuoc(t.id)}>
                           <Trash2 size={14} />
                         </button>
@@ -547,33 +614,52 @@ function KhamBenh() {
                 </tbody>
               </table>
             )}
-            <div className="kb-add-row flex-wrap gap-2 mt-3">
-              <select
-                className="form-select flex-[2] min-w-[160px] h-[38px] border border-[var(--border-color)] rounded-[var(--radius-md)] px-3 text-[13px] bg-white cursor-pointer"
-                value={thuocMoi.maThuoc}
-                onChange={e => {
-                  const matched = danhMucThuoc.find(x => x.maThuoc === e.target.value);
-                  setThuocMoi({
-                    ...thuocMoi,
-                    maThuoc: e.target.value,
-                    tenThuoc: matched ? matched.tenThuoc : ''
-                  });
-                }}
-              >
-                <option value="">-- Chọn thuốc kê đơn --</option>
-                {danhMucThuoc.map(t => (
-                  <option key={t.maThuoc} value={t.maThuoc}>
-                    [{t.maThuoc}] {t.tenThuoc} ({t.donViTinh || 'đơn vị'})
-                  </option>
-                ))}
-              </select>
-              <input type="number" className="form-input pl-3 flex-1 min-w-[80px]"
-                placeholder="Số lượng" value={thuocMoi.soLuong}
-                onChange={e => setThuocMoi({ ...thuocMoi, ...thuocMoi, soLuong: e.target.value })} />
-              <input type="text" className="form-input pl-3 flex-[2] min-w-[140px]"
-                placeholder="Cách dùng (Ví dụ: Ngày uống 2 lần, mỗi lần 1 viên)" value={thuocMoi.cachDung}
-                onChange={e => setThuocMoi({ ...thuocMoi, cachDung: e.target.value })} />
-              <button className="kb-add-btn h-[38px]" onClick={themThuoc}><Plus size={16} /> Thêm</button>
+            
+            <div className="form-group relative mt-3">
+              <label className="form-label font-semibold text-[13px] text-left block mb-1">Tìm kiếm thuốc kê đơn</label>
+              <div className="relative">
+                <input
+                  type="text"
+                  className="form-input pl-3 w-full h-[38px] text-[13px]"
+                  placeholder="Nhập mã hoặc tên thuốc cần kê đơn..."
+                  value={thuocQuery}
+                  onFocus={() => setShowThuocDropdown(true)}
+                  onChange={e => {
+                    setThuocQuery(e.target.value);
+                    setShowThuocDropdown(true);
+                  }}
+                />
+                {showThuocDropdown && (
+                  <>
+                    <div onClick={() => setShowThuocDropdown(false)} className="fixed inset-0 z-[998]" />
+                    <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-[var(--border-color)] rounded-[6px] shadow-lg max-h-[220px] overflow-y-auto z-[999] text-left">
+                      {danhMucThuoc
+                        .filter(item => 
+                          item.maThuoc.toLowerCase().includes(thuocQuery.toLowerCase()) || 
+                          item.tenThuoc.toLowerCase().includes(thuocQuery.toLowerCase())
+                        )
+                        .map(item => (
+                          <div
+                            key={item.maThuoc}
+                            className="p-2.5 hover:bg-[#f1f5f9] cursor-pointer border-b border-[#f1f5f9] text-[13px] transition-colors"
+                            onClick={() => chonThuocMoi(item)}
+                          >
+                            <span className="font-semibold text-[var(--primary)] mr-1">[{item.maThuoc}]</span>
+                            <span>{item.tenThuoc}</span>
+                            {item.hoatChat && <span className="text-[var(--text-muted)] text-[12px] ml-2">({item.hoatChat})</span>}
+                            <span className="text-[var(--text-muted)] text-[12px] ml-2">[{item.donViTinh || 'đơn vị'}]</span>
+                          </div>
+                        ))}
+                      {danhMucThuoc.filter(item => 
+                        item.maThuoc.toLowerCase().includes(thuocQuery.toLowerCase()) || 
+                        item.tenThuoc.toLowerCase().includes(thuocQuery.toLowerCase())
+                      ).length === 0 && (
+                        <div className="p-3 text-[13px] text-[var(--text-muted)] text-center italic">Không tìm thấy thuốc nào phù hợp</div>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
             <div className="kb-action-row mt-4 border-t border-[var(--border-color)] pt-3.5">
               <button className="btn-primary !w-fit !mt-0 py-[10px] px-6 flex items-center gap-2" onClick={() => luuPhieuKham(1)}>

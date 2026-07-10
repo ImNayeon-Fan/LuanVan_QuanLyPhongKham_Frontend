@@ -122,7 +122,7 @@ function ChiTietBenhNhan() {
   return (
     <div className="kb-wrapper h-screen overflow-hidden">
       {/* Topbar điều hướng */}
-      <div className="kb-topbar h-[50px] px-5">
+      <div className="kb-topbar px-5">
         <div className="flex-1 flex gap-2">
           <button className="kb-back-btn py-[5px] px-[10px]" onClick={() => navigate(-1)}>
             <ArrowLeft size={16} /> Quay lại
@@ -144,8 +144,8 @@ function ChiTietBenhNhan() {
 
       {/* Vùng thân hiển thị thông tin chi tiết */}
       <div 
-        className="kb-body p-5 px-6 bg-[var(--bg-main)] h-[calc(100vh-50px)] flex flex-col gap-5"
-        style={{ overflowY: 'auto', flexDirection: 'column' }}
+        className="kb-body p-5 px-6 bg-[var(--bg-main)] flex flex-col gap-5"
+        style={{ flex: 1, overflowY: 'auto', flexDirection: 'column' }}
       >
         
         {/* Banner bệnh nhân dạng Gradient cao cấp */}
@@ -340,18 +340,7 @@ function ChiTietBenhNhan() {
                       ))}
                     </tbody>
                   </table>
-                  
-                  {/* Chữ ký bác sĩ */}
-                  <div className="mt-6 flex justify-end text-[13px] text-[var(--text-muted)]">
-                    <div className="text-center w-[200px]">
-                      <p className="italic mb-10 text-[12px]">Ngày ..... tháng ..... năm 2026</p>
-                      <p className="font-semibold text-[var(--text-main)] mb-1">Bác sĩ khám điều trị</p>
-                      <p className="text-[11px] opacity-80">(Ký và ghi rõ họ tên)</p>
-                      {patient.tenBacSi && (
-                        <p className="mt-6 font-semibold text-[var(--primary)] italic">{patient.tenBacSi.split(' (')[0]}</p>
-                      )}
-                    </div>
-                  </div>
+
                 </div>
               )}
             </div>

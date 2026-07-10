@@ -527,6 +527,14 @@ export const apiCapNhatKhamBenh = async (maPhieu, payload) => {
   });
 };
 
+// API Cập nhật trạng thái và kết quả từng dịch vụ cận lâm sàng riêng lẻ
+export const apiCapNhatTrangThaiCLS = async (maPhieu, maChiTiet, trangThaiDichVu, ketQua = null) => {
+  return await apiFetch(`/KhamBenh/${maPhieu}/chi-dinh-cls/${maChiTiet}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ trangThaiDichVu, ketQua })
+  });
+};
+
 // API Tra cứu hồ sơ bệnh án hành chính theo mã/họ tên/SĐT
 export const apiTraCuuHoSoBenhAn = async (query) => {
   return await apiFetch(`/HoSoBenhAn/tra-cuu?query=${encodeURIComponent(query)}`);

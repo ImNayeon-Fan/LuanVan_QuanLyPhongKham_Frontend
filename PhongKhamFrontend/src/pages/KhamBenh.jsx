@@ -10,6 +10,7 @@ import {
   apiGetDSBenhNhanChoKham, 
   apiGetChiTietPhieuKhamBenh, 
   apiCapNhatKhamBenh, 
+  apiCapNhatTrangThaiCLS,
   apiGetDichVuCLSList, 
   apiGetThuocList 
 } from '../utils/api';
@@ -325,7 +326,8 @@ function KhamBenh() {
       chieuCao: sinhHieu.chieuCao ? parseFloat(sinhHieu.chieuCao) : null,
       chiDinhCLSMoi: chiDinh.filter(c => c.isNew).map(c => c.maDV),
       loiDan: ketLuan.loiDan ? ketLuan.loiDan.trim() : null,
-      donThuoc: donThuoc.map(t => ({
+      // Chỉ gửi thuốc chưa phát — thuốc đã phát (trangThaiPhatThuoc=true) không được ghi đè
+      donThuoc: donThuoc.filter(t => !t.trangThaiPhatThuoc).map(t => ({
         maThuoc: t.maThuoc,
         soLuong: parseInt(t.soLuong, 10),
         cachDung: t.cachDung.trim()
@@ -383,13 +385,33 @@ function KhamBenh() {
   // Xóa chỉ định cận lâm sàng khỏi danh sách
   const xoaChiDinh = (id) => setChiDinh(chiDinh.filter(c => c.id !== id && c.maDV !== id));
 
-  // Thay đổi trạng thái thực hiện của dịch vụ cận lâm sàng (Đã làm / Chưa thực hiện)
-  const toggleTrangThaiCLS = (id) => {
-    setChiDinh(prev => prev.map(c => 
-      c.id === id || c.maDV === id 
-        ? { ...c, trangThaiDichVu: c.trangThaiDichVu === 1 ? 0 : 1 } 
-        : c
-    ));
+  // Thay đổi trạng thái thực hiện của dịch vụ cận lâm sàng (Đã làm / Chưa thực hiện) qua API
+  const toggleTrangThaiCLS = async (id) => {
+    const cls = chiDinh.find(c => c.id === id || c.maDV === id);
+    if (!cls || !selectedBN?.maPhieu) return;
+
+    // Dịch vụ mới chưa lưu (isNew) thì chỉ toggle local, chưa có maChiTiet để gọi API
+    if (cls.isNew) {
+      setChiDinh(prev => prev.map(c =>
+        c.id === id || c.maDV === id
+          ? { ...c, trangThaiDichVu: c.trangThaiDichVu === 1 ? 0 : 1 }
+          : c
+      ));
+      return;
+    }
+
+    const newTrangThai = cls.trangThaiDichVu === 1 ? 0 : 1;
+    try {
+      await apiCapNhatTrangThaiCLS(selectedBN.maPhieu, cls.id, newTrangThai);
+      setChiDinh(prev => prev.map(c =>
+        c.id === id || c.maDV === id
+          ? { ...c, trangThaiDichVu: newTrangThai }
+          : c
+      ));
+      showSuccess(newTrangThai === 1 ? 'Đã cập nhật: CLS hoàn thành!' : 'Đã cập nhật: CLS chưa thực hiện!');
+    } catch (err) {
+      showError(err.message || 'Không thể cập nhật trạng thái CLS, vui lòng thử lại.');
+    }
   };
 
   // Chọn thuốc mới từ gợi ý tìm kiếm (tự động thêm vào đơn thuốc)
@@ -607,37 +629,46 @@ function KhamBenh() {
                 </thead>
                 <tbody>
                   {donThuoc.map((t, i) => (
-                    <tr key={t.id}>
+                    <tr key={t.id} className={t.trangThaiPhatThuoc ? 'opacity-60 bg-[#f8fafc]' : ''}>
                       <td className="text-center">{i + 1}</td>
-                      <td><span className="font-semibold text-[var(--primary)]">[{t.maThuoc}]</span> {t.tenThuoc}</td>
+                      <td>
+                        <span className="font-semibold text-[var(--primary)]">[{t.maThuoc}]</span> {t.tenThuoc}
+                        {t.trangThaiPhatThuoc && <span className="ml-2 text-[11px] text-[#16a34a] font-semibold bg-[#dcfce7] px-1.5 py-0.5 rounded-full">Đã phát</span>}
+                      </td>
                       <td>
                         <input 
                           type="number" 
                           min="1"
-                          className="form-input py-1 px-2 text-[13px] w-20 text-center border border-[var(--border-color)] rounded-[var(--radius-md)]" 
+                          className="form-input py-1 px-2 text-[13px] w-20 text-center border border-[var(--border-color)] rounded-[var(--radius-md)] disabled:opacity-50 disabled:cursor-not-allowed" 
                           value={t.soLuong} 
+                          disabled={!!t.trangThaiPhatThuoc}
                           onChange={e => capNhatSoLuongThuoc(t.id, e.target.value)} 
                         />
                       </td>
                       <td>
                         <input 
                           type="text" 
-                          className="form-input py-1 px-3 text-[13px] w-full border border-[var(--border-color)] rounded-[var(--radius-md)]" 
+                          className="form-input py-1 px-3 text-[13px] w-full border border-[var(--border-color)] rounded-[var(--radius-md)] disabled:opacity-50 disabled:cursor-not-allowed" 
                           placeholder="Cách dùng (Ví dụ: Ngày uống 2 lần, mỗi lần 1 viên)..."
                           value={t.cachDung} 
+                          disabled={!!t.trangThaiPhatThuoc}
                           onChange={e => capNhatCachDungThuoc(t.id, e.target.value)} 
                         />
                       </td>
                       <td className="text-center">
-                        <button className="kb-icon-btn kb-icon-btn--danger" onClick={() => xoaThuoc(t.id)}>
-                          <Trash2 size={14} />
-                        </button>
+                        {!t.trangThaiPhatThuoc && (
+                          <button className="kb-icon-btn kb-icon-btn--danger" onClick={() => xoaThuoc(t.id)}>
+                            <Trash2 size={14} />
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}
+
                 </tbody>
               </table>
             )}
+
             
             <div className="form-group relative mt-3">
               <label className="form-label font-semibold text-[13px] text-left block mb-1">Tìm kiếm thuốc kê đơn</label>

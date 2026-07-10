@@ -887,9 +887,18 @@ function KhamBenh() {
           <Stethoscope size={20} />
           <span>Khám bệnh cho bệnh nhân</span>
         </div>
-        <button className="kb-save-btn" onClick={() => luuPhieuKham()}>
-          <Save size={16} /> Lưu phiếu khám
-        </button>
+        {selectedBN && ketLuan.chanDoan.trim() && selectedIcdList.length > 0 ? (
+          <button 
+            className="kb-save-btn !bg-[#16a34a] hover:!bg-[#15803d] text-white border-none flex items-center gap-1.5 px-4 py-2 rounded font-semibold transition-all shadow cursor-pointer" 
+            onClick={() => luuPhieuKham(3)}
+          >
+            <ClipboardCheck size={16} /> Kết thúc khám
+          </button>
+        ) : (
+          <button className="kb-save-btn" onClick={() => luuPhieuKham()}>
+            <Save size={16} /> Lưu phiếu khám
+          </button>
+        )}
       </div>
 
       <div className="kb-body">

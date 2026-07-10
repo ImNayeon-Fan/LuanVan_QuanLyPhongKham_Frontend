@@ -167,7 +167,10 @@ function HoSoBenhAn() {
       </div>
 
       {/* Vùng thân chính */}
-      <div className="kb-body p-5 md:px-6 bg-[var(--bg-main)] h-[calc(100vh-50px)] overflow-y-auto flex flex-col gap-5">
+      <div 
+        className="kb-body p-5 md:px-6 bg-[var(--bg-main)] h-[calc(100vh-50px)] flex flex-col gap-5"
+        style={{ overflowY: 'auto', flexDirection: 'column' }}
+      >
 
         {/* Ô Tìm kiếm Bệnh nhân */}
         <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius-lg)] p-6 shadow-[var(--shadow-sm)] max-w-[800px] w-full mx-auto flex flex-col gap-4">

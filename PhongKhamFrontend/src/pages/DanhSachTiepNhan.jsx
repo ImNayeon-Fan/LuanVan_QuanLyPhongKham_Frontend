@@ -169,7 +169,10 @@ function DanhSachTiepNhan() {
       </div>
 
       {/* Main body chứa danh sách */}
-      <div className="kb-body py-4 px-6 bg-[var(--bg-main)] h-[calc(100vh-50px)] overflow-y-auto flex flex-col gap-4">
+      <div 
+        className="kb-body py-4 px-6 bg-[var(--bg-main)] h-[calc(100vh-50px)] flex flex-col gap-4"
+        style={{ overflowY: 'auto', flexDirection: 'column' }}
+      >
         
         {/* Bộ lọc nâng cao */}
         <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius-lg)] py-3 px-4 flex gap-4 items-center flex-wrap shadow-[var(--shadow-sm)]">

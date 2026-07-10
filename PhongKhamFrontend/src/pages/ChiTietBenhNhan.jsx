@@ -143,7 +143,10 @@ function ChiTietBenhNhan() {
       </div>
 
       {/* Vùng thân hiển thị thông tin chi tiết */}
-      <div className="kb-body p-5 px-6 bg-[var(--bg-main)] h-[calc(100vh-50px)] overflow-y-auto flex flex-col gap-5">
+      <div 
+        className="kb-body p-5 px-6 bg-[var(--bg-main)] h-[calc(100vh-50px)] flex flex-col gap-5"
+        style={{ overflowY: 'auto', flexDirection: 'column' }}
+      >
         
         {/* Banner bệnh nhân dạng Gradient cao cấp */}
         <div className="bg-[linear-gradient(135deg,#0ea5e9_0%,#0284c7_60%,#0369a1_100%)] rounded-[var(--radius-lg)] p-6 text-white shadow-[var(--shadow-md)] flex flex-col gap-4 relative overflow-hidden">

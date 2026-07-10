@@ -305,7 +305,10 @@ function TiepDon() {
       </div>
 
       {/* Vùng thân chính chứa biểu mẫu */}
-      <div className="kb-body p-4 bg-[var(--bg-main)] h-[calc(100vh-106px)] overflow-y-auto block">
+      <div 
+        className="kb-body p-4 bg-[var(--bg-main)] h-[calc(100vh-106px)] block"
+        style={{ overflowY: 'auto', display: 'block' }}
+      >
 
 
         <div className="grid grid-cols-2 gap-4 h-full">

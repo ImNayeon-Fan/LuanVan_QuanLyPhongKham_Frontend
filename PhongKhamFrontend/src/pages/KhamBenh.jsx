@@ -601,8 +601,19 @@ function KhamBenh() {
               </div>
             </div>
             <div className="kb-action-row mt-4 border-t border-[var(--border-color)] pt-3.5">
-              <button className="btn-primary !w-fit !mt-0 py-[10px] px-6 flex items-center gap-2" onClick={() => luuPhieuKham(2)}>
-                <Save size={16} /> Lưu chỉ định CLS
+              <button
+                className="btn-primary !w-fit !mt-0 py-[10px] px-6 flex items-center gap-2"
+                onClick={() => {
+                  // Nếu tất cả CLS đã hoàn thành → trạng thái quay về 1 (đang khám) để tiếp tục kê thuốc / kết luận
+                  // Nếu còn CLS chưa làm → giữ trạng thái 2 (chờ CLS)
+                  const allDone = chiDinh.length > 0 && chiDinh.every(c => c.trangThaiDichVu === 1);
+                  luuPhieuKham(allDone ? 1 : 2);
+                }}
+              >
+                <Save size={16} />
+                {chiDinh.length > 0 && chiDinh.every(c => c.trangThaiDichVu === 1)
+                  ? 'Lưu & Tiếp tục khám'
+                  : 'Lưu chỉ định CLS'}
               </button>
             </div>
           </div>
@@ -840,9 +851,23 @@ function KhamBenh() {
             </div>
             <div className="kb-action-row">
               <button className="btn-outline" onClick={() => setSelectedBN(null)}>Hủy</button>
-              <button className="btn-primary !w-fit !mt-0 py-[10px] px-6 flex items-center gap-2" onClick={() => luuPhieuKham(3)}>
-                <Save size={16} /> Hoàn thành khám
-              </button>
+              {/* Nút đổi thành Kết thúc khám khi đã điền chanDoan và chọn ICD */}
+              {ketLuan.chanDoan.trim() && selectedIcdList.length > 0 ? (
+                <button
+                  className="!w-fit !mt-0 py-[10px] px-6 flex items-center gap-2 font-semibold rounded-[var(--radius-md)] transition-all bg-[#16a34a] hover:bg-[#15803d] text-white border-none cursor-pointer text-[14px] shadow-md"
+                  onClick={() => luuPhieuKham(3)}
+                >
+                  <ClipboardCheck size={16} /> Kết thúc khám
+                </button>
+              ) : (
+                <button
+                  className="btn-primary !w-fit !mt-0 py-[10px] px-6 flex items-center gap-2 opacity-70"
+                  onClick={() => luuPhieuKham(1)}
+                  title="Nhập đầy đủ chẩn đoán và mã ICD để hoàn thành khám"
+                >
+                  <Save size={16} /> Lưu kết luận
+                </button>
+              )}
             </div>
           </div>
         );

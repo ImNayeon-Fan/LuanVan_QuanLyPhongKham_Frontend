@@ -149,7 +149,10 @@ function ChiTietBenhNhan() {
       >
         
         {/* Banner bệnh nhân dạng Gradient cao cấp */}
-        <div className="bg-[linear-gradient(135deg,#0ea5e9_0%,#0284c7_60%,#0369a1_100%)] rounded-[var(--radius-lg)] p-6 text-white shadow-[var(--shadow-md)] flex flex-col gap-4 relative overflow-hidden">
+        <div 
+          className="bg-[linear-gradient(135deg,#0ea5e9_0%,#0284c7_60%,#0369a1_100%)] rounded-[var(--radius-lg)] p-6 text-white shadow-[var(--shadow-md)] flex flex-col gap-4 relative overflow-hidden flex-shrink-0"
+          style={{ flexShrink: 0 }}
+        >
           <div className="absolute -right-5 -top-5 w-[150px] h-[150px] rounded-full bg-white/5 pointer-events-none" />
           <div className="absolute right-10 -bottom-10 w-[100px] h-[100px] rounded-full bg-white/[0.08] pointer-events-none" />
 

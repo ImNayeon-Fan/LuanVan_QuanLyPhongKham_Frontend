@@ -8,8 +8,7 @@ import {
   apiGetStaffList,
   apiAddStaff,
   apiUpdateStaff,
-  apiDeleteStaff,
-  apiGetKhoaList
+  apiDeleteStaff
 } from '../utils/api';
 import { useToast } from '../utils/ToastContext';
 
@@ -48,51 +47,10 @@ function PhanQuyenNhanSu() {
   const [selectedStaff, setSelectedStaff] = useState(null);
   const { showToast } = useToast();
   const [isAdmin, setIsAdmin] = useState(true);
-  const [danhMucKhoa, setDanhMucKhoa] = useState([]);
-
-  // Tải danh mục chuyên khoa để gán cho Bác sĩ / Nhân viên y tế từ Backend API
-  useEffect(() => {
-    const fetchKhoaList = async () => {
-      try {
-        const response = await apiGetKhoaList('', '', 1, 1000);
-        if (response && response.data) {
-          setDanhMucKhoa(response.data);
-        } else {
-          const stored = localStorage.getItem('danhMucKhoa');
-          if (stored) {
-            setDanhMucKhoa(JSON.parse(stored));
-          } else {
-            const DEFAULT_KHOA = [
-              { maKhoa: 'KHOA01', tenKhoa: 'Nội tổng quát' },
-              { maKhoa: 'KHOA02', tenKhoa: 'Tim mạch' },
-              { maKhoa: 'KHOA03', tenKhoa: 'Nhi khoa' },
-              { maKhoa: 'KHOA04', tenKhoa: 'Tai Mũi Họng' }
-            ];
-            setDanhMucKhoa(DEFAULT_KHOA);
-          }
-        }
-      } catch (error) {
-        console.error('Lỗi tải danh mục khoa phòng:', error);
-        const stored = localStorage.getItem('danhMucKhoa');
-        if (stored) {
-          setDanhMucKhoa(JSON.parse(stored));
-        } else {
-          const DEFAULT_KHOA = [
-            { maKhoa: 'KHOA01', tenKhoa: 'Nội tổng quát' },
-            { maKhoa: 'KHOA02', tenKhoa: 'Tim mạch' },
-            { maKhoa: 'KHOA03', tenKhoa: 'Nhi khoa' },
-            { maKhoa: 'KHOA04', tenKhoa: 'Tai Mũi Họng' }
-          ];
-          setDanhMucKhoa(DEFAULT_KHOA);
-        }
-      }
-    };
-    fetchKhoaList();
-  }, []);
 
   // Form chứa dữ liệu nhân viên đang được chỉnh sửa hoặc thêm mới
   const [formData, setFormData] = useState({
-    maNV: '', hoTen: '', sdt: '', email: '', chuyenMon: '', maKhoa: '', username: '', passwordHash: '', roleName: 'BacSi', isActive: true
+    maNV: '', hoTen: '', sdt: '', email: '', chuyenMon: '', username: '', passwordHash: '', roleName: 'BacSi', isActive: true
   });
 
   // State lưu trữ bộ lọc tìm kiếm trên danh sách
@@ -159,7 +117,6 @@ function PhanQuyenNhanSu() {
         sdt: selectedStaff.sdt || '',
         email: selectedStaff.email || '',
         chuyenMon: selectedStaff.chuyenMon || '',
-        maKhoa: selectedStaff.maKhoa || '',
         username: selectedStaff.username || '',
         passwordHash: '',
         roleName: ROLE_ID_TO_NAME[selectedStaff.roleID] || selectedStaff.roleName || 'BacSi',
@@ -167,7 +124,7 @@ function PhanQuyenNhanSu() {
       });
     } else {
       setFormData({
-        maNV: '', hoTen: '', sdt: '', email: '', chuyenMon: '', maKhoa: '', username: '', passwordHash: '', roleName: 'BacSi', isActive: true
+        maNV: '', hoTen: '', sdt: '', email: '', chuyenMon: '', username: '', passwordHash: '', roleName: 'BacSi', isActive: true
       });
     }
   }, [selectedStaff]);
@@ -299,7 +256,6 @@ function PhanQuyenNhanSu() {
           sdt: formData.sdt.trim(),
           email: formData.email.trim(),
           chuyenMon: formData.chuyenMon?.trim() || null,
-          maKhoa: formData.maKhoa?.trim() || null,
           username: formData.email.trim(),
           password: formData.passwordHash ? formData.passwordHash : null,
           roleID: mappedRoleID,
@@ -314,7 +270,6 @@ function PhanQuyenNhanSu() {
           sdt: formData.sdt.trim(),
           email: formData.email.trim(),
           chuyenMon: formData.chuyenMon?.trim() || null,
-          maKhoa: formData.maKhoa?.trim() || null,
           username: formData.email.trim(),
           password: formData.passwordHash,
           roleID: mappedRoleID,
@@ -678,24 +633,13 @@ function PhanQuyenNhanSu() {
 
                       <div className="form-group m-0">
                         <label className="form-label text-[12.5px]">Khoa (Chuyên môn)</label>
-                        <select
-                          className="w-full h-[34px] px-2.5 py-0 text-[13px] bg-white border border-slate-200 rounded-md outline-none focus:border-[var(--primary)] focus:ring-1 focus:ring-[var(--primary)]/20 transition-all"
-                          value={formData.maKhoa || ''}
-                          onChange={e => {
-                            const val = e.target.value;
-                            const matched = danhMucKhoa.find(k => k.maKhoa === val);
-                            setFormData({
-                              ...formData,
-                              maKhoa: val,
-                              chuyenMon: matched ? matched.tenKhoa : ''
-                            });
-                          }}
-                        >
-                          <option value="">— Chọn khoa / chuyên môn —</option>
-                          {danhMucKhoa.map(k => (
-                            <option key={k.maKhoa} value={k.maKhoa}>{k.tenKhoa}</option>
-                          ))}
-                        </select>
+                        <input
+                          type="text"
+                          className="form-input h-[34px] text-[13px] pl-3"
+                          placeholder="Nhập tên khoa / chuyên môn (VD: Nội tổng quát)"
+                          value={formData.chuyenMon || ''}
+                          onChange={e => setFormData({ ...formData, chuyenMon: e.target.value })}
+                        />
                       </div>
 
                       <div className="form-group m-0 col-span-2">

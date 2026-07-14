@@ -248,7 +248,7 @@ function TiepDon() {
     };
     const fetchKhoas = async () => {
       try {
-        const res = await apiGetKhoaList('', '', 1, 1000);
+        const res = await apiGetKhoaList('', '', 1, 100);
         if (res && res.data) {
           const mapping = {};
           res.data.forEach(k => {
@@ -446,7 +446,7 @@ function TiepDon() {
                 >
                   <option value="">-- Chọn Bác sĩ khám (Bắt buộc) --</option>
                   {danhSachBacSi.map(doc => {
-                    const tenKhoa = khoaMapping[doc.maKhoa] || doc.maKhoa || 'Khoa lâm sàng';
+                    const tenKhoa = khoaMapping[doc.maKhoa] || doc.chuyenMon || 'Khoa lâm sàng';
                     return (
                       <option key={doc.maNV} value={doc.maNV}>
                         {doc.hoTen} - {tenKhoa}

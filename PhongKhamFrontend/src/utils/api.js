@@ -269,6 +269,7 @@ export const apiGetChiTietPhieuKham = async (maPhieu) => {
       maICD: data.danhSachICD && data.danhSachICD.length > 0 ? data.danhSachICD[0].maICD : null,
       tenBenhICD: data.danhSachICD && data.danhSachICD.length > 0 ? data.danhSachICD[0].tenBenh : null,
       icdList: data.danhSachICD || [],
+      loiDan: data.donThuoc?.loiDanDonThuoc ?? null,
       canLamSang: data.dichVuYTe ? data.dichVuYTe.map(dv => ({
         maChiTiet: dv.maChiTiet,
         maDV: dv.maDV,

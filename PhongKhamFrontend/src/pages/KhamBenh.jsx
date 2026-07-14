@@ -151,7 +151,7 @@ function KhamBenh() {
   };
 
   // Tải danh sách bệnh nhân chờ khám từ API theo khoảng ngày
-  const fetchPatientList = async (searchQuery = '') => {
+  const fetchPatientList = async (searchQuery = '', initLoad = false) => {
     setLoadingList(true);
     try {
       const dates = getDatesInRange(tuNgay, denNgay);
@@ -184,8 +184,8 @@ function KhamBenh() {
 
       setDsBenhNhan(patients);
       
-      // Tự động chọn bệnh nhân đầu tiên nếu chưa chọn ai
-      if (patients.length > 0 && !selectedBN) {
+      // Tự động chọn bệnh nhân đầu tiên nếu chưa chọn ai và là lần đầu load
+      if (initLoad && patients.length > 0 && !selectedBN) {
         setSelectedBN(patients[0]);
       }
     } catch (err) {
@@ -198,7 +198,7 @@ function KhamBenh() {
   };
 
   useEffect(() => {
-    fetchPatientList(search);
+    fetchPatientList(search, true);
   }, [search, tuNgay, denNgay]);
 
   // Tải danh mục ICD, CLS, Thuốc từ API khi component mount
@@ -329,30 +329,82 @@ function KhamBenh() {
       canNang: sinhHieu.canNang ? parseFloat(sinhHieu.canNang) : null,
       chieuCao: sinhHieu.chieuCao ? parseFloat(sinhHieu.chieuCao) : null,
       chiDinhCLSMoi: chiDinh.filter(c => c.isNew).map(c => c.maDV),
-      loiDan: ketLuan.loiDan ? ketLuan.loiDan.trim() : null,
-      // Chỉ gửi thuốc chưa phát — thuốc đã phát (trangThaiPhatThuoc=true) không được ghi đè
-      donThuoc: donThuoc.filter(t => !t.trangThaiPhatThuoc).map(t => ({
-        maThuoc: t.maThuoc,
-        soLuong: parseInt(t.soLuong, 10),
-        cachDung: t.cachDung.trim()
-      })),
       ketLuan: ketLuan.chanDoan ? ketLuan.chanDoan.trim() : null,
       icdList: selectedIcdList.map(x => x.maICD),
-      trangThaiKham: newTrangThai
+      trangThaiKham: newTrangThai,
+      // Chỉ gửi donThuoc/loiDan khi đang ở tab đơn thuốc hoặc kết luận
+      ...(activeMenu === 'donThuoc' || activeMenu === 'ketLuan'
+        ? {
+            donThuoc: donThuoc.filter(t => !t.trangThaiPhatThuoc).map(t => ({
+              maThuoc: t.maThuoc,
+              soLuong: parseInt(t.soLuong, 10),
+              cachDung: t.cachDung.trim()
+            })),
+            loiDan: ketLuan.loiDan ? ketLuan.loiDan.trim() : null,
+          }
+        : {})
     };
 
     try {
       const res = await apiCapNhatKhamBenh(selectedBN.maPhieu, payload);
       if (res && res.data) {
         showSuccess(res.message || 'Lưu thông tin khám bệnh thành công!');
+        
+        // Reload toàn bộ chi tiết phiếu từ DB để đồng bộ state (Fix 2 & Option B)
+        try {
+          const detail = await apiGetChiTietPhieuKhamBenh(selectedBN.maPhieu);
+          if (detail && detail.data) {
+            const data = detail.data;
+            setSinhHieu({
+              mach: data.sinhHieu?.mach || '',
+              nhietDo: data.sinhHieu?.nhietDo || '',
+              huyetAp: data.sinhHieu?.huyetAp || '',
+              canNang: data.sinhHieu?.canNang || '',
+              chieuCao: data.sinhHieu?.chieuCao || ''
+            });
+            setChiDinh(data.chiDinhCLS ? data.chiDinhCLS.map(c => ({
+              id: c.maChiTiet,
+              maDV: c.maDV,
+              tenXN: c.tenDV,
+              ketQua: c.ketQua,
+              trangThaiDichVu: c.trangThaiCLS !== undefined ? c.trangThaiCLS : c.trangThaiDichVu,
+              isNew: false // Đã lưu thành công vào CSDL nên không còn là mới nữa
+            })) : []);
+            setDonThuoc(data.donThuoc && data.donThuoc.chiTiet ? data.donThuoc.chiTiet.map(t => ({
+              id: t.maThuoc,
+              maThuoc: t.maThuoc,
+              tenThuoc: t.tenThuoc,
+              soLuong: t.soLuong,
+              cachDung: t.cachDung,
+              trangThaiPhatThuoc: t.trangThaiPhatThuoc
+            })) : []);
+            setKetLuan({
+              chanDoan: data.ketLuan ? data.ketLuan.replace(/\s*\[CLS_STATUS:.*?\]/g, '') : '',
+              loiDan: data.donThuoc?.loiDan || ''
+            });
+            setSelectedIcdList(data.icdList ? data.icdList.map(icd => ({
+              maICD: icd.maICD,
+              tenBenh: icd.tenBenh
+            })) : []);
+          }
+        } catch (errDetail) {
+          console.error('Lỗi khi đồng bộ chi tiết phiếu khám sau lưu:', errDetail);
+        }
+
         // Cập nhật lại trạng thái bệnh nhân đang chọn ngay lập tức
         setSelectedBN(prev => ({
           ...prev,
           trangThai: newTrangThai,
           trangThaiKham: newTrangThai
         }));
-        // Tải lại danh sách bệnh nhân để sidebar phản ánh trạng thái mới
-        fetchPatientList(search);
+        // Cập nhật sidebar inline, KHÔNG gọi fetchPatientList để tránh làm reset reference bệnh nhân
+        setDsBenhNhan(prev =>
+          prev.map(bn =>
+            bn.maPhieu === selectedBN.maPhieu
+              ? { ...bn, trangThai: newTrangThai, trangThaiKham: newTrangThai }
+              : bn
+          )
+        );
       }
     } catch (err) {
       showError(err.message || 'Không thể lưu thông tin khám bệnh, vui lòng thử lại.');
@@ -477,7 +529,7 @@ function KhamBenh() {
             </div>
 
             {selectedBN.icdList && selectedBN.icdList.length > 0 ? (
-              <div className="bg-[#eff6ff] border border-[#bfdbfe] rounded-[6px] py-[10px] px-[14px] mb-4 flex flex-col gap-2 text-[13px] text-left">
+              <div className="bg-[#eff6ff] border border-[#bfdbfe] rounded-[6px] py-[10px] px-[14px] mb-2 flex flex-col gap-2 text-[13px] text-left">
                 <span className="font-semibold text-[#1e40af]">Mã bệnh & Chẩn đoán sơ bộ (Tiếp đón):</span>
                 <div className="flex flex-wrap gap-2">
                   {selectedBN.icdList.map(item => (
@@ -488,7 +540,7 @@ function KhamBenh() {
                 </div>
               </div>
             ) : selectedBN.maICD ? (
-              <div className="bg-[#eff6ff] border border-[#bfdbfe] rounded-[6px] py-[10px] px-[14px] mb-4 flex items-center gap-2 text-[13px]">
+              <div className="bg-[#eff6ff] border border-[#bfdbfe] rounded-[6px] py-[10px] px-[14px] mb-2 flex items-center gap-2 text-[13px]">
                 <span className="font-semibold text-[#1e40af]">Mã bệnh & Chẩn đoán sơ bộ (Tiếp đón):</span>
                 <span className="text-[#1e3a8a] bg-[#dbeafe] py-[2px] px-2 rounded font-bold">
                   {selectedBN.maICD}
@@ -496,7 +548,7 @@ function KhamBenh() {
                 <span className="font-medium text-[#1e40af]">{selectedBN.tenBenhICD}</span>
               </div>
             ) : (
-              <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[6px] py-[10px] px-[14px] mb-4 text-[13px] text-[var(--text-muted)] italic text-left">
+              <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[6px] py-[10px] px-[14px] mb-2 text-[13px] text-[var(--text-muted)] italic text-left">
                 Chưa có thông tin mã bệnh ICD / Chẩn đoán sơ bộ từ khâu Tiếp đón.
               </div>
             )}
@@ -527,7 +579,7 @@ function KhamBenh() {
             </div>
 
             {/* Nhập mã ICD gợi ý - Chuyển sang Khám cơ bản theo Backend v2 */}
-            <div className="form-group relative mt-5 border-t border-[var(--border-color)] pt-4">
+            <div className="form-group relative mt-3 border-t border-[var(--border-color)] pt-3">
               <label className="form-label font-semibold text-[13px] text-left block">Chẩn đoán bệnh lý chính/phụ (ICD-10) *</label>
               
               {/* Danh sách các mã bệnh đã chọn */}
@@ -567,7 +619,7 @@ function KhamBenh() {
                   {showIcdDropdown && (
                     <>
                       <div onClick={() => setShowIcdDropdown(false)} className="fixed inset-0 z-[998]" />
-                      <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-[var(--border-color)] rounded-[6px] shadow-lg max-h-[200px] overflow-y-auto z-[999]">
+                      <div className="absolute left-0 right-0 bottom-full mb-1 bg-white border border-[var(--border-color)] rounded-[6px] shadow-lg max-h-[200px] overflow-y-auto z-[999]">
                         {danhMucICD
                           .filter(item => 
                             item.maICD.toLowerCase().includes(icdQuery.toLowerCase()) || 
@@ -603,7 +655,7 @@ function KhamBenh() {
               </div>
             </div>
 
-            <div className="kb-action-row mt-6">
+            <div className="kb-action-row mt-3">
               <button className="btn-primary !w-fit !mt-0 py-[10px] px-6 flex items-center gap-2" onClick={() => luuPhieuKham(1)}>
                 <Save size={16} /> Lưu khám cơ bản
               </button>
@@ -661,7 +713,7 @@ function KhamBenh() {
                 {showClsDropdown && (
                   <>
                     <div onClick={() => setShowClsDropdown(false)} className="fixed inset-0 z-[998]" />
-                    <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-[var(--border-color)] rounded-[6px] shadow-lg max-h-[220px] overflow-y-auto z-[999] text-left">
+                    <div className="absolute left-0 right-0 bottom-full mb-1 bg-white border border-[var(--border-color)] rounded-[6px] shadow-lg max-h-[220px] overflow-y-auto z-[999] text-left">
                       {danhMucCLS
                         .filter(item => 
                           item.maDV.toLowerCase().includes(clsQuery.toLowerCase()) || 
@@ -749,7 +801,7 @@ function KhamBenh() {
                         <input 
                           type="number" 
                           min="1"
-                          className="form-input py-1 px-2 text-[13px] w-20 text-center border border-[var(--border-color)] rounded-[var(--radius-md)] disabled:opacity-50 disabled:cursor-not-allowed" 
+                          className="form-input py-1 px-2 text-[13px] w-28 text-center border border-[var(--border-color)] rounded-[var(--radius-md)] disabled:opacity-50 disabled:cursor-not-allowed" 
                           value={t.soLuong} 
                           disabled={!!t.trangThaiPhatThuoc}
                           onChange={e => capNhatSoLuongThuoc(t.id, e.target.value)} 
@@ -797,7 +849,7 @@ function KhamBenh() {
                 {showThuocDropdown && (
                   <>
                     <div onClick={() => setShowThuocDropdown(false)} className="fixed inset-0 z-[998]" />
-                    <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-[var(--border-color)] rounded-[6px] shadow-lg max-h-[220px] overflow-y-auto z-[999] text-left">
+                    <div className="absolute left-0 right-0 bottom-full mb-1 bg-white border border-[var(--border-color)] rounded-[6px] shadow-lg max-h-[220px] overflow-y-auto z-[999] text-left">
                       {danhMucThuoc
                         .filter(item => 
                           item.maThuoc.toLowerCase().includes(thuocQuery.toLowerCase()) || 

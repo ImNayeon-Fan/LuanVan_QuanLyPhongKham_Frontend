@@ -180,14 +180,15 @@ function HoSoBenhAn() {
           </div>
 
           <form onSubmit={handleSearch} className="flex gap-2.5">
-            <div className="flex items-center gap-2 flex-1 relative">
+            <div className="flex items-center gap-2 flex-1 relative" style={{ minWidth: '320px' }}>
               <Search size={18} className="absolute left-3.5 text-[var(--text-muted)]" />
               <input
                 type="text"
-                className="form-input pl-10 h-[42px] text-[14px]"
+                className="form-input pl-10 h-[42px] text-[14px] w-full"
                 placeholder="Nhập mã bệnh nhân (VD: BN260001) hoặc mã hồ sơ (VD: PK_...)"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
+                style={{ minWidth: '320px' }}
               />
             </div>
             <button type="submit" className="btn-primary w-[120px] h-[42px] flex items-center justify-center gap-1.5">
@@ -291,7 +292,7 @@ function HoSoBenhAn() {
               ) : (
                 <div className="flex flex-col gap-3">
                   {patientHistory.map((rec) => {
-                    const st = trangThaiLabel[rec.trangThai] || trangThaiLabel[0];
+                    const st = trangThaiLabel[rec.trangThaiKham] ?? trangThaiLabel[0];
                     return (
                       <div
                         key={rec.maPhieu}

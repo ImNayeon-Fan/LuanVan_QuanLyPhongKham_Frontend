@@ -12,8 +12,8 @@ function LandingPage() {
 
       {/* Top Header / Branding */}
       <header className="w-full max-w-7xl mx-auto flex items-center justify-between z-10">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center shadow-sm p-1.5 border border-slate-100">
+        <div className="flex items-center gap-4">
+          <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center shadow-md p-2 border border-slate-100">
             <img 
               src="/clinic_logo.png" 
               alt="Logo Phòng khám Đa khoa Nhật Tảo" 
@@ -21,10 +21,10 @@ function LandingPage() {
             />
           </div>
           <div>
-            <h1 className="text-lg md:text-xl font-extrabold text-slate-800 tracking-tight leading-none">
+            <h1 className="text-2xl md:text-3xl font-extrabold text-slate-800 tracking-tight leading-none">
               Phòng Khám Đa Khoa Nhật Tảo
             </h1>
-            <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider mt-0.5">Uy tín - Tận tâm - Chuyên nghiệp</p>
+            <p className="text-xs text-slate-400 font-semibold uppercase tracking-wider mt-1">Uy tín - Tận tâm - Chuyên nghiệp</p>
           </div>
         </div>
       </header>
@@ -33,9 +33,6 @@ function LandingPage() {
       <main className="w-full max-w-5xl mx-auto flex flex-col items-center justify-center flex-1 my-10 z-10">
         {/* Tagline */}
         <div className="text-center mb-12 max-w-2xl">
-          <span className="px-3 py-1 text-[11px] font-semibold text-sky-700 bg-sky-50 rounded-full border border-sky-100 uppercase tracking-widest inline-block mb-4 shadow-sm">
-            Hệ thống quản lý trực tuyến
-          </span>
           <h2 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-none mb-4">
             Chào mừng đến với <br className="hidden sm:inline" />
             <span className="bg-clip-text text-transparent bg-gradient-to-r from-sky-500 to-blue-600">

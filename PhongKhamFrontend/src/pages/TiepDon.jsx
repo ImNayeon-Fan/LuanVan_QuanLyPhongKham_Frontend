@@ -4,7 +4,7 @@ import {
   ArrowLeft, User, Stethoscope, Save, UserPlus, CheckCircle, AlertCircle
 } from 'lucide-react';
 import { useToast } from '../utils/ToastContext';
-import { apiTraCuuBenhNhan, apiTiepNhanBenhNhan, apiGetStaffList, apiGetICDList, apiGetKhoaList } from '../utils/api';
+import { apiTraCuuBenhNhan, apiTiepNhanBenhNhan, apiGetBacSiList, apiGetKhoaList } from '../utils/api';
 
 // Hàm kiểm tra định dạng ngày sinh hợp lệ (DD/MM/YYYY)
 const isValidDate = (dateStr) => {
@@ -24,34 +24,16 @@ const isValidDate = (dateStr) => {
   return day <= daysInMonth;
 };
 
-// Dữ liệu gợi ý ICD-10 mặc định
-const defaultICDData = [
-  { maICD: 'A09', tenBenh: 'Tiêu chảy và viêm dạ dày ruột do nhiễm khuẩn' },
-  { maICD: 'I10', tenBenh: 'Tăng huyết áp vô căn (nguyên phát)' },
-  { maICD: 'E11', tenBenh: 'Đái tháo đường không phụ thuộc insulin (Typ 2)' },
-  { maICD: 'J06', tenBenh: 'Nhiễm khuẩn đường hô hấp trên cấp tính nhiều vị trí' },
-  { maICD: 'K29', tenBenh: 'Viêm dạ dày và tá tràng' },
-  { maICD: 'M54', tenBenh: 'Đau lưng' },
-  { maICD: 'N39', tenBenh: 'Nhiễm trùng đường tiết niệu (không xác định vị trí)' },
-  { maICD: 'R05', tenBenh: 'Ho' }
-];
+
 
 function TiepDon() {
   const navigate = useNavigate();
   const location = useLocation();
   const { showSuccess, showError } = useToast();
   
-  // Danh sách bác sĩ tải động từ backend và các danh mục gợi ý
+  // Danh sách bác sĩ tải động từ backend và bản đồ khoa phòng
   const [danhSachBacSi, setDanhSachBacSi] = useState([]);
   const [khoaMapping, setKhoaMapping] = useState({});
-  const [danhMucICD, setDanhMucICD] = useState(() => {
-    try {
-      const stored = localStorage.getItem('danhMucICD');
-      return stored ? JSON.parse(stored) : defaultICDData;
-    } catch {
-      return defaultICDData;
-    }
-  });
   
   // Trạng thái biểu mẫu nhập liệu (Khởi tạo từ location.state nếu chuyển từ trang Lịch đặt khám)
   const [formData, setFormData] = useState(() => {
@@ -64,15 +46,11 @@ function TiepDon() {
       diaChi: '',
       tienSuBenh: '',
       maBacSi: '',
-      lyDoKham: state.lyDoKham || '',
-      maICD: '',
-      tenBenhICD: ''
+      lyDoKham: state.lyDoKham || ''
     };
   });
 
   const [foundPatient, setFoundPatient] = useState(null); // Thông tin bệnh nhân cũ tìm thấy
-  const [icdQuery, setIcdQuery] = useState('');
-  const [showIcdDropdown, setShowIcdDropdown] = useState(false);
 
   // Tra cứu bệnh nhân cũ theo SĐT khi nhập đủ 10 chữ số
   const handleSdtChange = async (val) => {
@@ -84,15 +62,49 @@ function TiepDon() {
         const res = await apiTraCuuBenhNhan(cleanVal);
         if (res && res.found && res.data) {
           setFoundPatient(res.data);
-          showSuccess(`Tìm thấy bệnh nhân cũ: ${res.data.hoTen}`);
+          showSuccess(`Tìm thấy hồ sơ bệnh nhân cũ: ${res.data.hoTen}. Đã tự động điền thông tin!`);
+          
+          // Tự động điền dữ liệu hành chính từ hồ sơ bệnh nhân cũ tìm thấy
+          let displayDob = '';
+          if (res.data.ngaySinh) {
+            const separator = res.data.ngaySinh.includes('-') ? '-' : '/';
+            const parts = res.data.ngaySinh.split(separator);
+            if (parts.length === 3) {
+              if (parts[0].length === 4) {
+                displayDob = `${parts[2]}/${parts[1]}/${parts[0]}`;
+              } else {
+                displayDob = `${parts[0]}/${parts[1]}/${parts[2]}`;
+              }
+            } else {
+              displayDob = res.data.ngaySinh;
+            }
+          }
+          setFormData(prev => ({
+            ...prev,
+            hoTen: res.data.hoTen,
+            ngaySinh: displayDob,
+            gioiTinh: res.data.gioiTinh || 'Nam',
+            diaChi: res.data.diaChi || '',
+            tienSuBenh: res.data.tienSuBenh || ''
+          }));
         } else {
           setFoundPatient(null);
         }
-      } catch {
+      } catch (err) {
+        console.error('Lỗi tra cứu SĐT:', err);
         setFoundPatient(null);
       }
     } else {
+      // Nếu số điện thoại bị thay đổi và không còn khớp 10 số, reset foundPatient và xóa form
       setFoundPatient(null);
+      setFormData(prev => ({
+        ...prev,
+        hoTen: '',
+        ngaySinh: '',
+        gioiTinh: 'Nam',
+        diaChi: '',
+        tienSuBenh: ''
+      }));
     }
   };
 
@@ -126,8 +138,19 @@ function TiepDon() {
     if (foundPatient) {
       let displayDob = '';
       if (foundPatient.ngaySinh) {
-        const parts = foundPatient.ngaySinh.split('-');
-        displayDob = parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : foundPatient.ngaySinh;
+        const separator = foundPatient.ngaySinh.includes('-') ? '-' : '/';
+        const parts = foundPatient.ngaySinh.split(separator);
+        if (parts.length === 3) {
+          if (parts[0].length === 4) {
+            // Định dạng: YYYY-MM-DD -> DD/MM/YYYY
+            displayDob = `${parts[2]}/${parts[1]}/${parts[0]}`;
+          } else {
+            // Định dạng: DD-MM-YYYY -> DD/MM/YYYY
+            displayDob = `${parts[0]}/${parts[1]}/${parts[2]}`;
+          }
+        } else {
+          displayDob = foundPatient.ngaySinh;
+        }
       }
       setFormData(prev => ({
         ...prev,
@@ -160,10 +183,8 @@ function TiepDon() {
   const handleCancel = () => {
     setFormData({
       sdt: '', hoTen: '', ngaySinh: '', gioiTinh: 'Nam',
-      diaChi: '', tienSuBenh: '', maBacSi: '', lyDoKham: '',
-      maICD: '', tenBenhICD: ''
+      diaChi: '', tienSuBenh: '', maBacSi: '', lyDoKham: ''
     });
-    setIcdQuery('');
     setFoundPatient(null);
   };
 
@@ -174,6 +195,9 @@ function TiepDon() {
     if (!formData.ngaySinh.trim()) return showError('Vui lòng nhập Ngày tháng năm sinh!');
     if (!isValidDate(formData.ngaySinh) || formData.ngaySinh.length !== 10) {
       return showError('Ngày sinh không hợp lệ (Định dạng đúng: DD/MM/YYYY)!');
+    }
+    if (!formData.maBacSi) {
+      return showError('Vui lòng chỉ định Bác sĩ khám cho bệnh nhân!');
     }
 
     // Chuyển đổi định dạng ngày sang YYYY-MM-DD trước khi gửi lên API
@@ -193,9 +217,7 @@ function TiepDon() {
       tienSuBenh: formData.tienSuBenh.trim() || null,
       maBacSi: formData.maBacSi || null,
       maNV: formData.maBacSi || null,
-      lyDoKham: formData.lyDoKham.trim(),
-      maICD: formData.maICD || null,
-      icdList: formData.maICD ? [{ maICD: formData.maICD, tenBenh: formData.tenBenhICD }] : []
+      lyDoKham: formData.lyDoKham.trim()
     };
 
     try {
@@ -205,15 +227,19 @@ function TiepDon() {
         handleCancel();
       }
     } catch (err) {
-      showError(err.message || 'Lỗi kết nối máy chủ, vui lòng thử lại.');
+      let errMsg = err.message || 'Lỗi kết nối máy chủ, vui lòng thử lại.';
+      if (errMsg.includes('chưa hoàn tất') || errMsg.includes('chua hoan tat') || errMsg.includes('phiếu khám chưa hoàn tất')) {
+        errMsg = 'Hồ sơ cũ ở trạng thái chưa khám xong vui lòng kiểm tra';
+      }
+      showError(errMsg);
     }
   };
 
-  // 1. Tải danh sách bác sĩ, danh mục khoa phòng và danh mục bệnh lý ICD-10 đang hoạt động từ backend
+  // 1. Tải danh sách bác sĩ và danh mục khoa phòng từ backend
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const res = await apiGetStaffList('active', 1, 100, '', 2); // RoleID 2 là Bác sĩ
+        const res = await apiGetBacSiList();
         if (res && res.data) setDanhSachBacSi(res.data);
       } catch (err) {
         console.error('Không thể tải danh sách bác sĩ:', err);
@@ -234,17 +260,8 @@ function TiepDon() {
         console.error('Không thể tải danh sách khoa:', err);
       }
     };
-    const fetchICDs = async () => {
-      try {
-        const res = await apiGetICDList('', '', 1, 1000);
-        if (res && res.data) setDanhMucICD(res.data);
-      } catch (err) {
-        console.error('Không thể tải danh mục ICD:', err);
-      }
-    };
     fetchDoctors();
     fetchKhoas();
-    fetchICDs();
   }, []);
 
   // 2. Tự động điền dữ liệu nếu chuyển hướng từ trang Lịch đặt khám
@@ -280,20 +297,13 @@ function TiepDon() {
   }, [formData, foundPatient]);
 
   const dateWarning = formData.ngaySinh.length === 10 && !isValidDate(formData.ngaySinh) ? 'Ngày sinh không hợp lệ' : '';
-  const query = icdQuery.trim().toLowerCase();
-  const filteredICDs = query 
-    ? danhMucICD.filter(item => 
-        item.maICD.toLowerCase().includes(query) ||
-        item.tenBenh.toLowerCase().includes(query)
-      )
-    : danhMucICD.slice(0, 10);
 
   return (
     <div className="kb-wrapper h-screen overflow-hidden">
       {/* Thanh công cụ định hướng phía trên */}
       <div className="kb-topbar h-[50px] px-5 flex items-center">
         <div className="flex-1 flex">
-          <button className="kb-back-btn py-[5px] px-[10px]" onClick={() => navigate('/')}>
+          <button className="kb-back-btn py-[5px] px-[10px]" onClick={() => navigate('/staff')}>
             <ArrowLeft size={16} /> Quay về trang chủ
           </button>
         </div>
@@ -428,13 +438,13 @@ function TiepDon() {
                 />
               </div>
 
-              <div className="form-group mb-3">
-                <label className="form-label font-semibold text-[13px]">Bác sĩ khám (Phòng khám chỉ định)</label>
+              <div className="form-group mb-0">
+                <label className="form-label font-semibold text-[13px]">Bác sĩ khám (Bắt buộc)</label>
                 <select
                   className="form-input pl-3 h-10 py-1.5"
                   value={formData.maBacSi} onChange={e => setFormData({ ...formData, maBacSi: e.target.value })}
                 >
-                  <option value="">-- Chọn Bác sĩ khám / Tự động phân phòng --</option>
+                  <option value="">-- Chọn Bác sĩ khám (Bắt buộc) --</option>
                   {danhSachBacSi.map(doc => {
                     const tenKhoa = khoaMapping[doc.maKhoa] || doc.maKhoa || 'Khoa lâm sàng';
                     return (
@@ -444,49 +454,6 @@ function TiepDon() {
                     );
                   })}
                 </select>
-              </div>
-
-              {/* Nhập mã ICD gợi ý */}
-              <div className="form-group mb-0 relative">
-                <label className="form-label font-semibold text-[13px]">Mã bệnh & Chẩn đoán ban đầu (ICD)</label>
-                <input
-                  type="text" className="form-input pl-3 h-9 w-full"
-                  placeholder="Tìm kiếm mã bệnh, tên bệnh chẩn đoán hoặc tự nhập..."
-                  value={icdQuery || (formData.maICD ? `[${formData.maICD}] ${formData.tenBenhICD}` : formData.tenBenhICD)}
-                  onFocus={() => setShowIcdDropdown(true)}
-                  onChange={e => {
-                    const val = e.target.value;
-                    setIcdQuery(val);
-                    setFormData(prev => ({ ...prev, tenBenhICD: val, maICD: '' }));
-                    setShowIcdDropdown(true);
-                  }}
-                />
-
-                {/* Dropdown danh sách gợi ý ICD */}
-                {showIcdDropdown && (
-                  <>
-                    <div onClick={() => setShowIcdDropdown(false)} className="fixed inset-0 z-[998]" />
-                    <div className="absolute bottom-10 left-0 right-0 bg-white border border-[var(--border-color)] rounded-[var(--radius-md)] shadow-[var(--shadow-md)] max-h-[180px] overflow-y-auto z-[999]">
-                      {filteredICDs.map(item => (
-                        <div 
-                          key={item.maICD} className="py-2 px-3 cursor-pointer text-[12.5px] border-b border-[var(--border-color)] text-left text-[var(--text-main)]"
-                          onClick={() => {
-                            setFormData(prev => ({ ...prev, maICD: item.maICD, tenBenhICD: item.tenBenh }));
-                            setIcdQuery('');
-                            setShowIcdDropdown(false);
-                          }}
-                          onMouseEnter={e => e.target.style.backgroundColor = 'var(--bg-main)'}
-                          onMouseLeave={e => e.target.style.backgroundColor = 'transparent'}
-                        >
-                          <strong className="text-[var(--primary)]">{item.maICD}</strong> - {item.tenBenh}
-                        </div>
-                      ))}
-                      {filteredICDs.length === 0 && (
-                        <div className="py-2 px-3 text-[12.5px] text-[var(--text-muted)] italic text-left">Không tìm thấy bệnh lý khớp. Bạn tự gõ tự do.</div>
-                      )}
-                    </div>
-                  </>
-                )}
               </div>
             </div>
 

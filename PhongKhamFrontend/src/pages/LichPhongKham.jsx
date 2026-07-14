@@ -353,7 +353,7 @@ function LichPhongKham() {
       {/* Topbar điều hướng */}
       <div className="kb-topbar h-[50px] px-5 flex-shrink-0 font-inherit flex items-center justify-between">
         <div className="flex-1 flex justify-start">
-          <button className="kb-back-btn py-[5px] px-[10px] font-inherit flex items-center gap-1" onClick={() => navigate('/')}>
+          <button className="kb-back-btn py-[5px] px-[10px] font-inherit flex items-center gap-1" onClick={() => navigate('/staff')}>
             <ArrowLeft size={16} /> Quay về trang chủ
           </button>
         </div>

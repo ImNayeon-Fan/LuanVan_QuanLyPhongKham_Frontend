@@ -148,7 +148,7 @@ function HoSoBenhAn() {
       {/* Topbar điều hướng */}
       <div className="kb-topbar h-[50px] px-5 flex items-center justify-between">
         <div className="flex-1 flex justify-start items-center">
-          <button className="kb-back-btn py-[5px] px-[10px] flex items-center gap-1" onClick={() => navigate('/')}>
+          <button className="kb-back-btn py-[5px] px-[10px] flex items-center gap-1" onClick={() => navigate('/staff')}>
             <ArrowLeft size={16} /> Quay lại trang chủ
           </button>
         </div>

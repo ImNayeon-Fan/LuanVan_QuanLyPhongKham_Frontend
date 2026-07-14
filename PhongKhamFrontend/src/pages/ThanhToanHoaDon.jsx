@@ -485,7 +485,7 @@ function ThanhToanHoaDon() {
       {/* Topbar điều hướng */}
       <div className="kb-topbar hide-on-print h-[50px] px-5 flex items-center justify-between border-b border-[var(--border-color)] bg-white">
         <div className="flex-1 flex justify-start">
-          <button className="kb-back-btn py-[5px] px-[10px]" onClick={() => navigate('/')}>
+          <button className="kb-back-btn py-[5px] px-[10px]" onClick={() => navigate('/staff')}>
             <ArrowLeft size={16} /> Quay về trang chủ
           </button>
         </div>

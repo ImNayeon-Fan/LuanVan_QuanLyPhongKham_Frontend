@@ -403,7 +403,7 @@ function PhanQuyenNhanSu() {
     return (
       <div className="h-screen bg-white flex flex-col items-center justify-center p-5 box-border relative">
         <button
-          onClick={() => navigate('/')}
+          onClick={() => navigate('/staff')}
           className="btn-outline absolute top-5 left-5 flex items-center gap-2 py-2 px-4 bg-transparent border border-[var(--border-color)] rounded-lg cursor-pointer text-sm text-[var(--text-main)] font-semibold transition-all duration-200 m-0"
         >
           <ArrowLeft size={16} /> Quay về trang chủ
@@ -426,7 +426,7 @@ function PhanQuyenNhanSu() {
       {/* Topbar điều hướng */}
       <div className="kb-topbar h-[50px] px-5 flex items-center justify-between">
         <div className="flex-1 flex justify-start">
-          <button className="kb-back-btn py-[5px] px-[10px]" onClick={() => navigate('/')}>
+          <button className="kb-back-btn py-[5px] px-[10px]" onClick={() => navigate('/staff')}>
             <ArrowLeft size={16} /> Quay về trang chủ
           </button>
         </div>

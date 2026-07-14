@@ -17,6 +17,8 @@ import ThanhToanHoaDon from './pages/ThanhToanHoaDon';
 import LichPhongKham from './pages/LichPhongKham';
 import DanhMucKhoa from './pages/DanhMucKhoa';
 import DatLichPublic from './pages/DatLichPublic';
+import LandingPage from './pages/LandingPage';
+import CustomerPortal from './pages/CustomerPortal';
 import { ToastProvider } from './utils/ToastContext';
 import { ProtectedRoute } from './utils/ProtectedRoute';
 import './index.css';
@@ -36,8 +38,14 @@ function App() {
           {/* Màn hình Đăng nhập (Mọi người đều có thể truy cập mà không cần đăng nhập trước) */}
           <Route path="/login" element={<Login />} />
           
-          {/* Trang chủ quản trị (Yêu cầu đăng nhập) */}
-          <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+          {/* Trang chủ điều hướng Landing Page */}
+          <Route path="/" element={<LandingPage />} />
+          
+          {/* Trang cổng thông tin khách hàng */}
+          <Route path="/khach-hang" element={<CustomerPortal />} />
+          
+          {/* Trang chủ quản trị nhân sự (Yêu cầu đăng nhập) */}
+          <Route path="/staff" element={<ProtectedRoute><Home /></ProtectedRoute>} />
           
           {/* Phân hệ chuyên môn khám chữa bệnh & tiếp đón bệnh nhân */}
           <Route path="/kham-benh" element={<ProtectedRoute><KhamBenh /></ProtectedRoute>} />

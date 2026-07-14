@@ -10,7 +10,6 @@ import {
   apiGetDSBenhNhanChoKham, 
   apiGetChiTietPhieuKhamBenh, 
   apiCapNhatKhamBenh, 
-  apiCapNhatTrangThaiCLS,
   apiGetDichVuCLSList, 
   apiGetThuocList 
 } from '../utils/api';
@@ -262,7 +261,7 @@ function KhamBenh() {
               maDV: c.maDV,
               tenXN: c.tenDV,
               ketQua: c.ketQua,
-              trangThaiDichVu: c.trangThaiDichVu
+              trangThaiDichVu: c.trangThaiCLS !== undefined ? c.trangThaiCLS : c.trangThaiDichVu
             })) : []);
             setDonThuoc(data.donThuoc && data.donThuoc.chiTiet ? data.donThuoc.chiTiet.map(t => ({
               id: t.maThuoc,
@@ -310,6 +309,11 @@ function KhamBenh() {
     
     if (sinhHieu.huyetAp && !/^\d{2,3}\/\d{2,3}$/.test(sinhHieu.huyetAp.trim())) {
       showError('Huyết áp không đúng định dạng (VD: 120/80)!');
+      return;
+    }
+
+    if (newTrangThai === 1 && selectedIcdList.length === 0) {
+      showError('Vui lòng nhập ít nhất 1 chẩn đoán ICD trước khi lưu khám cơ bản!');
       return;
     }
 
@@ -402,7 +406,14 @@ function KhamBenh() {
 
     const newTrangThai = cls.trangThaiDichVu === 1 ? 0 : 1;
     try {
-      await apiCapNhatTrangThaiCLS(selectedBN.maPhieu, cls.id, newTrangThai);
+      await apiCapNhatKhamBenh(selectedBN.maPhieu, {
+        trangThaiCLS: [
+          {
+            maChiTiet: parseInt(cls.id || id, 10),
+            daLamCLS: newTrangThai === 1
+          }
+        ]
+      });
       setChiDinh(prev => prev.map(c =>
         c.id === id || c.maDV === id
           ? { ...c, trangThaiDichVu: newTrangThai }
@@ -514,9 +525,87 @@ function KhamBenh() {
                 );
               })}
             </div>
-            <div className="kb-action-row">
+
+            {/* Nhập mã ICD gợi ý - Chuyển sang Khám cơ bản theo Backend v2 */}
+            <div className="form-group relative mt-5 border-t border-[var(--border-color)] pt-4">
+              <label className="form-label font-semibold text-[13px] text-left block">Chẩn đoán bệnh lý chính/phụ (ICD-10) *</label>
+              
+              {/* Danh sách các mã bệnh đã chọn */}
+              <div className="flex flex-wrap gap-2 mb-3 mt-1.5">
+                {selectedIcdList.length === 0 ? (
+                  <span className="text-[12.5px] text-[var(--text-muted)] italic text-left">Chưa chọn mã bệnh ICD nào (Bắt buộc chọn ít nhất 1 mã bệnh để lưu khám cơ bản).</span>
+                ) : (
+                  selectedIcdList.map(item => (
+                    <span key={item.maICD} className="bg-[#eff6ff] border border-[#bfdbfe] text-[#1e40af] py-[4px] px-[8px] rounded-[4px] font-medium text-[12.5px] flex items-center gap-1.5">
+                      <strong>{item.maICD}</strong> - {item.tenBenh}
+                      <button 
+                        type="button" 
+                        onClick={() => setSelectedIcdList(selectedIcdList.filter(x => x.maICD !== item.maICD))}
+                        className="bg-transparent border-none text-[#ef4444] cursor-pointer p-0 hover:text-red-700 flex items-center justify-center"
+                      >
+                        <X size={13} />
+                      </button>
+                    </span>
+                  ))
+                )}
+              </div>
+
+              {/* Ô tìm kiếm ICD */}
+              <div className="flex gap-2">
+                <div className="relative flex-1 text-left">
+                  <input
+                    type="text"
+                    className="form-input pl-3 w-full"
+                    placeholder="Tìm kiếm mã ICD hoặc tên bệnh lý..."
+                    value={icdQuery}
+                    onFocus={() => setShowIcdDropdown(true)}
+                    onChange={e => {
+                      setIcdQuery(e.target.value);
+                      setShowIcdDropdown(true);
+                    }}
+                  />
+                  {showIcdDropdown && (
+                    <>
+                      <div onClick={() => setShowIcdDropdown(false)} className="fixed inset-0 z-[998]" />
+                      <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-[var(--border-color)] rounded-[6px] shadow-lg max-h-[200px] overflow-y-auto z-[999]">
+                        {danhMucICD
+                          .filter(item => 
+                            item.maICD.toLowerCase().includes(icdQuery.toLowerCase()) || 
+                            item.tenBenh.toLowerCase().includes(icdQuery.toLowerCase())
+                          )
+                          .slice(0, 30)
+                          .map(item => (
+                            <div
+                              key={item.maICD}
+                              className="py-2 px-3 cursor-pointer text-[12.5px] border-b border-[var(--border-color)] text-left hover:bg-slate-50 text-[var(--text-main)]"
+                              onClick={() => {
+                                if (!selectedIcdList.some(x => x.maICD === item.maICD)) {
+                                  setSelectedIcdList([...selectedIcdList, item]);
+                                }
+                                setIcdQuery('');
+                                setShowIcdDropdown(false);
+                              }}
+                            >
+                              <strong className="text-[var(--primary)]">{item.maICD}</strong> - {item.tenBenh}
+                            </div>
+                          ))
+                        }
+                        {danhMucICD.filter(item => 
+                          item.maICD.toLowerCase().includes(icdQuery.toLowerCase()) || 
+                          item.tenBenh.toLowerCase().includes(icdQuery.toLowerCase())
+                        ).length === 0 && (
+                          <div className="py-3 px-3 text-center text-[12.5px] text-[var(--text-muted)] italic">Không tìm thấy mã ICD phù hợp.</div>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="kb-action-row mt-6">
               <button className="btn-primary !w-fit !mt-0 py-[10px] px-6 flex items-center gap-2" onClick={() => luuPhieuKham(1)}>
-                <Save size={16} /> Lưu sinh hiệu
+                <Save size={16} /> Lưu khám cơ bản
               </button>
             </div>
           </div>
@@ -619,12 +708,22 @@ function KhamBenh() {
           </div>
         );
 
-      case 'donThuoc':
+      case 'donThuoc': {
+        const hasPendingCLS = chiDinh.some(c => c.trangThaiDichVu === 0);
         return (
           <div className="kb-content-inner">
             <div className="kb-content-title">
               <Pill size={18} /> Đơn thuốc
             </div>
+            {hasPendingCLS && (
+              <div className="bg-[#fffbeb] border border-[#fef3c7] text-[#92400e] p-4 rounded-[6px] mb-4 text-[13px] text-left flex items-start gap-2.5">
+                <AlertCircle size={18} className="shrink-0 mt-0.5 text-[#d97706]" />
+                <div>
+                  <span className="font-bold">Còn dịch vụ cận lâm sàng chưa hoàn thành!</span>
+                  <p className="mt-1">Hệ thống yêu cầu hoàn tất toàn bộ các dịch vụ kỹ thuật cận lâm sàng (chuyển trạng thái sang "Đã làm CLS") trước khi tiến hành kê đơn thuốc cho bệnh nhân.</p>
+                </div>
+              </div>
+            )}
             {donThuoc.length === 0 ? (
               <div className="kb-empty-inline">Chưa có thuốc nào được kê.</div>
             ) : (
@@ -728,12 +827,17 @@ function KhamBenh() {
               </div>
             </div>
             <div className="kb-action-row mt-4 border-t border-[var(--border-color)] pt-3.5">
-              <button className="btn-primary !w-fit !mt-0 py-[10px] px-6 flex items-center gap-2" onClick={() => luuPhieuKham(1)}>
+              <button 
+                disabled={hasPendingCLS} 
+                className="btn-primary !w-fit !mt-0 py-[10px] px-6 flex items-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed" 
+                onClick={() => luuPhieuKham(1)}
+              >
                 <Save size={16} /> Lưu đơn thuốc
               </button>
             </div>
           </div>
         );
+      }
 
       case 'ketLuan':
         return (
@@ -742,99 +846,18 @@ function KhamBenh() {
               <ClipboardCheck size={18} /> Kết luận khám
             </div>
             
-            {/* Trình chọn mã ICD-10 */}
-            <div className="form-group relative">
-              <label className="form-label font-semibold text-[13px] text-left block">Danh sách mã bệnh ICD đã chọn</label>
-              
-              {/* Danh sách các mã bệnh đã chọn */}
-              <div className="flex flex-wrap gap-2 mb-3">
+            {/* Danh sách chẩn đoán ICD-10 đã chọn ở Khám cơ bản (Read-only) */}
+            <div className="form-group mb-4">
+              <label className="form-label font-semibold text-[13px] text-left block">Danh sách chẩn đoán ICD-10 đã chọn</label>
+              <div className="flex flex-wrap gap-2 mt-1.5">
                 {selectedIcdList.length === 0 ? (
-                  <span className="text-[12.5px] text-[var(--text-muted)] italic text-left">Chưa chọn mã bệnh ICD nào cho kết luận khám.</span>
+                  <span className="text-[12.5px] text-[var(--text-muted)] italic text-left">Chưa có mã bệnh ICD nào (Vui lòng bổ sung ở tab Khám cơ bản).</span>
                 ) : (
                   selectedIcdList.map(item => (
-                    <span key={item.maICD} className="bg-[#eff6ff] border border-[#bfdbfe] text-[#1e40af] py-[4px] px-[8px] rounded-[4px] font-medium text-[12.5px] flex items-center gap-1.5">
+                    <span key={item.maICD} className="bg-[#eff6ff] border border-[#bfdbfe] text-[#1e40af] py-[4px] px-[8px] rounded-[4px] font-medium text-[12.5px]">
                       <strong>{item.maICD}</strong> - {item.tenBenh}
-                      <button 
-                        type="button" 
-                        onClick={() => setSelectedIcdList(selectedIcdList.filter(x => x.maICD !== item.maICD))}
-                        className="bg-transparent border-none text-[#ef4444] cursor-pointer p-0 hover:text-red-700 flex items-center justify-center"
-                      >
-                        <X size={13} />
-                      </button>
                     </span>
                   ))
-                )}
-              </div>
-
-              {/* Ô tìm kiếm ICD */}
-              <div className="flex gap-2">
-                <div className="relative flex-1 text-left">
-                  <input
-                    type="text"
-                    className="form-input pl-3 w-full"
-                    placeholder="Tìm kiếm mã ICD hoặc tên bệnh lý..."
-                    value={icdQuery}
-                    onFocus={() => setShowIcdDropdown(true)}
-                    onChange={e => {
-                      setIcdQuery(e.target.value);
-                      setShowIcdDropdown(true);
-                    }}
-                  />
-                  {showIcdDropdown && (
-                    <>
-                      <div onClick={() => setShowIcdDropdown(false)} className="fixed inset-0 z-[998]" />
-                      <div className="absolute left-0 right-0 top-full mt-1 bg-white border border-[var(--border-color)] rounded-[6px] shadow-lg max-h-[220px] overflow-y-auto z-[999]">
-                        {danhMucICD
-                          .filter(item => 
-                            item.maICD.toLowerCase().includes(icdQuery.toLowerCase()) || 
-                            item.tenBenh.toLowerCase().includes(icdQuery.toLowerCase())
-                          )
-                          .slice(0, 30)
-                          .map(item => (
-                            <div
-                              key={item.maICD}
-                              className="py-2 px-3 cursor-pointer text-[12.5px] border-b border-[var(--border-color)] text-left hover:bg-slate-50 text-[var(--text-main)]"
-                              onClick={() => {
-                                if (!selectedIcdList.some(x => x.maICD === item.maICD)) {
-                                  setSelectedIcdList([...selectedIcdList, item]);
-                                }
-                                setIcdQuery('');
-                                setShowIcdDropdown(false);
-                              }}
-                            >
-                              <strong className="text-[var(--primary)]">{item.maICD}</strong> - {item.tenBenh}
-                            </div>
-                          ))
-                        }
-                        {danhMucICD.filter(item => 
-                          item.maICD.toLowerCase().includes(icdQuery.toLowerCase()) || 
-                          item.tenBenh.toLowerCase().includes(icdQuery.toLowerCase())
-                        ).length === 0 && (
-                          <div className="py-3 px-3 text-center text-[12.5px] text-[var(--text-muted)] italic">Không tìm thấy mã ICD phù hợp.</div>
-                        )}
-                      </div>
-                    </>
-                  )}
-                </div>
-                
-                {/* Sao chép từ tiếp đón */}
-                {((selectedBN.icdList && selectedBN.icdList.length > 0) || selectedBN.maICD) && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const fromReception = selectedBN.icdList || (selectedBN.maICD ? [{ maICD: selectedBN.maICD, tenBenh: selectedBN.tenBenhICD }] : []);
-                      const newList = [...selectedIcdList];
-                      fromReception.forEach(r => {
-                        if (!newList.some(x => x.maICD === r.maICD)) {
-                          newList.push(r);
-                        }
-                      });
-                      setSelectedIcdList(newList);
-                    }}
-                    className="btn-outline text-xs py-2 px-3 font-semibold h-[38px] flex items-center justify-center shrink-0"
-                  >
-                    Lấy ICD tiếp đón
-                  </button>
                 )}
               </div>
             </div>
@@ -880,7 +903,7 @@ function KhamBenh() {
     <div className="kb-wrapper">
       {/* Thanh tiêu đề topbar */}
       <div className="kb-topbar">
-        <button className="kb-back-btn" onClick={() => navigate('/')}>
+        <button className="kb-back-btn" onClick={() => navigate('/staff')}>
           <ArrowLeft size={18} /> Quay về trang chủ
         </button>
         <div className="kb-topbar-title">

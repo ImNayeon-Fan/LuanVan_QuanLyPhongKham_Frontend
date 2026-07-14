@@ -73,7 +73,7 @@ function Login() {
       // Lưu phiên đăng nhập chính thức
       setSession(response.token, response);
       showSuccess(`Đăng nhập thành công! Chào mừng ${response.hoTen || email.trim()} quay trở lại.`);
-      navigate('/');
+      navigate('/staff');
     } catch (err) {
       showError(err.message || "Email hoặc mật khẩu không chính xác!");
     }

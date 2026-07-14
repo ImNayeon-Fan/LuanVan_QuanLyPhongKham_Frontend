@@ -164,6 +164,11 @@ export const apiDeleteStaff = async (maNV) => {
   });
 };
 
+// API Lấy danh sách bác sĩ phục vụ Tiếp đón & Khám bệnh (Lấy từ DanhSachController mới của Backend v2)
+export const apiGetBacSiList = async () => {
+  return await apiFetch('/DanhSach/bac-si');
+};
+
 // API Tra cứu bệnh nhân cũ theo SĐT kết nối với Backend thực tế
 export const apiTraCuuBenhNhan = async (sdt) => {
   return await apiFetch(`/TiepDon/tra-cuu?sdt=${encodeURIComponent(sdt)}`);
@@ -188,8 +193,8 @@ export const apiTiepNhanBenhNhan = async (payload) => {
     diaChi: payload.diaChi,
     tienSuBenh: payload.tienSuBenh,
     maNVBacSi: payload.maBacSi || payload.maNV,
-    lyDoKham: payload.lyDoKham,
-    danhSachICD: payload.icdList ? payload.icdList.map(x => x.maICD) : (payload.maICD ? [payload.maICD] : [])
+    lyDoKham: payload.lyDoKham
+    // Gỡ bỏ danhSachICD vì Backend v2 chỉ cho phép Bác sĩ chỉ định ICD ở bước Khám
   };
 
   const res = await apiFetch('/TiepDon', {
@@ -219,7 +224,7 @@ export const apiTiepNhanBenhNhan = async (payload) => {
       trangThaiKham: 0,
       daThanhToan: false,
       ngayKham: res.data.ngayKham,
-      icdList: payload.icdList || (payload.maICD ? [{ maICD: payload.maICD, tenBenh: payload.tenBenhICD }] : [])
+      icdList: []
     };
     list.push(newPhieu);
     localStorage.setItem('danhSachPhieuKham', JSON.stringify(list));
@@ -242,8 +247,8 @@ export const apiGetDanhSachTiepNhan = async ({ search = '', maNV = '', trangThai
   if (res && res.data) {
     res.data = res.data.map(item => ({
       ...item,
-      maBacSi: item.maNV,
-      tenBacSi: item.tenNhanVien,
+      maBacSi: item.maBacSi || item.maNV,
+      tenBacSi: item.tenBacSi || item.tenNhanVien,
       trangThai: item.trangThaiKham,
       trangThaiKham: item.trangThaiKham
     }));
@@ -259,8 +264,8 @@ export const apiGetChiTietPhieuKham = async (maPhieu) => {
       ...data,
       trangThaiKham: data.trangThaiKham,
       trangThai: data.trangThaiKham,
-      tenBacSi: data.tenNhanVien,
-      maBacSi: data.maNV,
+      tenBacSi: data.tenBacSi || data.tenNhanVien,
+      maBacSi: data.maBacSi || data.maNV,
       maICD: data.danhSachICD && data.danhSachICD.length > 0 ? data.danhSachICD[0].maICD : null,
       tenBenhICD: data.danhSachICD && data.danhSachICD.length > 0 ? data.danhSachICD[0].tenBenh : null,
       icdList: data.danhSachICD || [],
@@ -511,7 +516,7 @@ export const apiGetDSBenhNhanChoKham = async ({ search = '', trangThai = '', maB
   if (ngayKham) queryParams.append('ngayKham', ngayKham);
   queryParams.append('page', page);
   queryParams.append('limit', limit);
-  return await apiFetch(`/KhamBenh/LayDSBenhNhan?` + queryParams.toString());
+  return await apiFetch(`/KhamBenh/danh-sach?` + queryParams.toString());
 };
 
 // API Lấy chi tiết phiếu khám bệnh lâm sàng
@@ -524,14 +529,6 @@ export const apiCapNhatKhamBenh = async (maPhieu, payload) => {
   return await apiFetch(`/KhamBenh/${maPhieu}`, {
     method: 'PUT',
     body: JSON.stringify(payload)
-  });
-};
-
-// API Cập nhật trạng thái và kết quả từng dịch vụ cận lâm sàng riêng lẻ
-export const apiCapNhatTrangThaiCLS = async (maPhieu, maChiTiet, trangThaiDichVu, ketQua = null) => {
-  return await apiFetch(`/KhamBenh/${maPhieu}/chi-dinh-cls/${maChiTiet}`, {
-    method: 'PATCH',
-    body: JSON.stringify({ trangThaiDichVu, ketQua })
   });
 };
 

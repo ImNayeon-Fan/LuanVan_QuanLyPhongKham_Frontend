@@ -127,7 +127,7 @@ function ChiTietBenhNhan() {
           <button className="kb-back-btn py-[5px] px-[10px]" onClick={() => navigate(-1)}>
             <ArrowLeft size={16} /> Quay lại
           </button>
-          <button className="kb-back-btn py-[5px] px-[10px] flex items-center gap-1" onClick={() => navigate('/')}>
+          <button className="kb-back-btn py-[5px] px-[10px] flex items-center gap-1" onClick={() => navigate('/staff')}>
             <Home size={14} /> Trang chủ
           </button>
         </div>

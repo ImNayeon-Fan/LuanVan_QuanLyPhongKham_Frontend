@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Search, User, Calendar, RefreshCw, ClipboardList, Eye
 } from 'lucide-react';
-import { apiGetDanhSachTiepNhan, apiGetStaffList, apiGetKhoaList } from '../utils/api';
+import { apiGetDanhSachTiepNhan, apiGetBacSiList, apiGetKhoaList } from '../utils/api';
 import { useToast } from '../utils/ToastContext';
 
 // Cấu hình nhãn trạng thái và màu sắc đi kèm
@@ -62,7 +62,7 @@ function DanhSachTiepNhan() {
   useEffect(() => {
     const fetchDoctors = async () => {
       try {
-        const res = await apiGetStaffList('active', 1, 100, '', 2); // 2 là vai trò Bác sĩ
+        const res = await apiGetBacSiList();
         if (res && res.data) setDocList(res.data);
       } catch (err) {
         console.error('Lỗi tải danh sách bác sĩ:', err);
@@ -153,7 +153,7 @@ function DanhSachTiepNhan() {
       {/* Topbar điều hướng */}
       <div className="kb-topbar h-[50px] px-5">
         <div className="flex-1 flex">
-          <button className="kb-back-btn py-[5px] px-[10px]" onClick={() => navigate('/')}>
+          <button className="kb-back-btn py-[5px] px-[10px]" onClick={() => navigate('/staff')}>
             <ArrowLeft size={16} /> Quay về trang chủ
           </button>
         </div>

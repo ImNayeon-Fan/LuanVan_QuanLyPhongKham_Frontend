@@ -548,4 +548,14 @@ export const apiGetLichSuKhamBenh = async (maBN) => {
   return await apiFetch(`/HoSoBenhAn/${maBN}/lich-su`);
 };
 
+// API Công khai - Lấy danh sách bác sĩ đang hoạt động (anonymous)
+export const apiGetBacSiCongKhai = async () => {
+  return await apiFetch('/CongKhai/bac-si');
+};
+
+// API Công khai - Tra cứu hồ sơ bệnh án bằng mã bệnh nhân và số điện thoại (anonymous)
+export const apiTraCuuHoSoCongKhai = async (maBN, sdt) => {
+  return await apiFetch(`/CongKhai/tra-cuu-ho-so?maBN=${encodeURIComponent(maBN)}&sdt=${encodeURIComponent(sdt)}`);
+};
+
 

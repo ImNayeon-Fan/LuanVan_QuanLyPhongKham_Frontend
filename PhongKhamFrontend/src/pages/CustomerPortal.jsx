@@ -6,6 +6,7 @@ import {
   ArrowLeft, Heart, CheckCircle2, AlertCircle, Info, Activity
 } from 'lucide-react';
 import { useToast } from '../utils/ToastContext';
+import { apiGetBacSiCongKhai, apiTraCuuHoSoCongKhai } from '../utils/api';
 
 // Mock doctors database for customer view
 const MOCK_DOCTORS = [
@@ -191,9 +192,44 @@ function CustomerPortal() {
   });
 
   // State phục vụ việc tra cứu lịch sử bệnh án / lịch hẹn
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchMaBN, setSearchMaBN] = useState('');
+  const [searchSdt, setSearchSdt] = useState('');
+  const [searching, setSearching] = useState(false);
   const [searchResult, setSearchResult] = useState(null);
   const [searched, setSearched] = useState(false);
+
+  // State phục vụ load danh sách bác sĩ công khai từ API
+  const [doctorsList, setDoctorsList] = useState([]);
+  const [loadingDoctors, setLoadingDoctors] = useState(false);
+
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      setLoadingDoctors(true);
+      try {
+        const res = await apiGetBacSiCongKhai();
+        if (res && res.data) {
+          setDoctorsList(res.data);
+        }
+      } catch (err) {
+        console.error('Không thể tải danh sách bác sĩ công khai từ API:', err);
+      } finally {
+        setLoadingDoctors(false);
+      }
+    };
+    fetchDoctors();
+  }, []);
+
+  const displayDoctors = doctorsList.length > 0 
+    ? doctorsList.map(doc => ({
+        maNV: doc.maNV,
+        hoTen: doc.hoTen,
+        chuyenMon: doc.chuyenMon || 'Bác sĩ chuyên khoa',
+        khoa: doc.tenKhoa || 'Phòng khám đa khoa',
+        bangCap: 'Bác sĩ chuyên khoa tại Phòng khám Đa khoa Nhật Tảo',
+        kinhNghiem: 'Nhiều năm kinh nghiệm trong lĩnh vực y tế và chăm sóc sức khỏe bệnh nhân.',
+        status: 'Đang làm việc'
+      }))
+    : MOCK_DOCTORS;
 
   // Mặc định thiết lập ngày hẹn là ngày mai
   useEffect(() => {
@@ -274,7 +310,8 @@ function CustomerPortal() {
         appointments: [newAppointment]
       });
       setActiveTab('search');
-      setSearchQuery(nextCode);
+      setSearchMaBN('');
+      setSearchSdt(newAppointment.sdt);
       setSearched(true);
 
       // Reset form
@@ -291,29 +328,106 @@ function CustomerPortal() {
   };
 
   // Tra cứu lịch sử bệnh án / lịch hẹn
-  const handleSearch = (e) => {
+  const handleSearch = async (e) => {
     if (e) e.preventDefault();
-    const query = searchQuery.trim().toLowerCase();
+    
+    const maBN = searchMaBN.trim();
+    const sdt = searchSdt.trim();
 
-    if (!query) {
-      showError('Vui lòng nhập Mã bệnh nhân, SĐT hoặc Mã lịch hẹn!');
+    if (!maBN && !sdt) {
+      showError('Vui lòng nhập Mã bệnh nhân hoặc Số điện thoại để tra cứu!');
       return;
     }
 
-    // 1. Kiểm tra trong Seeded database của Bệnh nhân trước
-    if (SEEDED_PATIENT_RECORDS[query]) {
-      setSearchResult(SEEDED_PATIENT_RECORDS[query]);
-      setSearched(true);
-      showSuccess('Tìm thấy thông tin hồ sơ bệnh lý người bệnh!');
-      return;
+    setSearching(true);
+    setSearched(false);
+    setSearchResult(null);
+
+    // 1. Kiểm tra xem có khớp dữ liệu Seeded/Mock tĩnh không
+    const mockKey = maBN.toLowerCase() || sdt;
+    if (SEEDED_PATIENT_RECORDS[mockKey]) {
+      const mockRecord = SEEDED_PATIENT_RECORDS[mockKey];
+      // Nếu nhập cả hai, đảm bảo khớp cả SDT
+      if (!maBN || !sdt || mockRecord.patient.sdt === sdt) {
+        // Lấy lịch hẹn từ localStorage
+        let matchedAppts = [];
+        try {
+          const allDatLich = JSON.parse(localStorage.getItem('danhSachDatLich') || '[]');
+          matchedAppts = allDatLich.filter(appt => appt.sdt === mockRecord.patient.sdt);
+        } catch (err) {
+          console.error(err);
+        }
+
+        setSearchResult({
+          patient: mockRecord.patient,
+          visits: mockRecord.visits,
+          appointments: matchedAppts.sort((a, b) => new Date(b.ngayHen) - new Date(a.ngayHen))
+        });
+        setSearched(true);
+        setSearching(false);
+        showSuccess('Tìm thấy thông tin hồ sơ bệnh lý người bệnh (Dữ liệu mẫu)!');
+        return;
+      }
     }
 
-    // 2. Nếu không có, tìm kiếm trong danh sách đặt lịch hẹn online lưu ở localStorage
+    // 2. Tra cứu dữ liệu từ API công khai thực tế của Backend
+    if (maBN && sdt) {
+      try {
+        const res = await apiTraCuuHoSoCongKhai(maBN, sdt);
+        if (res && res.patient) {
+          // Lấy lịch hẹn từ localStorage
+          let matchedAppts = [];
+          try {
+            const allDatLich = JSON.parse(localStorage.getItem('danhSachDatLich') || '[]');
+            matchedAppts = allDatLich.filter(appt => appt.sdt === sdt);
+          } catch (err) {
+            console.error(err);
+          }
+
+          setSearchResult({
+            patient: {
+              maBN: res.patient.maBN || res.patient.maBn,
+              hoTen: res.patient.hoTen,
+              ngaySinh: res.patient.ngaySinh,
+              gioiTinh: res.patient.gioiTinh,
+              diaChi: res.patient.diaChi,
+              tienSuBenh: res.patient.tienSuBenh
+            },
+            visits: res.lastVisit ? [{
+              maPhieu: res.lastVisit.maPhieu,
+              ngayKham: res.lastVisit.ngayKham ? new Date(res.lastVisit.ngayKham).toLocaleString('vi-VN') : '—',
+              tenBacSi: res.lastVisit.tenBacSi || 'Bác sĩ phòng khám',
+              lyDoKham: res.lastVisit.lyDoKham || 'Khám bệnh',
+              mach: res.lastVisit.mach,
+              nhietDo: res.lastVisit.nhietDo,
+              huyetAp: res.lastVisit.huyetAp,
+              canNang: res.lastVisit.canNang,
+              chieuCao: res.lastVisit.chieuCao,
+              ketLuan: res.lastVisit.ketLuan || 'Bình thường',
+              icdList: res.lastVisit.icdList || [],
+              clsList: res.lastVisit.clsList || [],
+              donThuoc: res.lastVisit.donThuoc || []
+            }] : [],
+            appointments: matchedAppts.sort((a, b) => new Date(b.ngayHen) - new Date(a.ngayHen))
+          });
+          showSuccess('Tìm thấy thông tin hồ sơ bệnh án từ hệ thống!');
+          setSearched(true);
+          setSearching(false);
+          return;
+        }
+      } catch (err) {
+        console.warn('Lỗi tra cứu API thực tế:', err);
+      }
+    }
+
+    // 3. Nếu vẫn không thấy, tìm kiếm lịch hẹn theo SDT hoặc mã đặt lịch trong localStorage
     try {
+      const queryStr = maBN.toLowerCase() || sdt;
       const allDatLich = JSON.parse(localStorage.getItem('danhSachDatLich') || '[]');
       const matchedAppts = allDatLich.filter(appt => 
-        appt.maDatLich.toLowerCase() === query ||
-        appt.sdt === query
+        appt.maDatLich.toLowerCase() === queryStr ||
+        appt.sdt === sdt ||
+        appt.sdt === queryStr
       );
 
       if (matchedAppts.length > 0) {
@@ -336,10 +450,12 @@ function CustomerPortal() {
         setSearchResult(null);
         showWarning('Không tìm thấy thông tin bệnh lý hoặc lịch hẹn nào trùng khớp!');
       }
-      setSearched(true);
     } catch (err) {
       console.error(err);
       showError('Có lỗi xảy ra khi tra cứu dữ liệu!');
+    } finally {
+      setSearched(true);
+      setSearching(false);
     }
   };
 
@@ -532,7 +648,7 @@ function CustomerPortal() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {MOCK_DOCTORS.map((doc) => (
+              {displayDoctors.map((doc) => (
                 <div key={doc.maNV} className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between">
                   <div>
                     <div className="flex items-center gap-3.5 mb-4">
@@ -579,28 +695,38 @@ function CustomerPortal() {
                 <Search size={18} className="text-blue-600" />
                 Tra Cứu Hồ Sơ Khám Bệnh & Đơn Thuốc Cá Nhân
               </h2>
-              <form onSubmit={handleSearch} className="flex gap-2.5">
-                <div className="relative flex-1">
-                  <span className="absolute left-3.5 top-3.5 text-slate-400"><Search size={16} /></span>
+              <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="relative">
+                  <span className="absolute left-3.5 top-3.5 text-slate-400"><User size={16} /></span>
                   <input 
                     type="text"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Nhập Mã bệnh nhân (VD: BN260714001, BN260703001) hoặc Số điện thoại"
+                    value={searchMaBN}
+                    onChange={(e) => setSearchMaBN(e.target.value)}
+                    placeholder="Nhập Mã bệnh nhân (VD: BN260714001)"
                     className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-sm transition-all"
                   />
                 </div>
-                <button 
-                  type="submit"
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl text-sm transition-colors active:scale-95"
-                >
-                  Tra cứu
-                </button>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-3.5 text-slate-400"><Phone size={16} /></span>
+                  <input 
+                    type="text"
+                    value={searchSdt}
+                    onChange={(e) => setSearchSdt(e.target.value)}
+                    placeholder="Nhập Số điện thoại (VD: 0896421137)"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-sm transition-all"
+                  />
+                </div>
+                <div className="md:col-span-2 flex justify-end">
+                  <button 
+                    type="submit"
+                    disabled={searching}
+                    className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-bold py-3 px-8 rounded-xl text-sm transition-colors active:scale-95 flex items-center gap-2"
+                  >
+                    {searching ? 'Đang tra cứu...' : 'Tra cứu hồ sơ'}
+                  </button>
+                </div>
               </form>
-              <div className="flex items-center gap-1.5 mt-2.5 text-xs text-slate-400">
-                <Info size={13} />
-                <span>Bạn có thể sử dụng thông tin mẫu để test tra cứu: <span className="font-semibold text-slate-600">BN260714001</span> hoặc <span className="font-semibold text-slate-600">BN260703001</span></span>
-              </div>
+
             </div>
 
             {/* No Results Info */}

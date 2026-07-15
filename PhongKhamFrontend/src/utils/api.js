@@ -558,4 +558,15 @@ export const apiTraCuuHoSoCongKhai = async (maBN, sdt) => {
   return await apiFetch(`/CongKhai/tra-cuu-ho-so?maBN=${encodeURIComponent(maBN)}&sdt=${encodeURIComponent(sdt)}`);
 };
 
+// API Lấy danh sách danh mục vật tư y tế (có hỗ trợ tìm kiếm và phân trang)
+export const apiGetVatTuList = async (query = '', donViTinh = '', page = 1, pageSize = 100) => {
+  const queryParams = new URLSearchParams({
+    page: page.toString(),
+    pageSize: pageSize.toString()
+  });
+  if (query) queryParams.append('tenVatTu', query);
+  if (donViTinh) queryParams.append('donViTinh', donViTinh);
+  return await apiFetch(`/VatTu?` + queryParams.toString());
+};
+
 

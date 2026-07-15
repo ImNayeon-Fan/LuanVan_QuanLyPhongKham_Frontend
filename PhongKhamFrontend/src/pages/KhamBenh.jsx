@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Search, User, Stethoscope, FlaskConical,
-  Pill, ClipboardCheck, Plus, Trash2, Save, ChevronRight, X
+  Pill, ClipboardCheck, Plus, Trash2, Save, ChevronRight, X, Package
 } from 'lucide-react';
 import { useToast } from '../utils/ToastContext';
 import { 
@@ -11,7 +11,8 @@ import {
   apiGetChiTietPhieuKhamBenh, 
   apiCapNhatKhamBenh, 
   apiGetDichVuCLSList, 
-  apiGetThuocList 
+  apiGetThuocList,
+  apiGetVatTuList
 } from '../utils/api';
 
 // Khớp với PhieuKham.TrangThaiKham trong C# SQL Database:
@@ -78,6 +79,7 @@ const MENU_ITEMS = [
   { key: 'sinhHieu',  label: 'Thông tin khám cơ bản',     icon: <Stethoscope size={18} /> },
   { key: 'chiDinh',   label: 'Chỉ định cận lâm sàng',     icon: <FlaskConical size={18} /> },
   { key: 'donThuoc',  label: 'Đơn thuốc',                  icon: <Pill size={18} /> },
+  { key: 'vatTu',     label: 'Kê vật tư y tế',             icon: <Package size={18} /> },
   { key: 'ketLuan',   label: 'Kết luận khám',              icon: <ClipboardCheck size={18} /> },
 ];
 
@@ -111,6 +113,7 @@ function KhamBenh() {
   });
   const [chiDinh, setChiDinh]   = useState([]);
   const [donThuoc, setDonThuoc] = useState([]);
+  const [vatTu, setVatTu]       = useState([]);
   const [ketLuan, setKetLuan]   = useState({ chanDoan: '', loiDan: '' });
 
   const [danhMucICD, setDanhMucICD] = useState([]);
@@ -124,8 +127,12 @@ function KhamBenh() {
   const [thuocQuery, setThuocQuery] = useState('');
   const [showThuocDropdown, setShowThuocDropdown] = useState(false);
 
+  const [vatTuQuery, setVatTuQuery] = useState('');
+  const [showVatTuDropdown, setShowVatTuDropdown] = useState(false);
+
   const [danhMucCLS, setDanhMucCLS] = useState([]);
   const [danhMucThuoc, setDanhMucThuoc] = useState([]);
+  const [danhMucVatTu, setDanhMucVatTu] = useState([]);
 
   // Hàm chuyển đổi ngày tháng định dạng Việt Nam
   const formatDateVN = (dateStr) => {
@@ -236,6 +243,34 @@ function KhamBenh() {
       } catch (err) {
         console.error('Lỗi tải danh mục thuốc:', err);
       }
+
+      // 4. Tải danh mục vật tư y tế
+      try {
+        const resVatTu = await apiGetVatTuList('', '', 1, 1000);
+        if (resVatTu && resVatTu.data && resVatTu.data.length > 0) {
+          setDanhMucVatTu(resVatTu.data.map(item => ({
+            maVatTu: item.maVatTu || item.MaVatTu || '',
+            tenVatTu: item.tenVatTu || item.TenVatTu || '',
+            donViTinh: item.donViTinh || item.DonViTinh || 'Cái',
+            isActive: item.isActive ?? true
+          })));
+        } else {
+          setDanhMucVatTu([
+            { maVatTu: 'VT001', tenVatTu: 'Găng tay y tế', donViTinh: 'Cái', isActive: true },
+            { maVatTu: 'VT002', tenVatTu: 'Bơm kim tiêm 5ml', donViTinh: 'Cái', isActive: true },
+            { maVatTu: 'VT003', tenVatTu: 'Bông băng cồn sát trùng', donViTinh: 'Bộ', isActive: true },
+            { maVatTu: 'VT004', tenVatTu: 'Nước muối sinh lý', donViTinh: 'Chai', isActive: true },
+          ]);
+        }
+      } catch (err) {
+        console.error('Lỗi tải danh mục vật tư y tế:', err);
+        setDanhMucVatTu([
+          { maVatTu: 'VT001', tenVatTu: 'Găng tay y tế', donViTinh: 'Cái', isActive: true },
+          { maVatTu: 'VT002', tenVatTu: 'Bơm kim tiêm 5ml', donViTinh: 'Cái', isActive: true },
+          { maVatTu: 'VT003', tenVatTu: 'Bông băng cồn sát trùng', donViTinh: 'Bộ', isActive: true },
+          { maVatTu: 'VT004', tenVatTu: 'Nước muối sinh lý', donViTinh: 'Chai', isActive: true },
+        ]);
+      }
     };
     fetchCatalogs();
   }, []);
@@ -271,6 +306,13 @@ function KhamBenh() {
               cachDung: t.cachDung,
               trangThaiPhatThuoc: t.trangThaiPhatThuoc
             })) : []);
+            setVatTu(data.vatTu ? data.vatTu.map(v => ({
+              id: v.maVatTu,
+              maVatTu: v.maVatTu,
+              tenVT: v.tenVatTu || v.tenVT || '',
+              soLuong: v.soLuong || 1,
+              donViTinh: v.donViTinh || ''
+            })) : []);
             setKetLuan({
               chanDoan: data.ketLuan ? data.ketLuan.replace(/\s*\[CLS_STATUS:.*?\]/g, '') : '',
               loiDan: data.donThuoc?.loiDan || ''
@@ -294,6 +336,7 @@ function KhamBenh() {
       setSinhHieu({ mach: '', nhietDo: '', huyetAp: '', canNang: '', chieuCao: '' });
       setChiDinh([]);
       setDonThuoc([]);
+      setVatTu([]);
       setKetLuan({ chanDoan: '', loiDan: '' });
       setSelectedIcdList([]);
       setIcdQuery('');
@@ -342,6 +385,15 @@ function KhamBenh() {
             })),
             loiDan: ketLuan.loiDan ? ketLuan.loiDan.trim() : null,
           }
+        : {}),
+      // Gửi kèm danh sách vật tư y tế chỉ định khi ở tab vật tư hoặc kết luận (Chuẩn bị trước cho Backend)
+      ...(activeMenu === 'vatTu' || activeMenu === 'ketLuan'
+        ? {
+            vatTuList: vatTu.map(v => ({
+              maVatTu: v.maVatTu,
+              soLuong: parseInt(v.soLuong, 10)
+            }))
+          }
         : {})
     };
 
@@ -377,6 +429,13 @@ function KhamBenh() {
               soLuong: t.soLuong,
               cachDung: t.cachDung,
               trangThaiPhatThuoc: t.trangThaiPhatThuoc
+            })) : []);
+            setVatTu(data.vatTu ? data.vatTu.map(v => ({
+              id: v.maVatTu,
+              maVatTu: v.maVatTu,
+              tenVT: v.tenVatTu || v.tenVT || '',
+              soLuong: v.soLuong || 1,
+              donViTinh: v.donViTinh || ''
             })) : []);
             setKetLuan({
               chanDoan: data.ketLuan ? data.ketLuan.replace(/\s*\[CLS_STATUS:.*?\]/g, '') : '',
@@ -510,6 +569,35 @@ function KhamBenh() {
   
   // Xóa thuốc đã kê khỏi đơn thuốc
   const xoaThuoc = (id) => setDonThuoc(donThuoc.filter(t => t.id !== id && t.maThuoc !== id));
+
+  // Chọn vật tư y tế mới từ gợi ý tìm kiếm
+  const chonVatTuMoi = (vt) => {
+    if (vatTu.some(x => x.maVatTu === vt.maVatTu)) {
+      showError('Vật tư này đã được chọn kê cho bệnh nhân!');
+      setVatTuQuery('');
+      setShowVatTuDropdown(false);
+      return;
+    }
+
+    setVatTu([...vatTu, {
+      id: vt.maVatTu,
+      maVatTu: vt.maVatTu,
+      tenVT: vt.tenVatTu || vt.tenVT,
+      soLuong: 1, // Mặc định số lượng là 1
+      donViTinh: vt.donViTinh || 'Cái'
+    }]);
+
+    setVatTuQuery('');
+    setShowVatTuDropdown(false);
+  };
+
+  // Cập nhật số lượng vật tư y tế trực tiếp trên dòng bảng kê
+  const capNhatSoLuongVatTu = (id, val) => {
+    setVatTu(prev => prev.map(v => v.id === id || v.maVatTu === id ? { ...v, soLuong: val } : v));
+  };
+
+  // Xóa vật tư y tế đã kê khỏi danh sách
+  const xoaVatTu = (id) => setVatTu(vatTu.filter(v => v.id !== id && v.maVatTu !== id));
 
   // Render giao diện nghiệp vụ theo menu bác sĩ đang chọn
   const renderContent = () => {
@@ -885,6 +973,118 @@ function KhamBenh() {
                 onClick={() => luuPhieuKham(1)}
               >
                 <Save size={16} /> Lưu đơn thuốc
+              </button>
+            </div>
+          </div>
+        );
+      }
+
+      case 'vatTu': {
+        return (
+          <div className="kb-content-inner">
+            <div className="kb-content-title">
+              <Package size={18} /> Danh sách vật tư y tế sử dụng
+            </div>
+
+            {vatTu.length === 0 ? (
+              <div className="kb-empty-inline">Chưa có vật tư y tế nào được kê.</div>
+            ) : (
+              <table className="kb-table">
+                <thead>
+                  <tr>
+                    <th style={{ width: '60px' }}>STT</th>
+                    <th style={{ width: '120px' }}>Mã vật tư</th>
+                    <th className="text-left">Tên vật tư</th>
+                    <th style={{ width: '120px' }} className="text-center">Số lượng</th>
+                    <th style={{ width: '120px' }} className="text-center">Đơn vị tính</th>
+                    <th style={{ width: '60px' }} className="text-center">Xóa</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {vatTu.map((v, i) => (
+                    <tr key={v.id}>
+                      <td className="text-center">{i + 1}</td>
+                      <td>
+                        <strong className="text-[var(--primary)]">{v.maVatTu}</strong>
+                      </td>
+                      <td className="text-left font-semibold text-[var(--text-main)]">
+                        {v.tenVT}
+                      </td>
+                      <td className="text-center">
+                        <input 
+                          type="number" 
+                          min="1"
+                          className="form-input py-1 px-3 text-[13px] text-center w-20 border border-[var(--border-color)] rounded-[var(--radius-md)]" 
+                          value={v.soLuong} 
+                          onChange={e => capNhatSoLuongVatTu(v.id, e.target.value)} 
+                        />
+                      </td>
+                      <td className="text-center text-[13px] text-[var(--text-muted)] font-medium">
+                        {v.donViTinh}
+                      </td>
+                      <td className="text-center">
+                        <button className="kb-icon-btn kb-icon-btn--danger" onClick={() => xoaVatTu(v.id)}>
+                          <Trash2 size={14} />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+
+            <div className="form-group relative mt-3">
+              <label className="form-label font-semibold text-[13px] text-left block mb-1">Tìm kiếm vật tư y tế</label>
+              <div className="relative">
+                <input
+                  type="text"
+                  className="form-input pl-3 w-full h-[38px] text-[13px]"
+                  placeholder="Nhập mã hoặc tên vật tư y tế cần kê..."
+                  value={vatTuQuery}
+                  onFocus={() => setShowVatTuDropdown(true)}
+                  onChange={e => {
+                    setVatTuQuery(e.target.value);
+                    setShowVatTuDropdown(true);
+                  }}
+                />
+                {showVatTuDropdown && (
+                  <>
+                    <div onClick={() => setShowVatTuDropdown(false)} className="fixed inset-0 z-[998]" />
+                    <div className="absolute left-0 right-0 bottom-full mb-1 bg-white border border-[var(--border-color)] rounded-[6px] shadow-lg max-h-[220px] overflow-y-auto z-[999] text-left">
+                      {danhMucVatTu
+                        .filter(item => 
+                          item.maVatTu.toLowerCase().includes(vatTuQuery.toLowerCase()) || 
+                          item.tenVatTu.toLowerCase().includes(vatTuQuery.toLowerCase())
+                        )
+                        .map(item => (
+                          <div
+                            key={item.maVatTu}
+                            className="p-2.5 hover:bg-[#f1f5f9] cursor-pointer border-b border-[#f1f5f9] text-[13px] transition-colors"
+                            onClick={() => chonVatTuMoi(item)}
+                          >
+                            <span className="font-semibold text-[var(--primary)] mr-1">[{item.maVatTu}]</span>
+                            <span>{item.tenVatTu}</span>
+                            <span className="text-[var(--text-muted)] text-[12px] ml-2">[{item.donViTinh || 'Đơn vị'}]</span>
+                          </div>
+                        ))}
+                      {danhMucVatTu.filter(item => 
+                        item.maVatTu.toLowerCase().includes(vatTuQuery.toLowerCase()) || 
+                        item.tenVatTu.toLowerCase().includes(vatTuQuery.toLowerCase())
+                      ).length === 0 && (
+                        <div className="p-3 text-[13px] text-[var(--text-muted)] text-center italic">Không tìm thấy vật tư nào phù hợp</div>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+
+            <div className="kb-action-row mt-4 border-t border-[var(--border-color)] pt-3.5">
+              <button 
+                className="btn-primary !w-fit !mt-0 py-[10px] px-6 flex items-center gap-2" 
+                onClick={() => luuPhieuKham(1)}
+              >
+                <Save size={16} /> Lưu vật tư y tế
               </button>
             </div>
           </div>

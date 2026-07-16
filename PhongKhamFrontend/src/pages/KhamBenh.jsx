@@ -247,7 +247,7 @@ function KhamBenh() {
       // 4. Tải danh mục vật tư y tế
       try {
         const resVatTu = await apiGetVatTuList('', '', 1, 1000);
-        if (resVatTu && resVatTu.data && resVatTu.data.length > 0) {
+        if (resVatTu && resVatTu.data) {
           setDanhMucVatTu(resVatTu.data.map(item => ({
             maVatTu: item.maVatTu || item.MaVatTu || '',
             tenVatTu: item.tenVatTu || item.TenVatTu || '',
@@ -255,21 +255,11 @@ function KhamBenh() {
             isActive: item.isActive ?? true
           })));
         } else {
-          setDanhMucVatTu([
-            { maVatTu: 'VT001', tenVatTu: 'Găng tay y tế', donViTinh: 'Cái', isActive: true },
-            { maVatTu: 'VT002', tenVatTu: 'Bơm kim tiêm 5ml', donViTinh: 'Cái', isActive: true },
-            { maVatTu: 'VT003', tenVatTu: 'Bông băng cồn sát trùng', donViTinh: 'Bộ', isActive: true },
-            { maVatTu: 'VT004', tenVatTu: 'Nước muối sinh lý', donViTinh: 'Chai', isActive: true },
-          ]);
+          setDanhMucVatTu([]);
         }
       } catch (err) {
         console.error('Lỗi tải danh mục vật tư y tế:', err);
-        setDanhMucVatTu([
-          { maVatTu: 'VT001', tenVatTu: 'Găng tay y tế', donViTinh: 'Cái', isActive: true },
-          { maVatTu: 'VT002', tenVatTu: 'Bơm kim tiêm 5ml', donViTinh: 'Cái', isActive: true },
-          { maVatTu: 'VT003', tenVatTu: 'Bông băng cồn sát trùng', donViTinh: 'Bộ', isActive: true },
-          { maVatTu: 'VT004', tenVatTu: 'Nước muối sinh lý', donViTinh: 'Chai', isActive: true },
-        ]);
+        setDanhMucVatTu([]);
       }
     };
     fetchCatalogs();

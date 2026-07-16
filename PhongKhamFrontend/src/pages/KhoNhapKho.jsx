@@ -131,21 +131,11 @@ function KhoNhapKho() {
       if (res && res.data) {
         setDanhMucVatTu(res.data);
       } else {
-        setDanhMucVatTu([
-          { maVatTu: 'VT001', tenVatTu: 'Găng tay y tế', donViTinh: 'Cái' },
-          { maVatTu: 'VT002', tenVatTu: 'Bơm kim tiêm 5ml', donViTinh: 'Cái' },
-          { maVatTu: 'VT003', tenVatTu: 'Bông băng cồn sát trùng', donViTinh: 'Bộ' },
-          { maVatTu: 'VT004', tenVatTu: 'Nước muối sinh lý NaCl 0.9%', donViTinh: 'Chai' }
-        ]);
+        setDanhMucVatTu([]);
       }
     } catch (err) {
       console.error('Lỗi tải danh mục vật tư:', err);
-      setDanhMucVatTu([
-        { maVatTu: 'VT001', tenVatTu: 'Găng tay y tế', donViTinh: 'Cái' },
-        { maVatTu: 'VT002', tenVatTu: 'Bơm kim tiêm 5ml', donViTinh: 'Cái' },
-        { maVatTu: 'VT003', tenVatTu: 'Bông băng cồn sát trùng', donViTinh: 'Bộ' },
-        { maVatTu: 'VT004', tenVatTu: 'Nước muối sinh lý NaCl 0.9%', donViTinh: 'Chai' }
-      ]);
+      setDanhMucVatTu([]);
     }
   };
 

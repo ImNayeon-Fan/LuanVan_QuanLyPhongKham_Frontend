@@ -93,14 +93,8 @@ function LandingPage() {
         </div>
       </main>
 
-      {/* Footer */}
       <footer className="w-full max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 font-medium border-t border-slate-200/50 pt-6 z-10">
-        <div>&copy; {new Date().getFullYear()} Phòng Khám Đa Khoa Nhật Tảo. Bảo lưu mọi quyền.</div>
-        <div className="flex gap-4 mt-2 sm:mt-0">
-          <a href="#" className="hover:text-slate-600 transition-colors">Điều khoản sử dụng</a>
-          <span>&middot;</span>
-          <a href="#" className="hover:text-slate-600 transition-colors">Chính sách bảo mật</a>
-        </div>
+        <div>&copy; {new Date().getFullYear()} Phòng Khám Đa Khoa Nhật Tảo.</div>
       </footer>
     </div>
   );

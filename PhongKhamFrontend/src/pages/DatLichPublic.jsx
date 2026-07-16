@@ -592,7 +592,7 @@ function DatLichPublic() {
           <strong className="text-white text-sm block mb-1.5">PHÒNG KHÁM ĐA KHOA NHẬT TẢO</strong>
           <p className="my-1">Địa chỉ: 123 Đường Nhật Tảo, Phường 4, Quận 10, TP. Hồ Chí Minh</p>
           <p className="my-1">Email: contact@nhattaoclinic.vn | Hotline hỗ trợ: 1900 6868</p>
-          <p className="mt-5 mb-0 mx-0 text-[11px] opacity-60">&copy; {new Date().getFullYear()} Phòng khám đa khoa Nhật Tảo. Bảo lưu mọi quyền.</p>
+          <p className="mt-5 mb-0 mx-0 text-[11px] opacity-60">&copy; {new Date().getFullYear()} Phòng khám đa khoa Nhật Tảo.</p>
         </div>
       </footer>
     </div>

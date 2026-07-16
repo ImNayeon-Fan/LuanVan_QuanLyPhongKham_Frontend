@@ -15,7 +15,11 @@ import {
   apiAddLoThuoc,
   apiUpdateLoThuoc,
   apiDeleteLoThuoc,
-  apiGetVatTuList
+  apiGetVatTuList,
+  apiGetVatTuLotList,
+  apiAddVatTuLot,
+  apiUpdateVatTuLot,
+  apiDeleteVatTuLot
 } from '../utils/api';
 
 // Danh sách lô thuốc nhập kho mặc định ban đầu (fallback)
@@ -139,52 +143,43 @@ function KhoNhapKho() {
     }
   };
 
-  // Tải danh sách lô vật tư y tế từ LocalStorage (giả lập backend)
-  const loadVatTuLotsData = () => {
+  // Tải danh sách lô vật tư y tế từ máy chủ (API thực tế)
+  const loadVatTuLotsData = async () => {
+    setIsLoading(true);
     try {
-      const stored = localStorage.getItem('danhSachLoVatTu');
-      let currentLots = DEFAULT_VATTU_LOTS;
-      if (stored) {
-        currentLots = JSON.parse(stored);
+      const res = await apiGetVatTuLotList(
+        vatTuLotsFilters.maLo.trim(),
+        vatTuLotsFilters.tenVatTu.trim(),
+        vatTuLotsFilters.tenNCC.trim(),
+        vatTuLotsFilters.expiryStatus,
+        vatTuLotsCurrentPage,
+        itemsPerPage
+      );
+      if (res && res.data) {
+        const mapped = res.data.map(item => ({
+          maLo: item.maLo,
+          maVatTu: item.maVatTu,
+          tenVatTu: item.tenVatTu,
+          maNCC: String(item.maNCC),
+          tenNCC: item.tenNCC,
+          soLuongNhap: parseInt(item.soLuongNhap, 10) || 0,
+          soLuongTon: parseInt(item.soLuongTon, 10) || 0,
+          giaBan: parseFloat(item.giaBan) || 0,
+          giaNhap: parseFloat(item.giaNhap) || 0,
+          hanSuDung: item.hanSuDung,
+          ngaySanXuat: item.ngaySanXuat
+        }));
+        setVatTuLots(mapped);
+        setTotalVatTuLots(res.total || 0);
       } else {
-        localStorage.setItem('danhSachLoVatTu', JSON.stringify(DEFAULT_VATTU_LOTS));
+        setVatTuLots([]);
+        setTotalVatTuLots(0);
       }
-
-      // Lọc dữ liệu lô vật tư
-      const queryMaLo = (vatTuLotsFilters.maLo || '').trim().toLowerCase();
-      const queryTenVT = (vatTuLotsFilters.tenVatTu || '').trim().toLowerCase();
-      const queryTenNCC = (vatTuLotsFilters.tenNCC || '').trim().toLowerCase();
-      const queryExpiry = vatTuLotsFilters.expiryStatus || 'All';
-
-      const filtered = currentLots.filter(item => {
-        const matchesMaLo = !queryMaLo || item.maLo.toLowerCase().includes(queryMaLo);
-        
-        // Tìm thông tin tên vật tư
-        const vt = danhMucVatTu.find(v => (v.maVatTu || v.maVT) === item.maVatTu) || {};
-        const matchesTenVT = !queryTenVT || (vt.tenVatTu || vt.tenVT || '').toLowerCase().includes(queryTenVT);
-
-        // Tìm thông tin tên nhà cung cấp
-        const sup = allSuppliers.find(s => String(s.maNCC) === String(item.maNCC)) || {};
-        const matchesTenNCC = !queryTenNCC || (sup.tenNCC || '').toLowerCase().includes(queryTenNCC);
-
-        // Lọc theo HSD
-        let matchesExpiry = true;
-        if (queryExpiry !== 'All') {
-          const expInfo = getExpiryStatus(item.hanSuDung);
-          if (queryExpiry === 'Safe') matchesExpiry = expInfo.class === 'safe';
-          else if (queryExpiry === 'Expiring') matchesExpiry = expInfo.class === 'expiring';
-          else if (queryExpiry === 'Expired') matchesExpiry = expInfo.class === 'expired';
-        }
-
-        return matchesMaLo && matchesTenVT && matchesTenNCC && matchesExpiry;
-      });
-
-      setVatTuLots(filtered);
-      setTotalVatTuLots(filtered.length);
-    } catch (e) {
-      console.error(e);
-      setVatTuLots(DEFAULT_VATTU_LOTS);
-      setTotalVatTuLots(DEFAULT_VATTU_LOTS.length);
+    } catch (err) {
+      console.error('Lỗi tải danh sách lô vật tư:', err);
+      showError('Không thể tải danh sách lô vật tư từ máy chủ');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -533,7 +528,7 @@ function KhoNhapKho() {
   };
 
   // Lưu Lô vật tư y tế
-  const handleSaveVatTuLot = (e) => {
+  const handleSaveVatTuLot = async (e) => {
     if (e) e.preventDefault();
     if (!vatTuLotsFormData.maLo.trim()) {
       showError("Vui lòng nhập mã lô vật tư!");
@@ -574,10 +569,10 @@ function KhoNhapKho() {
       return;
     }
 
-    const newLot = {
+    const payload = {
       maLo: vatTuLotsFormData.maLo.trim().toUpperCase(),
       maVatTu: vatTuLotsFormData.maVatTu,
-      maNCC: vatTuLotsFormData.maNCC,
+      maNCC: parseInt(vatTuLotsFormData.maNCC, 10),
       soLuongNhap: slNhap,
       soLuongTon: slTon,
       giaNhap: gNhap,
@@ -586,25 +581,24 @@ function KhoNhapKho() {
       hanSuDung: vatTuLotsFormData.hanSuDung
     };
 
-    // In ra console log để bạn BE xem payload mẫu
-    console.log("[BE LOG] Yêu cầu lưu lô vật tư nhập kho:", newLot);
-
-    let updatedLots = [];
-    if (selectedVatTuLot?.isNew) {
-      if (vatTuLots.some(x => x.maLo === newLot.maLo)) {
-        showError("Mã lô vật tư này đã tồn tại!");
-        return;
+    setIsLoading(true);
+    try {
+      if (selectedVatTuLot?.isNew) {
+        const res = await apiAddVatTuLot(payload);
+        showSuccess(res.message || "Nhập kho lô vật tư mới thành công!");
+        setSelectedVatTuLot(null);
+      } else {
+        const res = await apiUpdateVatTuLot(selectedVatTuLot.maLo, payload);
+        showSuccess(res.message || "Cập nhật lô vật tư thành công!");
+        setSelectedVatTuLot(null);
       }
-      updatedLots = [...vatTuLots, newLot];
-      showSuccess("Nhập kho lô vật tư mới thành công! (Dữ liệu giả lập)");
-    } else {
-      updatedLots = vatTuLots.map(l => l.maLo === selectedVatTuLot.maLo ? newLot : l);
-      showSuccess("Cập nhật thông tin lô vật tư thành công! (Dữ liệu giả lập)");
+      await loadVatTuLotsData();
+    } catch (err) {
+      console.error('Lỗi khi lưu lô vật tư:', err);
+      showError(err.message || 'Lưu thông tin thất bại');
+    } finally {
+      setIsLoading(false);
     }
-
-    setVatTuLots(updatedLots);
-    localStorage.setItem('danhSachLoVatTu', JSON.stringify(updatedLots));
-    setSelectedVatTuLot(null);
   };
 
   // Xóa lô thuốc
@@ -628,14 +622,21 @@ function KhoNhapKho() {
   };
 
   // Xóa Lô vật tư y tế
-  const handleDeleteVatTuLot = (maLo) => {
+  const handleDeleteVatTuLot = async (maLo) => {
     if (window.confirm(`Bạn có chắc chắn muốn xóa lô vật tư: ${maLo} khỏi dữ liệu nhập kho?`)) {
-      const updatedLots = vatTuLots.filter(l => l.maLo !== maLo);
-      setVatTuLots(updatedLots);
-      localStorage.setItem('danhSachLoVatTu', JSON.stringify(updatedLots));
-      showSuccess("Xóa lô vật tư thành công! (Dữ liệu giả lập)");
-      if (selectedVatTuLot && selectedVatTuLot.maLo === maLo) {
-        setSelectedVatTuLot(null);
+      setIsLoading(true);
+      try {
+        await apiDeleteVatTuLot(maLo);
+        showSuccess("Xóa lô vật tư thành công!");
+        if (selectedVatTuLot && selectedVatTuLot.maLo === maLo) {
+          setSelectedVatTuLot(null);
+        }
+        await loadVatTuLotsData();
+      } catch (err) {
+        console.error('Lỗi khi xóa lô vật tư:', err);
+        showError(err.message || "Không thể xóa lô vật tư này!");
+      } finally {
+        setIsLoading(false);
       }
     }
   };

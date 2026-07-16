@@ -6,7 +6,15 @@ import {
   AlertCircle, Plus, Trash2, FileText, Activity, Pill, ClipboardList, CreditCard
 } from 'lucide-react';
 import { useToast } from '../utils/ToastContext';
-import { apiGetDichVuCLSList } from '../utils/api';
+import { 
+  apiGetThanhToanList, 
+  apiGetThanhToanChiTiet, 
+  apiAddThanhToanVatTu, 
+  apiDeleteThanhToanVatTu, 
+  apiXacNhanThanhToan, 
+  apiGetThanhToanPDF,
+  apiGetVatTuList
+} from '../utils/api';
 
 
 // Từ điển đơn giá dịch vụ cận lâm sàng dự phòng
@@ -79,6 +87,9 @@ function ThanhToanHoaDon() {
   // Các state lưu trữ danh sách phiếu khám và phiếu được chọn
   const [dsPhieuKham, setDsPhieuKham] = useState([]);
   const [selectedPhieu, setSelectedPhieu] = useState(null);
+  const [billingDetails, setBillingDetails] = useState(null);
+  const [loadingDetails, setLoadingDetails] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   
   // Các state lưu trữ danh mục từ LocalStorage
   const [danhMucDichVu, setDanhMucDichVu] = useState([]);
@@ -90,7 +101,7 @@ function ThanhToanHoaDon() {
   
   // State quản lý việc thêm vật tư trực tiếp khi lập hóa đơn
   const [showVatTuModal, setShowVatTuModal] = useState(false);
-  const [vatTuMoi, setVatTuMoi] = useState({ tenVT: '', soLuong: 1, donGia: 10000 });
+  const [vatTuMoi, setVatTuMoi] = useState({ maVatTu: '', soLuong: 1 });
   const [selectedLotVatTu, setSelectedLotVatTu] = useState('');
 
   // Các bộ lọc tìm kiếm danh sách phiếu thu
@@ -103,7 +114,63 @@ function ThanhToanHoaDon() {
   // Banner thông báo thanh toán thành công không chặn màn hình
   const [successMessage, setSuccessMessage] = useState('');
 
-  // Load danh sách dữ liệu từ LocalStorage khi khởi chạy
+  // Tải danh sách phiếu thu viện phí (lọc & tìm kiếm) từ máy chủ
+  const loadDSPhieuKham = async (selectedCode = null) => {
+    setIsLoading(true);
+    try {
+      const res = await apiGetThanhToanList({
+        search: searchQuery.trim(),
+        trangThai: statusFilter
+      });
+      if (res && res.data) {
+        setDsPhieuKham(res.data);
+        
+        // Cập nhật selectedPhieu
+        if (selectedCode) {
+          const found = res.data.find(p => p.maPhieu === selectedCode);
+          if (found) setSelectedPhieu(found);
+        } else if (res.data.length > 0) {
+          setSelectedPhieu(prev => {
+            if (prev) {
+              const updated = res.data.find(p => p.maPhieu === prev.maPhieu);
+              return updated || res.data[0];
+            }
+            return res.data[0];
+          });
+        } else {
+          setSelectedPhieu(null);
+        }
+      } else {
+        setDsPhieuKham([]);
+        setSelectedPhieu(null);
+      }
+    } catch (err) {
+      console.error("Lỗi tải danh sách phiếu thu:", err);
+      showError("Không thể tải danh sách phiếu thu từ máy chủ");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Tải danh mục vật tư y tế phục vụ kê thêm
+  const loadDanhMucVatTu = async () => {
+    try {
+      const res = await apiGetVatTuList('', '', 1, 100);
+      if (res && res.data) {
+        const mapped = res.data.map(item => ({
+          maVatTu: item.maVatTu || item.MaVatTu,
+          tenVatTu: item.tenVatTu || item.TenVatTu,
+          donViTinh: item.donViTinh || item.DonViTinh,
+          isActive: item.isActive || item.IsActive
+        }));
+        setDanhMucVatTu(mapped);
+      }
+    } catch (err) {
+      console.error("Lỗi tải danh mục vật tư:", err);
+    }
+  };
+
+  // Khởi chạy dữ liệu ban đầu
   useEffect(() => {
     // Lấy thông tin tài khoản hiện tại làm thu ngân
     try {
@@ -114,147 +181,39 @@ function ThanhToanHoaDon() {
       }
     } catch(e) {}
 
-    // Khởi tạo/Load dữ liệu phiếu khám bệnh
-    try {
-      const storedPK = localStorage.getItem('danhSachPhieuKham');
-      let currentList = [];
-      const mockPK = [
-        {
-          maPhieu: 'PK_260527_001',
-          maBN: 'BN260001',
-          hoTen: 'NGUYỄN VĂN AN',
-          ngaySinh: '15/03/1980',
-          gioiTinh: 'Nam',
-          sdt: '0901234567',
-          diaChi: '123 Nguyễn Trãi, Phường 2, Quận 5, TP. Hồ Chí Minh',
-          tienSuBenh: 'Tăng huyết áp, Đái tháo đường typ 2',
-          maNV: 'NV002',
-          tenBacSi: 'BS. CK1. Nguyễn Văn An (Nội tổng quát)',
-          lyDoKham: 'Đau đầu, chóng mặt, mệt mỏi kéo dài',
-          chanDoan: 'Tăng huyết áp vô căn (nguyên phát)',
-          loiDan: 'Ăn nhạt, hạn chế mỡ động vật, uống thuốc đúng giờ.',
-          ngayKham: '2026-05-27T11:00:00.000Z',
-          trangThai: 3, // Trạng thái hoàn thành khám
-          chiDinh: [
-            { id: 1, tenXN: 'Siêu âm ổ bụng tổng quát' },
-            { id: 2, tenXN: 'Xét nghiệm công thức máu toàn bộ (24 chỉ số)' }
-          ],
-          donThuoc: [
-            { id: 101, tenThuoc: 'Paracetamol 500mg', soLuong: '1 viên x 3 lần', soNgay: 7 },
-            { id: 102, tenThuoc: 'Decolgen Forte', soLuong: '1 viên x 2 lần', soNgay: 5 }
-          ],
-          vatTu: [
-            { id: 201, tenVT: 'Găng tay y tế', soLuong: 2, donGia: 3000 },
-            { id: 202, tenVT: 'Bơm kim tiêm 5ml', soLuong: 1, donGia: 5000 }
-          ],
-          daThanhToan: false
-        },
-        {
-          maPhieu: 'PK_260527_002',
-          maBN: 'BN260002',
-          hoTen: 'TRẦN THỊ BÌNH',
-          ngaySinh: '20/08/1992',
-          gioiTinh: 'Nữ',
-          sdt: '0918765432',
-          diaChi: '456 Lê Lợi, Bến Nghé, Quận 1, TP. Hồ Chí Minh',
-          tienSuBenh: 'Dị ứng thuốc Penicillin',
-          maNV: 'NV003',
-          tenBacSi: 'BS. CK2. Trần Thị Bình (Tim mạch)',
-          lyDoKham: 'Tức ngực nhẹ, khó thở khi gắng sức',
-          chanDoan: 'Nhịp tim nhanh không xác định',
-          loiDan: 'Hạn chế vận động nặng, tái khám sau 1 tuần',
-          ngayKham: '2026-05-27T12:30:00.000Z',
-          trangThai: 3,
-          chiDinh: [
-            { id: 3, tenXN: 'Điện tâm đồ (ECG)' },
-            { id: 4, tenXN: 'Siêu âm tim màu' }
-          ],
-          donThuoc: [
-            { id: 103, tenThuoc: 'Panadol Extra', soLuong: '1 viên x 2 lần', soNgay: 3 }
-          ],
-          vatTu: [
-            { id: 203, tenVT: 'Bông băng cồn sát trùng', soLuong: 1, donGia: 15000 }
-          ],
-          daThanhToan: true,
-          phuongThucTT: 'Chuyển khoản',
-          ngayThanhToan: '2026-05-27T13:45:00.000Z',
-          tienChiTra: 380000,
-          tienBHYT: 0,
-          tienNguoiBenhTra: 380000,
-          thuNgan: 'Mai Xuân Phát'
-        }
-      ];
+    loadDanhMucVatTu();
+  }, []);
 
-      if (storedPK) {
-        currentList = JSON.parse(storedPK);
-        let needsSave = false;
-        mockPK.forEach(mock => {
-          const exists = currentList.some(item => item.maPhieu === mock.maPhieu);
-          if (!exists) {
-            currentList.push(mock);
-            needsSave = true;
-          }
-        });
-        if (needsSave) {
-          localStorage.setItem('danhSachPhieuKham', JSON.stringify(currentList));
-        }
-      } else {
-        currentList = mockPK;
-        localStorage.setItem('danhSachPhieuKham', JSON.stringify(currentList));
-      }
-      setDsPhieuKham(currentList);
-
-      // Mặc định chọn bệnh nhân đầu tiên chưa thanh toán
-      const firstUnpaid = currentList.find(p => p.trangThai === 3 && !p.daThanhToan);
-      if (firstUnpaid) {
-        setSelectedPhieu(firstUnpaid);
-      } else {
-        const firstPaid = currentList.find(p => p.trangThai === 3);
-        if (firstPaid) setSelectedPhieu(firstPaid);
-      }
-    } catch(e) {}
-
-    // Fetch danh mục dịch vụ cận lâm sàng từ Backend
-    const fetchDichVuCLS = async () => {
-      try {
-        const response = await apiGetDichVuCLSList('', '', null, 1, 100);
-        if (response && response.data) {
-          const mappedData = response.data.map(item => ({
-            maDV: item.MaDV || item.maDV || '',
-            tenDV: item.TenDV || item.tenDV || '',
-            giaTien: item.GiaTien !== undefined && item.GiaTien !== null ? item.GiaTien : 0,
-            trangThai: item.TrangThai !== undefined ? item.TrangThai : true
-          }));
-          setDanhMucDichVu(mappedData);
-          return;
-        }
-      } catch (err) {
-        console.error("Failed to load services from backend, using fallback:", err);
-      }
-      
-      // Fallback
-      try {
-        const storedDV = localStorage.getItem('danhMucDichVuCLS');
-        if (storedDV) setDanhMucDichVu(JSON.parse(storedDV));
-      } catch (e) {}
-    };
-
-    fetchDichVuCLS();
-    
-    try {
-      const storedThuoc = localStorage.getItem('danhMucThuoc');
-      if (storedThuoc) setDanhMucThuoc(JSON.parse(storedThuoc));
-
-      const storedVT = localStorage.getItem('danhMucVatTu');
-      if (storedVT) setDanhMucVatTu(JSON.parse(storedVT));
-    } catch(e) {}
-  }, [navigate]);
-
-
-  // Đồng bộ phương thức thanh toán của phiếu khi thay đổi bệnh nhân
+  // Lắng nghe bộ lọc tìm kiếm và trạng thái
   useEffect(() => {
-    if (selectedPhieu) {
-      setPhuongThucTT(selectedPhieu.phuongThucTT || 'Tiền mặt');
+    const delayDebounce = setTimeout(() => {
+      loadDSPhieuKham();
+    }, 250);
+    return () => clearTimeout(delayDebounce);
+  }, [searchQuery, statusFilter]);
+
+  // Lắng nghe selectedPhieu để fetch chi tiết hóa đơn từ backend
+  useEffect(() => {
+    if (selectedPhieu && selectedPhieu.maPhieu) {
+      const fetchDetails = async () => {
+        setLoadingDetails(true);
+        try {
+          const res = await apiGetThanhToanChiTiet(selectedPhieu.maPhieu);
+          if (res) {
+            setBillingDetails(res);
+            setPhuongThucTT(res.phuongThucTT || 'Tiền mặt');
+          }
+        } catch (err) {
+          console.error("Lỗi tải chi tiết hóa đơn:", err);
+          showError("Không thể tải chi tiết hóa đơn");
+          setBillingDetails(null);
+        } finally {
+          setLoadingDetails(false);
+        }
+      };
+      fetchDetails();
+    } else {
+      setBillingDetails(null);
     }
   }, [selectedPhieu]);
 
@@ -288,102 +247,11 @@ function ThanhToanHoaDon() {
     return `Ngày ${day} tháng ${month} năm ${year} lúc ${hours}:${minutes}`;
   };
 
-  // Tra cứu đơn giá dịch vụ cận lâm sàng
-  const getServicePrice = (tenXN) => {
-    const found = danhMucDichVu.find(dv => dv.tenDV.toLowerCase().trim() === tenXN.toLowerCase().trim());
-    if (found) return found.giaTien;
-    
-    const defaultDichVuDataForLookup = [
-      { maDV: 'DV001', tenDV: 'Siêu âm ổ bụng tổng quát' },
-      { maDV: 'DV002', tenDV: 'X-Quang ngực thẳng (Kỹ thuật số)' },
-      { maDV: 'DV003', tenDV: 'Xét nghiệm công thức máu toàn bộ (24 chỉ số)' },
-      { maDV: 'DV004', tenDV: 'Xét nghiệm đường huyết (Glucose)' },
-      { maDV: 'DV005', tenDV: 'Điện tâm đồ (ECG)' },
-      { maDV: 'DV006', tenDV: 'Siêu âm tim màu' }
-    ];
-
-    for (const [key, value] of Object.entries(FALLBACK_SERVICE_PRICES)) {
-      const fallbackItem = defaultDichVuDataForLookup.find(item => item.maDV === key);
-      if (fallbackItem && fallbackItem.tenDV.toLowerCase().includes(tenXN.toLowerCase())) {
-        return value;
-      }
-    }
-    return 100000;
-  };
-
-  // Tra cứu đơn giá thuốc
-  const getDrugPrice = (tenThuoc) => {
-    const cleanName = Object.keys(FALLBACK_DRUG_PRICES).find(name => tenThuoc.toLowerCase().includes(name.toLowerCase()));
-    if (cleanName) return FALLBACK_DRUG_PRICES[cleanName];
-    return FALLBACK_DRUG_PRICES['default'];
-  };
-
-  // Tra cứu đơn giá vật tư
-  const getSupplyPrice = (tenVT) => {
-    const cleanName = Object.keys(FALLBACK_SUPPLY_PRICES).find(name => tenVT.toLowerCase().includes(name.toLowerCase()));
-    if (cleanName) return FALLBACK_SUPPLY_PRICES[cleanName];
-    return FALLBACK_SUPPLY_PRICES['default'];
-  };
-
-  // Tính toán tổng hợp chi phí hóa đơn chi tiết
-  const getBillingDetails = (phieu) => {
-    if (!phieu) return { services: [], drugs: [], supplies: [], totalServices: 0, totalDrugs: 0, totalSupplies: 0, grandTotal: 0 };
-
-    const services = (phieu.chiDinh || []).map((c, idx) => {
-      const price = getServicePrice(c.tenXN);
-      return {
-        stt: idx + 1,
-        tenItem: c.tenXN,
-        soLuong: 1,
-        donGia: price,
-        thanhTien: price,
-        type: 'CLS'
-      };
-    });
-
-    const drugs = (phieu.donThuoc || []).map((t, idx) => {
-      const qty = parseDrugQuantity(t.soLuong, t.soNgay);
-      const price = getDrugPrice(t.tenThuoc);
-      const subTotal = qty * price;
-      return {
-        stt: idx + 1,
-        tenItem: t.tenThuoc,
-        soLuong: qty,
-        lieuDung: t.soLuong,
-        soNgay: t.soNgay,
-        donGia: price,
-        thanhTien: subTotal,
-        type: 'Thuoc'
-      };
-    });
-
-    const supplies = (phieu.vatTu || []).map((v, idx) => {
-      const price = v.donGia || getSupplyPrice(v.tenVT);
-      const subTotal = v.soLuong * price;
-      return {
-        id: v.id,
-        stt: idx + 1,
-        tenItem: v.tenVT,
-        soLuong: v.soLuong,
-        donGia: price,
-        thanhTien: subTotal,
-        type: 'VatTu'
-      };
-    });
-
-    const totalServices = services.reduce((sum, item) => sum + item.thanhTien, 0);
-    const totalDrugs = drugs.reduce((sum, item) => sum + item.thanhTien, 0);
-    const totalSupplies = supplies.reduce((sum, item) => sum + item.thanhTien, 0);
-    const grandTotal = totalServices + totalDrugs + totalSupplies;
-
-    return { services, drugs, supplies, totalServices, totalDrugs, totalSupplies, grandTotal };
-  };
-
-  // Thêm vật tư y tế trực tiếp vào phiếu thu
-  const handleAddSupply = (e) => {
-    e.preventDefault();
-    if (!vatTuMoi.tenVT) {
-      showError("Vui lòng chọn hoặc điền tên vật tư y tế!");
+  // Thêm vật tư y tế trực tiếp vào phiếu thu (API thực tế)
+  const handleAddSupply = async (e) => {
+    if (e) e.preventDefault();
+    if (!vatTuMoi.maVatTu) {
+      showError("Vui lòng chọn vật tư y tế!");
       return;
     }
     if (vatTuMoi.soLuong <= 0) {
@@ -391,93 +259,103 @@ function ThanhToanHoaDon() {
       return;
     }
 
-    const price = getSupplyPrice(vatTuMoi.tenVT);
-    const newSupplyItem = {
-      id: Date.now(),
-      tenVT: vatTuMoi.tenVT,
-      soLuong: parseInt(vatTuMoi.soLuong, 10),
-      donGia: price
-    };
+    setIsLoading(true);
+    try {
+      await apiAddThanhToanVatTu(selectedPhieu.maPhieu, {
+        maVatTu: vatTuMoi.maVatTu,
+        soLuong: parseInt(vatTuMoi.soLuong, 10)
+      });
+      showSuccess("Kê thêm vật tư y tế thành công!");
+      
+      const updatedDetails = await apiGetThanhToanChiTiet(selectedPhieu.maPhieu);
+      setBillingDetails(updatedDetails);
+      loadDSPhieuKham(selectedPhieu.maPhieu);
 
-    const updatedVatTu = [...(selectedPhieu.vatTu || []), newSupplyItem];
-    const updatedPhieu = { ...selectedPhieu, vatTu: updatedVatTu };
-
-    const updatedList = dsPhieuKham.map(pk => pk.maPhieu === selectedPhieu.maPhieu ? updatedPhieu : pk);
-    setDsPhieuKham(updatedList);
-    setSelectedPhieu(updatedPhieu);
-    localStorage.setItem('danhSachPhieuKham', JSON.stringify(updatedList));
-
-    setVatTuMoi({ tenVT: '', soLuong: 1, donGia: 10000 });
-    setSelectedLotVatTu('');
-    setShowVatTuModal(false);
-  };
-
-  // Xóa vật tư tiêu hao khỏi danh sách kê
-  const handleDeleteSupply = (vId) => {
-    if (window.confirm("Bạn có chắc chắn muốn xóa vật tư này khỏi phiếu thu?")) {
-      const updatedVatTu = (selectedPhieu.vatTu || []).filter(v => v.id !== vId);
-      const updatedPhieu = { ...selectedPhieu, vatTu: updatedVatTu };
-      const updatedList = dsPhieuKham.map(pk => pk.maPhieu === selectedPhieu.maPhieu ? updatedPhieu : pk);
-      setDsPhieuKham(updatedList);
-      setSelectedPhieu(updatedPhieu);
-      localStorage.setItem('danhSachPhieuKham', JSON.stringify(updatedList));
+      setVatTuMoi({ maVatTu: danhMucVatTu.length > 0 ? danhMucVatTu[0].maVatTu : '', soLuong: 1 });
+      setShowVatTuModal(false);
+    } catch (err) {
+      console.error("Lỗi khi thêm vật tư:", err);
+      showError(err.message || "Kê thêm vật tư thất bại");
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  // Xác nhận và thực hiện thanh toán hóa đơn
-  const handleExecutePayment = () => {
+  // Xóa vật tư tiêu hao khỏi danh sách kê (API thực tế)
+  const handleDeleteSupply = async (maVatTu) => {
+    if (window.confirm("Bạn có chắc chắn muốn xóa vật tư này khỏi phiếu thu?")) {
+      setIsLoading(true);
+      try {
+        await apiDeleteThanhToanVatTu(selectedPhieu.maPhieu, maVatTu);
+        showSuccess("Xóa vật tư tiêu hao thành công!");
+        
+        const updatedDetails = await apiGetThanhToanChiTiet(selectedPhieu.maPhieu);
+        setBillingDetails(updatedDetails);
+        loadDSPhieuKham(selectedPhieu.maPhieu);
+      } catch (err) {
+        console.error("Lỗi khi xóa vật tư:", err);
+        showError(err.message || "Xóa vật tư thất bại");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  // Xác nhận và thực hiện thanh toán hóa đơn (API thực tế)
+  const handleExecutePayment = async () => {
     if (!selectedPhieu) return;
+    setIsLoading(true);
+    try {
+      const res = await apiXacNhanThanhToan({
+        maPhieu: selectedPhieu.maPhieu,
+        phuongThucTT
+      });
+      showSuccess(res.message || "Thanh toán viện phí và lập hóa đơn thành công!");
+      
+      await loadDSPhieuKham(selectedPhieu.maPhieu);
+      const updatedDetails = await apiGetThanhToanChiTiet(selectedPhieu.maPhieu);
+      setBillingDetails(updatedDetails);
 
-    const { grandTotal } = getBillingDetails(selectedPhieu);
-    const patientShare = grandTotal;
-
-    const paidPhieu = {
-      ...selectedPhieu,
-      daThanhToan: true,
-      phuongThucTT: phuongThucTT,
-      ngayThanhToan: new Date().toISOString(),
-      tienChiTra: grandTotal,
-      tienBHYT: 0,
-      tienNguoiBenhTra: patientShare,
-      thuNgan: thuNgan
-    };
-
-    const updatedList = dsPhieuKham.map(pk => pk.maPhieu === selectedPhieu.maPhieu ? paidPhieu : pk);
-    setDsPhieuKham(updatedList);
-    setSelectedPhieu(paidPhieu);
-    localStorage.setItem('danhSachPhieuKham', JSON.stringify(updatedList));
-
-    setSuccessMessage(`Thanh toán thành công hóa đơn của bệnh nhân ${selectedPhieu.hoTen}! Số tiền: ${patientShare.toLocaleString('vi-VN')} đ`);
-    setTimeout(() => {
-      setSuccessMessage('');
-    }, 5000);
-
-    setTimeout(() => {
-      window.print();
-    }, 150);
+      if (res.maHoaDon) {
+        handlePrintInvoice(res.maHoaDon);
+      }
+    } catch (err) {
+      console.error("Lỗi khi thanh toán:", err);
+      showError(err.message || "Thanh toán viện phí thất bại");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // Lệnh in hóa đơn thanh toán
-  const handlePrintInvoice = () => {
-    window.print();
+  // Lệnh in hóa đơn thanh toán tải PDF từ máy chủ
+  const handlePrintInvoice = async (maHoaDonOverride = null) => {
+    const targetMaHoaDon = maHoaDonOverride || billingDetails?.maHoaDon;
+    if (!targetMaHoaDon) {
+      showError("Không tìm thấy mã hóa đơn để in!");
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const blob = await apiGetThanhToanPDF(targetMaHoaDon);
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+    } catch (err) {
+      console.error("Lỗi in hóa đơn:", err);
+      showError("Không thể tải file PDF hóa đơn");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // Lọc danh sách theo truy vấn tìm kiếm
-  const filteredPhieuKham = dsPhieuKham.filter(pk => {
-    if (pk.trangThai !== 3) return false;
+  const filteredPhieuKham = dsPhieuKham;
 
-    const matchSearch = 
-      pk.hoTen.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      pk.maBN?.includes(searchQuery) ||
-      pk.maPhieu?.includes(searchQuery);
-
-    if (statusFilter === 'All') return matchSearch;
-    if (statusFilter === 'Unpaid') return matchSearch && !pk.daThanhToan;
-    if (statusFilter === 'Paid') return matchSearch && pk.daThanhToan;
-    return matchSearch;
-  });
-
-  const { services, drugs, supplies, totalServices, totalDrugs, totalSupplies, grandTotal } = getBillingDetails(selectedPhieu);
+  const services = billingDetails?.cls || [];
+  const drugs = billingDetails?.thuoc || [];
+  const supplies = billingDetails?.vatTu || [];
+  const totalServices = billingDetails?.tongTienDichVu || 0;
+  const totalDrugs = billingDetails?.tongTienThuoc || 0;
+  const totalSupplies = billingDetails?.tongTienVatTu || 0;
+  const grandTotal = billingDetails?.tongTienThanhToan || 0;
 
   return (
     <div className="kb-wrapper h-screen overflow-hidden">
@@ -527,19 +405,19 @@ function ThanhToanHoaDon() {
                 onClick={() => setStatusFilter('All')}
                 className={`flex-1 py-[5px] px-[5px] border-none text-[11.5px] font-semibold rounded-[4px] cursor-pointer transition-all duration-150 ${statusFilter === 'All' ? 'bg-white text-inherit' : 'bg-transparent text-inherit'}`}
               >
-                Tất cả ({dsPhieuKham.filter(p => p.trangThai === 3).length})
+                Tất cả ({dsPhieuKham.length})
               </button>
               <button 
                 onClick={() => setStatusFilter('Unpaid')}
                 className={`flex-1 py-[5px] px-[5px] border-none text-[11.5px] font-semibold rounded-[4px] cursor-pointer transition-all duration-150 ${statusFilter === 'Unpaid' ? 'bg-white text-[#dc2626]' : 'bg-transparent text-[#dc2626]'}`}
               >
-                Chưa TT ({dsPhieuKham.filter(p => p.trangThai === 3 && !p.daThanhToan).length})
+                Chưa TT ({dsPhieuKham.filter(p => !p.daThanhToan).length})
               </button>
               <button 
                 onClick={() => setStatusFilter('Paid')}
                 className={`flex-1 py-[5px] px-[5px] border-none text-[11.5px] font-semibold rounded-[4px] cursor-pointer transition-all duration-150 ${statusFilter === 'Paid' ? 'bg-white text-[#16a34a]' : 'bg-transparent text-[#16a34a]'}`}
               >
-                Đã TT ({dsPhieuKham.filter(p => p.trangThai === 3 && p.daThanhToan).length})
+                Đã TT ({dsPhieuKham.filter(p => p.daThanhToan).length})
               </button>
             </div>
           </div>
@@ -553,7 +431,6 @@ function ThanhToanHoaDon() {
             ) : (
               filteredPhieuKham.map(pk => {
                 const isSelected = selectedPhieu && selectedPhieu.maPhieu === pk.maPhieu;
-                const { grandTotal: amount } = getBillingDetails(pk);
                 const isPaid = pk.daThanhToan;
                 
                 return (
@@ -563,7 +440,7 @@ function ThanhToanHoaDon() {
                     className={`p-3 rounded-lg border cursor-pointer mb-2 transition-all duration-150 ease-in-out ${isSelected ? 'border-[var(--primary)] bg-[var(--primary-light)]' : 'border-[var(--border-color)] bg-white'}`}
                   >
                     <div className="flex justify-between mb-1.5">
-                      <span className="text-[11px] font-bold text-[var(--text-muted)]">{pk.maPhieu}</span>
+                       <span className="text-[11px] font-bold text-[var(--text-muted)]">{pk.maPhieu}</span>
                       {isPaid ? (
                         <span className="text-[11px] text-[#16a34a] bg-[#dcfce7] py-[1px] px-2 rounded-[10px] font-bold">Đã TT</span>
                       ) : (
@@ -573,7 +450,9 @@ function ThanhToanHoaDon() {
                     <div className="text-[13.5px] font-bold text-[var(--text-main)] mb-1">{pk.hoTen}</div>
                     <div className="flex justify-between items-center text-[12px]">
                       <span className="text-[var(--text-muted)]">Mã NB: {pk.maBN}</span>
-                      <strong className="text-[#0052cc] text-[13.5px]">{amount.toLocaleString('vi-VN')} đ</strong>
+                      <strong className="text-[#0052cc] text-[13.5px]">
+                        {isSelected && billingDetails ? `${billingDetails.tongTienThanhToan.toLocaleString('vi-VN')} đ` : 'Xem chi tiết'}
+                      </strong>
                     </div>
                   </div>
                 );
@@ -1053,20 +932,20 @@ function ThanhToanHoaDon() {
                 {danhMucVatTu.length > 0 ? (
                   <select 
                     className="form-input h-9 text-[13px] px-2" 
-                    value={vatTuMoi.tenVT}
-                    onChange={e => setVatTuMoi({ ...vatTuMoi, tenVT: e.target.value })}
+                    value={vatTuMoi.maVatTu}
+                    onChange={e => setVatTuMoi({ ...vatTuMoi, maVatTu: e.target.value })}
                   >
                     {danhMucVatTu.map(vt => (
-                      <option key={vt.maVT} value={vt.tenVT}>{vt.tenVT}</option>
+                      <option key={vt.maVatTu} value={vt.maVatTu}>{vt.tenVatTu} ({vt.donViTinh})</option>
                     ))}
                   </select>
                 ) : (
                   <input 
                     type="text" 
                     className="form-input h-9 text-[13px]" 
-                    placeholder="Điền tên vật tư tiêu hao..."
-                    value={vatTuMoi.tenVT}
-                    onChange={e => setVatTuMoi({ ...vatTuMoi, tenVT: e.target.value })}
+                    placeholder="Điền mã vật tư tiêu hao..."
+                    value={vatTuMoi.maVatTu}
+                    onChange={e => setVatTuMoi({ ...vatTuMoi, maVatTu: e.target.value })}
                     required
                   />
                 )}

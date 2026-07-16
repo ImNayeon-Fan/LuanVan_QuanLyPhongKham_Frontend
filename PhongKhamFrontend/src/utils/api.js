@@ -569,4 +569,96 @@ export const apiGetVatTuList = async (query = '', donViTinh = '', page = 1, page
   return await apiFetch(`/VatTu?` + queryParams.toString());
 };
 
+// ==========================================
+// API QUẢN LÝ LÔ VẬT TƯ (KhoVatTuController)
+// ==========================================
+
+export const apiGetVatTuLotList = async (maLo = '', tenVatTu = '', tenNCC = '', hanSuDung = '', page = 1, pageSize = 10) => {
+  const queryParams = new URLSearchParams({
+    page: page.toString(),
+    pageSize: pageSize.toString()
+  });
+  if (maLo) queryParams.append('maLo', maLo);
+  if (tenVatTu) queryParams.append('tenVatTu', tenVatTu);
+  if (tenNCC) queryParams.append('tenNCC', tenNCC);
+  if (hanSuDung && hanSuDung !== 'All' && hanSuDung !== 'Tất cả') {
+    queryParams.append('hanSuDung', hanSuDung);
+  }
+  return await apiFetch(`/KhoVatTu?` + queryParams.toString());
+};
+
+export const apiAddVatTuLot = async (payload) => {
+  return await apiFetch('/KhoVatTu', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  });
+};
+
+export const apiUpdateVatTuLot = async (maLo, payload) => {
+  return await apiFetch(`/KhoVatTu/${maLo}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload)
+  });
+};
+
+export const apiDeleteVatTuLot = async (maLo) => {
+  return await apiFetch(`/KhoVatTu/${maLo}`, {
+    method: 'DELETE'
+  });
+};
+
+// ==========================================
+// API THANH TOÁN & HÓA ĐƠN (ThanhToanController)
+// ==========================================
+
+export const apiGetThanhToanList = async ({ search = '', trangThai = 'All', page = 1, pageSize = 20 } = {}) => {
+  const queryParams = new URLSearchParams({
+    page: page.toString(),
+    pageSize: pageSize.toString()
+  });
+  if (search) queryParams.append('search', search);
+  if (trangThai) queryParams.append('trangThai', trangThai);
+  return await apiFetch(`/ThanhToan/danh-sach?` + queryParams.toString());
+};
+
+export const apiGetThanhToanChiTiet = async (maPhieu) => {
+  return await apiFetch(`/ThanhToan/${maPhieu}/chi-tiet`);
+};
+
+export const apiAddThanhToanVatTu = async (maPhieu, payload) => {
+  return await apiFetch(`/ThanhToan/${maPhieu}/vat-tu`, {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  });
+};
+
+export const apiDeleteThanhToanVatTu = async (maPhieu, maVatTu) => {
+  return await apiFetch(`/ThanhToan/${maPhieu}/vat-tu/${maVatTu}`, {
+    method: 'DELETE'
+  });
+};
+
+export const apiXacNhanThanhToan = async (payload) => {
+  return await apiFetch('/ThanhToan/xac-nhan', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  });
+};
+
+export const apiGetThanhToanPDF = async (maHoaDon) => {
+  const token = getToken();
+  const headers = {};
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  const response = await fetch(`${API_BASE_URL}/ThanhToan/${maHoaDon}/pdf`, {
+    headers
+  });
+  if (!response.ok) {
+    const text = await response.text();
+    throw new Error(text || `Lỗi tải PDF hóa đơn: ${response.status}`);
+  }
+  return await response.blob();
+};
+
 

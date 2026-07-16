@@ -17,65 +17,7 @@ import {
 } from '../utils/api';
 
 
-// Từ điển đơn giá dịch vụ cận lâm sàng dự phòng
-const FALLBACK_SERVICE_PRICES = {
-  'DV001': 150000,
-  'DV002': 120000,
-  'DV003': 90000,
-  'DV004': 50000,
-  'DV005': 80000,
-  'DV006': 300000
-};
-
-// Từ điển đơn giá thuốc dự phòng
-const FALLBACK_DRUG_PRICES = {
-  'Paracetamol 500mg': 2000,
-  'Amoxicillin 500mg': 4000,
-  'Panadol Extra': 3000,
-  'Decolgen Forte': 3500,
-  'Gaviscon Dual Action': 25000,
-  'Augmentin 1g': 18000,
-  'default': 5000
-};
-
-// Từ điển vật tư y tế dự phòng
-const FALLBACK_SUPPLY_PRICES = {
-  'Găng tay y tế': 3000,
-  'Bơm kim tiêm 5ml': 5000,
-  'Bông băng cồn sát trùng': 15000,
-  'Nước muối sinh lý': 12000,
-  'default': 8000
-};
-
-// Hàm quy đổi liều dùng đơn thuốc sang tổng số lượng thuốc
-const parseDrugQuantity = (soLuongStr, soNgay) => {
-  const days = parseInt(soNgay, 10) || 1;
-  if (!soLuongStr) return 2 * days;
-  
-  // Trích xuất dạng "X viên x Y lần"
-  const match = soLuongStr.match(/(\d+)\s*(viên|gói|ống|chai|vỉ|hộp|tuýp)?\s*[x/*]\s*(\d+)/i);
-  if (match) {
-    const qtyPerTime = parseInt(match[1], 10) || 1;
-    const timesPerDay = parseInt(match[3], 10) || 1;
-    return qtyPerTime * timesPerDay * days;
-  }
-  
-  // Trích xuất dạng "X viên/ngày"
-  const matchDay = soLuongStr.match(/(\d+)\s*(viên|gói|ống|chai|vỉ|hộp|tuýp)?\s*\/\s*ngày/i);
-  if (matchDay) {
-    return (parseInt(matchDay[1], 10) || 1) * days;
-  }
-  
-  // Lấy các chữ số bất kỳ
-  const numbers = soLuongStr.match(/\d+/g);
-  if (numbers && numbers.length >= 2) {
-    return parseInt(numbers[0], 10) * parseInt(numbers[1], 10) * days;
-  } else if (numbers && numbers.length === 1) {
-    return parseInt(numbers[0], 10) * days;
-  }
-  
-  return 2 * days;
-};
+// Giá tiền và số lượng quy đổi được lấy trực tiếp từ Backend API
 
 /**
  * Component chính quản lý màn hình thanh toán hóa đơn viện phí

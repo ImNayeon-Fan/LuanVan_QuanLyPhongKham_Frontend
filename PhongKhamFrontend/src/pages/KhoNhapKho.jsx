@@ -22,19 +22,7 @@ import {
   apiDeleteVatTuLot
 } from '../utils/api';
 
-// Danh sách lô thuốc nhập kho mặc định ban đầu (fallback)
-const DEFAULT_LOTS = [
-  { maLo: 'L26001', maThuoc: 'TH001', maNCC: '1', soLuongNhap: 1000, soLuongTon: 850, giaNhap: 500, giaBan: 1000, ngaySanXuat: '2026-01-10', hanSuDung: '2029-01-10' },
-  { maLo: 'L26002', maThuoc: 'TH002', maNCC: '2', soLuongNhap: 500, soLuongTon: 500, giaNhap: 1200, giaBan: 2000, ngaySanXuat: '2026-02-15', hanSuDung: '2028-02-15' },
-  { maLo: 'L26003', maThuoc: 'TH005', maNCC: '3', soLuongNhap: 200, soLuongTon: 120, giaNhap: 15000, giaBan: 22000, ngaySanXuat: '2026-03-01', hanSuDung: '2026-09-01' },
-];
-
-// Danh sách lô vật tư tiêu hao nhập kho mặc định (fallback/mock)
-const DEFAULT_VATTU_LOTS = [
-  { maLo: 'LVT26001', maVatTu: 'VT001', maNCC: '1', soLuongNhap: 2000, soLuongTon: 1800, giaNhap: 1500, giaBan: 3000, ngaySanXuat: '2026-01-05', hanSuDung: '2029-01-05' },
-  { maLo: 'LVT26002', maVatTu: 'VT002', maNCC: '2', soLuongNhap: 1000, soLuongTon: 900, giaNhap: 2500, giaBan: 5000, ngaySanXuat: '2026-02-10', hanSuDung: '2029-02-10' },
-  { maLo: 'LVT26003', maVatTu: 'VT003', maNCC: '3', soLuongNhap: 500, soLuongTon: 450, giaNhap: 8000, giaBan: 15000, ngaySanXuat: '2026-03-15', hanSuDung: '2028-03-15' },
-];
+// Hoàn toàn kết nối và load dữ liệu thật từ cơ sở dữ liệu SQL Server qua API thực tế
 
 /**
  * Component Quản lý Nhập kho thuốc, Lô thuốc và Nhà cung cấp

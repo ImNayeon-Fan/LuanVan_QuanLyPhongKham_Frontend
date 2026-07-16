@@ -14,7 +14,8 @@ import {
   apiGetLoThuocList,
   apiAddLoThuoc,
   apiUpdateLoThuoc,
-  apiDeleteLoThuoc
+  apiDeleteLoThuoc,
+  apiGetVatTuList
 } from '../utils/api';
 
 // Danh sách lô thuốc nhập kho mặc định ban đầu (fallback)
@@ -24,6 +25,13 @@ const DEFAULT_LOTS = [
   { maLo: 'L26003', maThuoc: 'TH005', maNCC: '3', soLuongNhap: 200, soLuongTon: 120, giaNhap: 15000, giaBan: 22000, ngaySanXuat: '2026-03-01', hanSuDung: '2026-09-01' },
 ];
 
+// Danh sách lô vật tư tiêu hao nhập kho mặc định (fallback/mock)
+const DEFAULT_VATTU_LOTS = [
+  { maLo: 'LVT26001', maVatTu: 'VT001', maNCC: '1', soLuongNhap: 2000, soLuongTon: 1800, giaNhap: 1500, giaBan: 3000, ngaySanXuat: '2026-01-05', hanSuDung: '2029-01-05' },
+  { maLo: 'LVT26002', maVatTu: 'VT002', maNCC: '2', soLuongNhap: 1000, soLuongTon: 900, giaNhap: 2500, giaBan: 5000, ngaySanXuat: '2026-02-10', hanSuDung: '2029-02-10' },
+  { maLo: 'LVT26003', maVatTu: 'VT003', maNCC: '3', soLuongNhap: 500, soLuongTon: 450, giaNhap: 8000, giaBan: 15000, ngaySanXuat: '2026-03-15', hanSuDung: '2028-03-15' },
+];
+
 /**
  * Component Quản lý Nhập kho thuốc, Lô thuốc và Nhà cung cấp
  */
@@ -31,7 +39,7 @@ function KhoNhapKho() {
   const navigate = useNavigate();
   const { showSuccess, showError } = useToast();
   
-  // Tab hiện tại ('lots' hoặc 'suppliers')
+  // Tab hiện tại ('lots' hoặc 'vattuLots')
   const [activeTab, setActiveTab] = useState('lots');
 
   // Phân quyền vai trò quản trị kho
@@ -39,23 +47,24 @@ function KhoNhapKho() {
 
   // States dữ liệu
   const [lots, setLots] = useState([]);
+  const [vatTuLots, setVatTuLots] = useState([]);
   const [allSuppliers, setAllSuppliers] = useState([]); // Toàn bộ để chọn & map
-  const [suppliers, setSuppliers] = useState([]);       // Phân trang ở tab 2
   const [drugs, setDrugs] = useState([]);
+  const [danhMucVatTu, setDanhMucVatTu] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
   // Chọn dòng chi tiết
   const [selectedLot, setSelectedLot] = useState(null);
-  const [selectedSupplier, setSelectedSupplier] = useState(null);
+  const [selectedVatTuLot, setSelectedVatTuLot] = useState(null);
 
   // State form Lô thuốc
   const [formData, setFormData] = useState({
     maLo: '', maThuoc: '', maNCC: '', soLuongNhap: '', soLuongTon: '', giaNhap: '', giaBan: '', ngaySanXuat: '', hanSuDung: ''
   });
 
-  // State form Nhà cung cấp
-  const [supFormData, setSupFormData] = useState({
-    maNCC: '', tenNCC: '', sDT: '', diaChi: ''
+  // State form Lô vật tư
+  const [vatTuLotsFormData, setVatTuLotsFormData] = useState({
+    maLo: '', maVatTu: '', maNCC: '', soLuongNhap: '', soLuongTon: '', giaNhap: '', giaBan: '', ngaySanXuat: '', hanSuDung: ''
   });
 
   // Bộ lọc Lô thuốc
@@ -63,9 +72,9 @@ function KhoNhapKho() {
     maLo: '', tenThuoc: '', tenNCC: '', expiryStatus: ''
   });
 
-  // Bộ lọc Nhà cung cấp
-  const [supFilters, setSupFilters] = useState({
-    tenNCC: ''
+  // Bộ lọc Lô vật tư
+  const [vatTuLotsFilters, setVatTuLotsFilters] = useState({
+    maLo: '', tenVatTu: '', tenNCC: '', expiryStatus: 'All'
   });
 
   // Phân trang Lô thuốc
@@ -73,10 +82,9 @@ function KhoNhapKho() {
   const itemsPerPage = 10;
   const [totalLots, setTotalLots] = useState(0);
 
-  // Phân trang Nhà cung cấp
-  const [supPage, setSupPage] = useState(1);
-  const [supPageSize, setSupPageSize] = useState(10);
-  const [totalSuppliers, setTotalSuppliers] = useState(0);
+  // Phân trang Lô vật tư
+  const [vatTuLotsCurrentPage, setVatTuLotsCurrentPage] = useState(1);
+  const [totalVatTuLots, setTotalVatTuLots] = useState(0);
 
   // Kiểm tra vai trò của người dùng
   useEffect(() => {
@@ -116,23 +124,77 @@ function KhoNhapKho() {
     }
   };
 
-  // Tải danh sách nhà cung cấp phân trang cho bảng bên trái (Tab 2)
-  const loadSuppliersData = async () => {
-    setIsLoading(true);
+  // Tải danh mục vật tư y tế phục vụ chọn lựa
+  const loadVatTu = async () => {
     try {
-      const res = await apiGetNhaCungCapList(supFilters.tenNCC.trim(), supPage, supPageSize);
+      const res = await apiGetVatTuList('', '', 1, 1000);
       if (res && res.data) {
-        setSuppliers(res.data);
-        setTotalSuppliers(res.total || 0);
+        setDanhMucVatTu(res.data);
       } else {
-        setSuppliers([]);
-        setTotalSuppliers(0);
+        setDanhMucVatTu([
+          { maVatTu: 'VT001', tenVatTu: 'Găng tay y tế', donViTinh: 'Cái' },
+          { maVatTu: 'VT002', tenVatTu: 'Bơm kim tiêm 5ml', donViTinh: 'Cái' },
+          { maVatTu: 'VT003', tenVatTu: 'Bông băng cồn sát trùng', donViTinh: 'Bộ' },
+          { maVatTu: 'VT004', tenVatTu: 'Nước muối sinh lý NaCl 0.9%', donViTinh: 'Chai' }
+        ]);
       }
     } catch (err) {
-      console.error('Lỗi tải nhà cung cấp phân trang:', err);
-      showError('Không thể tải danh sách nhà cung cấp từ máy chủ');
-    } finally {
-      setIsLoading(false);
+      console.error('Lỗi tải danh mục vật tư:', err);
+      setDanhMucVatTu([
+        { maVatTu: 'VT001', tenVatTu: 'Găng tay y tế', donViTinh: 'Cái' },
+        { maVatTu: 'VT002', tenVatTu: 'Bơm kim tiêm 5ml', donViTinh: 'Cái' },
+        { maVatTu: 'VT003', tenVatTu: 'Bông băng cồn sát trùng', donViTinh: 'Bộ' },
+        { maVatTu: 'VT004', tenVatTu: 'Nước muối sinh lý NaCl 0.9%', donViTinh: 'Chai' }
+      ]);
+    }
+  };
+
+  // Tải danh sách lô vật tư y tế từ LocalStorage (giả lập backend)
+  const loadVatTuLotsData = () => {
+    try {
+      const stored = localStorage.getItem('danhSachLoVatTu');
+      let currentLots = DEFAULT_VATTU_LOTS;
+      if (stored) {
+        currentLots = JSON.parse(stored);
+      } else {
+        localStorage.setItem('danhSachLoVatTu', JSON.stringify(DEFAULT_VATTU_LOTS));
+      }
+
+      // Lọc dữ liệu lô vật tư
+      const queryMaLo = (vatTuLotsFilters.maLo || '').trim().toLowerCase();
+      const queryTenVT = (vatTuLotsFilters.tenVatTu || '').trim().toLowerCase();
+      const queryTenNCC = (vatTuLotsFilters.tenNCC || '').trim().toLowerCase();
+      const queryExpiry = vatTuLotsFilters.expiryStatus || 'All';
+
+      const filtered = currentLots.filter(item => {
+        const matchesMaLo = !queryMaLo || item.maLo.toLowerCase().includes(queryMaLo);
+        
+        // Tìm thông tin tên vật tư
+        const vt = danhMucVatTu.find(v => (v.maVatTu || v.maVT) === item.maVatTu) || {};
+        const matchesTenVT = !queryTenVT || (vt.tenVatTu || vt.tenVT || '').toLowerCase().includes(queryTenVT);
+
+        // Tìm thông tin tên nhà cung cấp
+        const sup = allSuppliers.find(s => String(s.maNCC) === String(item.maNCC)) || {};
+        const matchesTenNCC = !queryTenNCC || (sup.tenNCC || '').toLowerCase().includes(queryTenNCC);
+
+        // Lọc theo HSD
+        let matchesExpiry = true;
+        if (queryExpiry !== 'All') {
+          const expInfo = getExpiryStatus(item.hanSuDung);
+          if (queryExpiry === 'Safe') matchesExpiry = expInfo.class === 'safe';
+          else if (queryExpiry === 'Expiring') matchesExpiry = expInfo.class === 'expiring';
+          else if (queryExpiry === 'Expired') matchesExpiry = expInfo.class === 'expired';
+        }
+
+        return matchesMaLo && matchesTenVT && matchesTenNCC && matchesExpiry;
+      });
+
+      setVatTuLots(filtered);
+      setTotalVatTuLots(filtered.length);
+    } catch (e) {
+      console.error(e);
+      setVatTuLots(DEFAULT_VATTU_LOTS);
+      setTotalVatTuLots(DEFAULT_VATTU_LOTS.length);
     }
   };
 
@@ -167,6 +229,7 @@ function KhoNhapKho() {
   useEffect(() => {
     loadDrugs();
     loadAllSuppliers();
+    loadVatTu();
   }, []);
 
   // Gọi tải lô thuốc ở Tab 1 khi lọc/phân trang thay đổi
@@ -179,12 +242,12 @@ function KhoNhapKho() {
     }
   }, [activeTab, filters.maLo, filters.tenThuoc, filters.tenNCC, filters.expiryStatus, currentPage]);
 
-  // Gọi tải nhà cung cấp ở Tab 2 khi lọc/phân trang thay đổi
+  // Gọi tải lô vật tư ở Tab 2 khi lọc/phân trang thay đổi hoặc khi danh mục vật tư/NCC được load
   useEffect(() => {
-    if (activeTab === 'suppliers') {
-      loadSuppliersData();
+    if (activeTab === 'vattuLots') {
+      loadVatTuLotsData();
     }
-  }, [activeTab, supFilters.tenNCC, supPage, supPageSize]);
+  }, [activeTab, vatTuLotsFilters.maLo, vatTuLotsFilters.tenVatTu, vatTuLotsFilters.tenNCC, vatTuLotsFilters.expiryStatus, vatTuLotsCurrentPage, danhMucVatTu, allSuppliers]);
 
   // Reset trang khi lọc thay đổi
   useEffect(() => {
@@ -192,8 +255,8 @@ function KhoNhapKho() {
   }, [filters.maLo, filters.tenThuoc, filters.tenNCC, filters.expiryStatus]);
 
   useEffect(() => {
-    setSupPage(1);
-  }, [supFilters.tenNCC, supPageSize]);
+    setVatTuLotsCurrentPage(1);
+  }, [vatTuLotsFilters.maLo, vatTuLotsFilters.tenVatTu, vatTuLotsFilters.tenNCC, vatTuLotsFilters.expiryStatus]);
 
   // Điền dữ liệu lô thuốc đã chọn vào form chi tiết
   useEffect(() => {
@@ -214,19 +277,24 @@ function KhoNhapKho() {
     }
   }, [selectedLot]);
 
-  // Điền dữ liệu nhà cung cấp đã chọn vào form chi tiết
+  // Điền dữ liệu lô vật tư đã chọn vào form chi tiết
   useEffect(() => {
-    if (selectedSupplier) {
-      setSupFormData({
-        maNCC: selectedSupplier.maNCC || '',
-        tenNCC: selectedSupplier.tenNCC || '',
-        sDT: selectedSupplier.sDT || selectedSupplier.sdt || '',
-        diaChi: selectedSupplier.diaChi || ''
+    if (selectedVatTuLot) {
+      setVatTuLotsFormData({
+        maLo: selectedVatTuLot.maLo || '',
+        maVatTu: selectedVatTuLot.maVatTu || '',
+        maNCC: selectedVatTuLot.maNCC || '',
+        soLuongNhap: selectedVatTuLot.soLuongNhap !== undefined ? selectedVatTuLot.soLuongNhap : '',
+        soLuongTon: selectedVatTuLot.soLuongTon !== undefined ? selectedVatTuLot.soLuongTon : '',
+        giaNhap: selectedVatTuLot.giaNhap !== undefined ? selectedVatTuLot.giaNhap : '',
+        giaBan: selectedVatTuLot.giaBan !== undefined ? selectedVatTuLot.giaBan : '',
+        ngaySanXuat: selectedVatTuLot.ngaySanXuat || '',
+        hanSuDung: selectedVatTuLot.hanSuDung || ''
       });
     } else {
-      setSupFormData({ maNCC: '', tenNCC: '', sDT: '', diaChi: '' });
+      setVatTuLotsFormData({ maLo: '', maVatTu: '', maNCC: '', soLuongNhap: '', soLuongTon: '', giaNhap: '', giaBan: '', ngaySanXuat: '', hanSuDung: '' });
     }
-  }, [selectedSupplier]);
+  }, [selectedVatTuLot]);
 
   // Cảnh báo hạn sử dụng lô thuốc
   const getExpiryStatus = (hsdString) => {
@@ -287,39 +355,40 @@ function KhoNhapKho() {
     return pages;
   };
 
-  // Phân trang Nhà cung cấp (collapsed pagination)
-  const totalSupPages = Math.max(1, Math.ceil(totalSuppliers / supPageSize));
-  const activeSupPage = Math.min(supPage, totalSupPages);
-  const supStartIndex = (activeSupPage - 1) * supPageSize;
-  const supEndIndex = supStartIndex + suppliers.length;
 
-  const getSupPaginationItems = () => {
+  // Phân trang Lô vật tư
+  const totalVatTuLotsPages = Math.max(1, Math.ceil(totalVatTuLots / itemsPerPage));
+  const activeVatTuLotsPage = Math.min(vatTuLotsCurrentPage, totalVatTuLotsPages);
+  const vatTuLotsStartIndex = (activeVatTuLotsPage - 1) * itemsPerPage;
+  const vatTuLotsEndIndex = vatTuLotsStartIndex + vatTuLots.length;
+
+  const getVatTuLotsPaginationItems = () => {
     const pages = [];
-    if (totalSupPages <= 7) {
-      for (let i = 1; i <= totalSupPages; i++) {
+    if (totalVatTuLotsPages <= 7) {
+      for (let i = 1; i <= totalVatTuLotsPages; i++) {
         pages.push(i);
       }
     } else {
-      if (activeSupPage <= 4) {
+      if (activeVatTuLotsPage <= 4) {
         for (let i = 1; i <= 5; i++) {
           pages.push(i);
         }
         pages.push('...');
-        pages.push(totalSupPages);
-      } else if (activeSupPage >= totalSupPages - 3) {
+        pages.push(totalVatTuLotsPages);
+      } else if (activeVatTuLotsPage >= totalVatTuLotsPages - 3) {
         pages.push(1);
         pages.push('...');
-        for (let i = totalSupPages - 4; i <= totalSupPages; i++) {
+        for (let i = totalVatTuLotsPages - 4; i <= totalVatTuLotsPages; i++) {
           pages.push(i);
         }
       } else {
         pages.push(1);
         pages.push('...');
-        pages.push(activeSupPage - 1);
-        pages.push(activeSupPage);
-        pages.push(activeSupPage + 1);
+        pages.push(activeVatTuLotsPage - 1);
+        pages.push(activeVatTuLotsPage);
+        pages.push(activeVatTuLotsPage + 1);
         pages.push('...');
-        pages.push(totalSupPages);
+        pages.push(totalVatTuLotsPages);
       }
     }
     return pages;
@@ -334,9 +403,13 @@ function KhoNhapKho() {
     }
   };
 
-  // Thay đổi input Nhà cung cấp
-  const handleSupInputChange = (key, val) => {
-    setSupFormData({ ...supFormData, [key]: val });
+  // Thay đổi input Lô vật tư
+  const handleVatTuLotInputChange = (key, val) => {
+    if (key === 'soLuongNhap' && !vatTuLotsFormData.soLuongTon) {
+      setVatTuLotsFormData({ ...vatTuLotsFormData, soLuongNhap: val, soLuongTon: val });
+    } else {
+      setVatTuLotsFormData({ ...vatTuLotsFormData, [key]: val });
+    }
   };
 
   // Thay đổi bộ lọc Lô thuốc
@@ -344,9 +417,9 @@ function KhoNhapKho() {
     setFilters({ ...filters, [key]: val });
   };
 
-  // Thay đổi bộ lọc Nhà cung cấp
-  const handleSupFilterChange = (key, val) => {
-    setSupFilters({ ...supFilters, [key]: val });
+  // Thay đổi bộ lọc Lô vật tư
+  const handleVatTuLotsFilterChange = (key, val) => {
+    setVatTuLotsFilters({ ...vatTuLotsFilters, [key]: val });
   };
 
   // Thêm mới Lô thuốc
@@ -372,13 +445,25 @@ function KhoNhapKho() {
     });
   };
 
-  // Thêm mới Nhà cung cấp
-  const handleAddNewSupplier = () => {
-    setSelectedSupplier({
-      maNCC: '',
-      tenNCC: '',
-      sDT: '',
-      diaChi: '',
+  // Thêm mới Lô vật tư
+  const handleAddNewVatTuLot = () => {
+    const lotNumbers = vatTuLots
+      .map(l => l.maLo)
+      .filter(id => /^LVT\d+$/i.test(id))
+      .map(id => parseInt(id.replace(/^LVT/i, ''), 10));
+    const nextNum = lotNumbers.length > 0 ? Math.max(...lotNumbers) + 1 : 1;
+    const newCode = `LVT${String(nextNum).padStart(5, '0')}`;
+
+    setSelectedVatTuLot({
+      maLo: newCode,
+      maVatTu: danhMucVatTu.length > 0 ? (danhMucVatTu[0].maVatTu || danhMucVatTu[0].maVT || '') : '',
+      maNCC: allSuppliers.length > 0 ? String(allSuppliers[0].maNCC) : '',
+      soLuongNhap: '',
+      soLuongTon: '',
+      giaNhap: '',
+      giaBan: '',
+      ngaySanXuat: '',
+      hanSuDung: '',
       isNew: true
     });
   };
@@ -457,39 +542,79 @@ function KhoNhapKho() {
     }
   };
 
-  // Lưu Nhà cung cấp
-  const handleSaveSupplier = async (e) => {
+  // Lưu Lô vật tư y tế
+  const handleSaveVatTuLot = (e) => {
     if (e) e.preventDefault();
-    if (!supFormData.tenNCC.trim()) {
-      showError("Vui lòng nhập tên nhà cung cấp!");
+    if (!vatTuLotsFormData.maLo.trim()) {
+      showError("Vui lòng nhập mã lô vật tư!");
+      return;
+    }
+    if (!vatTuLotsFormData.maVatTu) {
+      showError("Vui lòng chọn vật tư y tế!");
+      return;
+    }
+    if (!vatTuLotsFormData.maNCC) {
+      showError("Vui lòng chọn nhà cung cấp!");
       return;
     }
 
-    const payload = {
-      TenNCC: supFormData.tenNCC.trim(),
-      SDT: supFormData.sDT ? supFormData.sDT.trim() : null,
-      DiaChi: supFormData.diaChi ? supFormData.diaChi.trim() : null
+    const slNhap = parseInt(vatTuLotsFormData.soLuongNhap, 10);
+    const slTon = parseInt(vatTuLotsFormData.soLuongTon, 10);
+    const gNhap = parseFloat(vatTuLotsFormData.giaNhap);
+    const gBan = parseFloat(vatTuLotsFormData.giaBan);
+
+    if (isNaN(slNhap) || slNhap < 0) {
+      showError("Số lượng nhập phải là số không âm!");
+      return;
+    }
+    if (isNaN(slTon) || slTon < 0 || slTon > slNhap) {
+      showError("Số lượng tồn phải là số không âm và không vượt quá số lượng nhập!");
+      return;
+    }
+    if (isNaN(gNhap) || gNhap < 0) {
+      showError("Giá nhập phải là số không âm!");
+      return;
+    }
+    if (isNaN(gBan) || gBan < 0) {
+      showError("Giá bán phải là số không âm!");
+      return;
+    }
+    if (vatTuLotsFormData.ngaySanXuat && vatTuLotsFormData.hanSuDung && new Date(vatTuLotsFormData.hanSuDung) <= new Date(vatTuLotsFormData.ngaySanXuat)) {
+      showError("Hạn sử dụng phải sau Ngày sản xuất!");
+      return;
+    }
+
+    const newLot = {
+      maLo: vatTuLotsFormData.maLo.trim().toUpperCase(),
+      maVatTu: vatTuLotsFormData.maVatTu,
+      maNCC: vatTuLotsFormData.maNCC,
+      soLuongNhap: slNhap,
+      soLuongTon: slTon,
+      giaNhap: gNhap,
+      giaBan: gBan,
+      ngaySanXuat: vatTuLotsFormData.ngaySanXuat || null,
+      hanSuDung: vatTuLotsFormData.hanSuDung
     };
 
-    setIsLoading(true);
-    try {
-      if (selectedSupplier?.isNew) {
-        const res = await apiAddNhaCungCap(payload);
-        showSuccess(res.message || "Thêm mới nhà cung cấp thành công!");
-        setSelectedSupplier(null);
-      } else {
-        const res = await apiUpdateNhaCungCap(selectedSupplier.maNCC, payload);
-        showSuccess(res.message || "Cập nhật nhà cung cấp thành công!");
-        setSelectedSupplier(null);
+    // In ra console log để bạn BE xem payload mẫu
+    console.log("[BE LOG] Yêu cầu lưu lô vật tư nhập kho:", newLot);
+
+    let updatedLots = [];
+    if (selectedVatTuLot?.isNew) {
+      if (vatTuLots.some(x => x.maLo === newLot.maLo)) {
+        showError("Mã lô vật tư này đã tồn tại!");
+        return;
       }
-      await loadAllSuppliers();
-      await loadSuppliersData();
-    } catch (err) {
-      console.error('Lỗi lưu nhà cung cấp:', err);
-      showError(err.message || 'Lưu thông tin thất bại');
-    } finally {
-      setIsLoading(false);
+      updatedLots = [...vatTuLots, newLot];
+      showSuccess("Nhập kho lô vật tư mới thành công! (Dữ liệu giả lập)");
+    } else {
+      updatedLots = vatTuLots.map(l => l.maLo === selectedVatTuLot.maLo ? newLot : l);
+      showSuccess("Cập nhật thông tin lô vật tư thành công! (Dữ liệu giả lập)");
     }
+
+    setVatTuLots(updatedLots);
+    localStorage.setItem('danhSachLoVatTu', JSON.stringify(updatedLots));
+    setSelectedVatTuLot(null);
   };
 
   // Xóa lô thuốc
@@ -512,23 +637,15 @@ function KhoNhapKho() {
     }
   };
 
-  // Xóa Nhà cung cấp
-  const handleDeleteSupplier = async (maNCC, tenNCC) => {
-    if (window.confirm(`Bạn có chắc chắn muốn xóa nhà cung cấp: ${tenNCC}?`)) {
-      setIsLoading(true);
-      try {
-        await apiDeleteNhaCungCap(maNCC);
-        showSuccess("Xóa nhà cung cấp thành công!");
-        if (selectedSupplier && selectedSupplier.maNCC === maNCC) {
-          setSelectedSupplier(null);
-        }
-        await loadAllSuppliers();
-        await loadSuppliersData();
-      } catch (err) {
-        console.error('Lỗi xóa nhà cung cấp:', err);
-        showError(err.message || "Không thể xóa nhà cung cấp này (có thể do đang có lô thuốc liên kết)!");
-      } finally {
-        setIsLoading(false);
+  // Xóa Lô vật tư y tế
+  const handleDeleteVatTuLot = (maLo) => {
+    if (window.confirm(`Bạn có chắc chắn muốn xóa lô vật tư: ${maLo} khỏi dữ liệu nhập kho?`)) {
+      const updatedLots = vatTuLots.filter(l => l.maLo !== maLo);
+      setVatTuLots(updatedLots);
+      localStorage.setItem('danhSachLoVatTu', JSON.stringify(updatedLots));
+      showSuccess("Xóa lô vật tư thành công! (Dữ liệu giả lập)");
+      if (selectedVatTuLot && selectedVatTuLot.maLo === maLo) {
+        setSelectedVatTuLot(null);
       }
     }
   };
@@ -567,17 +684,17 @@ function KhoNhapKho() {
           </button>
           <button 
             className={`py-1.5 px-5 text-[12.5px] font-bold rounded-lg transition-all duration-200 cursor-pointer flex items-center gap-1.5 ${
-              activeTab === 'suppliers' 
+              activeTab === 'vattuLots' 
                 ? 'bg-white text-[var(--primary-hover)] shadow-sm' 
                 : 'text-slate-500 hover:text-slate-800'
             }`}
             onClick={() => {
-              setActiveTab('suppliers');
-              setSelectedSupplier(null);
+              setActiveTab('vattuLots');
+              setSelectedVatTuLot(null);
             }}
           >
-            <Users size={15} />
-            Nhà cung cấp dược phẩm
+            <ClipboardList size={15} />
+            Lô vật tư nhập kho
           </button>
         </div>
       </div>
@@ -876,128 +993,158 @@ function KhoNhapKho() {
           </>
         ) : (
           // ==========================================
-          // GIAO DIỆN TAB 2: NHÀ CUNG CẤP (API)
+          // GIAO DIỆN TAB 2: LÔ VẬT TƯ (FALLBACK / MOCK)
           // ==========================================
           <>
-            {/* Cột trái: Bảng danh sách nhà cung cấp */}
+            {/* Cột trái: Bảng danh sách lô vật tư */}
             <div className="flex-[1.3] flex flex-col border-r border-[var(--border-color)] h-full bg-white">
               <div className="flex justify-between items-center py-3 px-4 border-b border-[var(--border-color)] bg-[var(--bg-main)]">
                 <div className="flex items-center gap-1.5">
-                  <Users size={16} className="text-[#0ea5e9]" />
-                  <h3 className="text-[14px] font-[750] text-[var(--text-main)]">Danh sách Nhà cung cấp</h3>
+                  <ClipboardList size={16} className="text-[#10b981]" />
+                  <h3 className="text-[14px] font-[750] text-[var(--text-main)]">Danh sách Lô vật tư nhập kho</h3>
                 </div>
                 {isManager && (
-                  <button onClick={handleAddNewSupplier} className="btn-primary h-8 text-[12.5px] px-3 flex items-center gap-1 !w-auto !mt-0 shrink-0 bg-[#0ea5e9] hover:bg-[#0284c7]">
-                    <Plus size={14} /> Thêm nhà cung cấp
+                  <button onClick={handleAddNewVatTuLot} className="btn-primary h-8 text-[12.5px] px-3 flex items-center gap-1 !w-auto !mt-0 shrink-0 bg-[#10b981] hover:bg-[#059669]">
+                    <Plus size={14} /> Nhập kho lô mới
                   </button>
                 )}
               </div>
 
-              {/* Bảng nhà cung cấp */}
+              {/* Bảng lô vật tư */}
               <div className="flex-1 overflow-y-auto">
                 <table className="kb-table w-full border-collapse text-[13px]">
                   <thead>
                     <tr className="sticky top-0 z-10 bg-[var(--bg-main)] border-b-2 border-[var(--border-color)]">
                       <th className="w-[50px] text-center p-2">STT</th>
-                      <th className="w-[100px] p-2">Mã NCC</th>
-                      <th className="p-2">Tên nhà cung cấp</th>
-                      <th className="w-[160px] p-2">Số điện thoại</th>
-                      <th className="p-2">Địa chỉ trụ sở</th>
+                      <th className="w-[80px] p-2">Mã lô</th>
+                      <th className="w-[160px] p-2">Vật tư y tế</th>
+                      <th className="w-[160px] p-2">Nhà cung cấp</th>
+                      <th className="w-[80px] p-2 text-right">SL Nhập</th>
+                      <th className="w-[80px] p-2 text-right">SL Tồn</th>
+                      <th className="w-[100px] p-2 text-right">Giá bán</th>
+                      <th className="w-[120px] p-2 text-center">Trạng thái HSD</th>
                       {isManager && <th className="w-[60px] p-2 text-center">Xóa</th>}
                     </tr>
                     <tr className="bg-[var(--bg-main)] border-b border-[var(--border-color)]">
                       <td></td>
-                      <td></td>
                       <td className="p-1">
                         <input 
-                          type="text" placeholder="Lọc theo tên..." className="form-input h-[26px] text-[12px] py-[2px] !px-2 !pl-2"
-                          value={supFilters.tenNCC} onChange={e => handleSupFilterChange('tenNCC', e.target.value)}
+                          type="text" placeholder="Mã..." className="form-input h-[26px] text-[12px] py-[2px] !px-2 !pl-2"
+                          value={vatTuLotsFilters.maLo} onChange={e => handleVatTuLotsFilterChange('maLo', e.target.value)}
+                        />
+                      </td>
+                      <td className="p-1">
+                        <input 
+                          type="text" placeholder="Vật tư..." className="form-input h-[26px] text-[12px] py-[2px] !px-2 !pl-2"
+                          value={vatTuLotsFilters.tenVatTu} onChange={e => handleVatTuLotsFilterChange('tenVatTu', e.target.value)}
+                        />
+                      </td>
+                      <td className="p-1">
+                        <input 
+                          type="text" placeholder="Tên NCC..." className="form-input h-[26px] text-[12px] py-[2px] !px-2 !pl-2"
+                          value={vatTuLotsFilters.tenNCC} onChange={e => handleVatTuLotsFilterChange('tenNCC', e.target.value)}
                         />
                       </td>
                       <td></td>
                       <td></td>
+                      <td></td>
+                      <td className="p-1">
+                        <select className="form-input h-[26px] text-[12px] py-0 !px-2 !pl-2" value={vatTuLotsFilters.expiryStatus} onChange={e => handleVatTuLotsFilterChange('expiryStatus', e.target.value)}>
+                          <option value="All">Tất cả HSD</option>
+                          <option value="Safe">An toàn</option>
+                          <option value="Expiring">Hạn ngắn (&lt;6 th)</option>
+                          <option value="Expired">Đã hết hạn</option>
+                        </select>
+                      </td>
                       {isManager && <td></td>}
                     </tr>
                   </thead>
                   <tbody>
-                    {isLoading ? (
+                    {vatTuLots.map((item, idx) => {
+                      const isSelected = selectedVatTuLot && selectedVatTuLot.maLo === item.maLo;
+                      const vt = danhMucVatTu.find(v => (v.maVatTu || v.maVT) === item.maVatTu) || {};
+                      const sup = allSuppliers.find(s => String(s.maNCC) === String(item.maNCC)) || {};
+                      const expInfo = getExpiryStatus(item.hanSuDung);
+                      
+                      return (
+                        <tr 
+                          key={item.maLo} 
+                          className={`kb-table-row cursor-pointer transition-colors duration-150 ${isSelected ? 'bg-[var(--primary-light)]' : 'bg-transparent'}`}
+                          onClick={() => setSelectedVatTuLot(item)}
+                        >
+                          <td className="text-center py-2.5 px-2 text-[var(--text-muted)]">{vatTuLotsStartIndex + idx + 1}</td>
+                          <td className={`font-semibold py-2.5 px-2 ${isSelected ? 'text-[var(--primary-hover)]' : 'text-[var(--text-main)]'}`}>{item.maLo}</td>
+                          <td className="font-[650] py-2.5 px-2">
+                            {vt.tenVatTu || vt.tenVT || 'Vật tư không xác định'}
+                            <div className="text-[11px] font-normal text-[var(--text-muted)]">{vt.quyCach || 'Vật tư tiêu hao'}</div>
+                          </td>
+                          <td className="py-2.5 px-2 text-[12px]">{sup.tenNCC || 'NCC không xác định'}</td>
+                          <td className="py-2.5 px-2 text-right font-medium">{item.soLuongNhap}</td>
+                          <td className={`py-2.5 px-2 text-right font-semibold ${item.soLuongTon === 0 ? 'text-[#ef4444]' : 'text-[var(--text-main)]'}`}>{item.soLuongTon}</td>
+                          <td className="py-2.5 px-2 text-right font-semibold text-[var(--primary)]">{(item.giaBan || 0).toLocaleString()}đ</td>
+                          <td className="py-2.5 px-2 text-center">
+                            <span className={`text-[11px] font-semibold py-0.5 px-2 rounded-[10px] ${
+                              expInfo.class === 'expired' ? 'bg-[#fee2e2] text-[#ef4444]' : expInfo.class === 'expiring' ? 'bg-[#ffedd5] text-[#ea580c]' : 'bg-[#dcfce7] text-[#16a34a]'
+                            }`}>{expInfo.label}</span>
+                          </td>
+                          {isManager && (
+                            <td className="py-2.5 px-2 text-center">
+                              <button 
+                                className="kb-icon-btn kb-icon-btn--danger mx-auto"
+                                onClick={(e) => { e.stopPropagation(); handleDeleteVatTuLot(item.maLo); }}
+                                title="Xóa lô vật tư"
+                              >
+                                <Trash2 size={13} />
+                              </button>
+                            </td>
+                          )}
+                        </tr>
+                      );
+                    })}
+                    {vatTuLots.length === 0 && (
                       <tr>
-                        <td colSpan={isManager ? 6 : 5} className="text-center p-10 text-[var(--text-muted)]">Đang tải danh sách nhà cung cấp...</td>
+                        <td colSpan={isManager ? 9 : 8} className="text-center p-10 text-[var(--text-muted)]">Không tìm thấy lô vật tư trùng khớp với bộ lọc tìm kiếm</td>
                       </tr>
-                    ) : suppliers.length === 0 ? (
-                      <tr>
-                        <td colSpan={isManager ? 6 : 5} className="text-center p-10 text-[var(--text-muted)]">Không tìm thấy nhà cung cấp nào</td>
-                      </tr>
-                    ) : (
-                      suppliers.map((sup, idx) => {
-                        const isSelected = selectedSupplier && selectedSupplier.maNCC === sup.maNCC;
-                        return (
-                          <tr 
-                            key={sup.maNCC} 
-                            className={`kb-table-row cursor-pointer transition-colors duration-150 ${isSelected ? 'bg-[var(--primary-light)]' : 'bg-transparent'}`}
-                            onClick={() => setSelectedSupplier(sup)}
-                          >
-                            <td className="text-center py-2.5 px-2 text-[var(--text-muted)]">{supStartIndex + idx + 1}</td>
-                            <td className={`font-semibold py-2.5 px-2 ${isSelected ? 'text-[var(--primary-hover)]' : 'text-[var(--text-main)]'}`}>{sup.maNCC}</td>
-                            <td className="font-[650] py-2.5 px-2">{sup.tenNCC}</td>
-                            <td className="py-2.5 px-2 font-medium">{sup.sDT || sup.sdt || '—'}</td>
-                            <td className="py-2.5 px-2 text-[12px] text-gray-600">{sup.diaChi || '—'}</td>
-                            {isManager && (
-                              <td className="py-2.5 px-2 text-center">
-                                <button 
-                                  className="kb-icon-btn kb-icon-btn--danger mx-auto"
-                                  onClick={(e) => { e.stopPropagation(); handleDeleteSupplier(sup.maNCC, sup.tenNCC); }}
-                                  title="Xóa nhà cung cấp"
-                                >
-                                  <Trash2 size={13} />
-                                </button>
-                              </td>
-                            )}
-                          </tr>
-                        );
-                      })
                     )}
                   </tbody>
                 </table>
               </div>
 
-              {/* Phân trang Nhà cung cấp */}
+              {/* Phân trang Lô vật tư */}
               <div className="border-t border-[var(--border-color)] py-2 px-4 flex justify-between items-center text-[12.5px] text-[var(--text-muted)] bg-[var(--bg-main)]">
                 <div className="flex gap-1 items-center">
                   <button 
-                    disabled={activeSupPage === 1} 
-                    onClick={() => setSupPage(activeSupPage - 1)} 
+                    disabled={activeVatTuLotsPage === 1} 
+                    onClick={() => setVatTuLotsCurrentPage(activeVatTuLotsPage - 1)} 
                     className={`h-6 w-6 rounded border border-[#0ea5e9] flex items-center justify-center text-[11px] font-bold transition-all ${
-                      activeSupPage === 1 
+                      activeVatTuLotsPage === 1 
                         ? 'opacity-40 cursor-not-allowed text-[#0ea5e9] bg-transparent' 
                         : 'text-[#0ea5e9] bg-transparent hover:bg-[#e0f2fe] cursor-pointer'
                     }`}
                   >
                     &lt;
                   </button>
-                  {getSupPaginationItems().map((p, index) => {
-                    if (p === '...') {
-                      return <span key={`dots-${index}`} className="px-1 text-[var(--text-muted)] select-none">...</span>;
-                    }
-                    return (
-                      <button 
-                        key={p} 
-                        onClick={() => setSupPage(p)} 
-                        className={`h-6 w-6 rounded border flex items-center justify-center text-[11px] font-bold transition-all cursor-pointer ${
-                          p === activeSupPage
-                            ? "bg-[#0ea5e9] text-white border-[#0ea5e9]"
-                            : "bg-transparent text-[#0ea5e9] border-[#0ea5e9] hover:bg-[#e0f2fe]"
-                        }`}
-                      >
-                        {p}
-                      </button>
-                    );
-                  })}
+                  {getVatTuLotsPaginationItems().map((p, idx) => (
+                    <button 
+                      key={idx} 
+                      onClick={() => typeof p === 'number' && setVatTuLotsCurrentPage(p)} 
+                      disabled={p === '...'}
+                      className={`h-6 w-6 rounded border flex items-center justify-center text-[11px] font-bold transition-all ${
+                        p === '...' 
+                          ? 'border-transparent text-[var(--text-muted)] bg-transparent cursor-default'
+                          : p === activeVatTuLotsPage
+                            ? "bg-[#0ea5e9] text-white border-[#0ea5e9] cursor-pointer"
+                            : "bg-transparent text-[#0ea5e9] border-[#0ea5e9] hover:bg-[#e0f2fe] cursor-pointer"
+                      }`}
+                    >
+                      {p}
+                    </button>
+                  ))}
                   <button 
-                    disabled={activeSupPage === totalSupPages} 
-                    onClick={() => setSupPage(activeSupPage + 1)} 
+                    disabled={activeVatTuLotsPage === totalVatTuLotsPages} 
+                    onClick={() => setVatTuLotsCurrentPage(activeVatTuLotsPage + 1)} 
                     className={`h-6 w-6 rounded border border-[#0ea5e9] flex items-center justify-center text-[11px] font-bold transition-all ${
-                      activeSupPage === totalSupPages 
+                      activeVatTuLotsPage === totalVatTuLotsPages 
                         ? 'opacity-40 cursor-not-allowed text-[#0ea5e9] bg-transparent' 
                         : 'text-[#0ea5e9] bg-transparent hover:bg-[#e0f2fe] cursor-pointer'
                     }`}
@@ -1005,69 +1152,127 @@ function KhoNhapKho() {
                     &gt;
                   </button>
                 </div>
-                <span>Hiển thị {totalSuppliers === 0 ? 0 : supStartIndex + 1} - {Math.min(supEndIndex, totalSuppliers)} trên tổng {totalSuppliers} nhà cung cấp</span>
+                <span>Hiển thị {vatTuLots.length === 0 ? 0 : vatTuLotsStartIndex + 1} - {Math.min(vatTuLotsEndIndex, vatTuLots.length)} trên tổng {vatTuLots.length} lô</span>
               </div>
             </div>
 
-            {/* Cột phải: Form chi tiết Nhà cung cấp */}
+            {/* Cột phải: Form chi tiết Lô vật tư */}
             <div className="flex-[0.7] flex flex-col h-full bg-white">
-              <div className="flex bg-[#0ea5e9] py-3 px-[18px] h-[42px] items-center text-white text-[13px] font-bold gap-2">
-                <Users size={16} />
-                <span>CHI TIẾT THÔNG TIN NHÀ CUNG CẤP</span>
+              <div className="flex bg-[#10b981] py-3 px-[18px] h-[42px] items-center text-white text-[13px] font-bold gap-2">
+                <Database size={16} />
+                <span>NHẬP KHO VÀ ĐỊNH GIÁ LÔ VẬT TƯ</span>
               </div>
 
               <div className="flex-1 overflow-y-auto p-5 bg-white">
-                {selectedSupplier === null ? (
+                {selectedVatTuLot === null ? (
                   <div className="h-full flex flex-col items-center justify-center text-[var(--text-muted)] text-center gap-3">
-                    <Users size={48} className="opacity-25 text-[#0ea5e9]" />
+                    <Database size={48} className="opacity-25 text-[#10b981]" />
                     <div>
-                      <h4 className="font-semibold text-[var(--text-main)]">Chưa chọn nhà cung cấp</h4>
-                      <p className="text-[13px] mt-1">Chọn một nhà cung cấp bên trái hoặc bấm "Thêm nhà cung cấp" để khai báo thông tin mới.</p>
+                      <h4 className="font-semibold text-[var(--text-main)]">Chưa chọn lô vật tư</h4>
+                      <p className="text-[13px] mt-1">Chọn một lô vật tư bên trái hoặc bấm "Nhập kho lô mới" để khai báo lô nhập vật tư tiêu hao.</p>
                     </div>
                   </div>
                 ) : (
-                  <form onSubmit={handleSaveSupplier} className="h-full flex flex-col justify-between">
+                  <form onSubmit={handleSaveVatTuLot} className="h-full flex flex-col justify-between">
                     <div className="flex flex-col gap-3.5">
                       
-                      <div className="form-group m-0">
-                        <label className="form-label text-[12.5px]">Mã nhà cung cấp</label>
-                        <input 
-                          type="text" className="form-input h-9 text-[13px] uppercase !pl-3" placeholder="Tự sinh tự động" value={supFormData.maNCC}
-                          disabled required
-                        />
+                      <div className="grid grid-cols-[1fr_1.2fr] gap-3">
+                        <div className="form-group m-0">
+                          <label className="form-label text-[12.5px]">Mã lô vật tư <span className="text-red-500">*</span></label>
+                          <input 
+                            type="text" className="form-input h-9 text-[13px] uppercase !pl-3" placeholder="VD: LVT26001" value={vatTuLotsFormData.maLo}
+                            onChange={e => handleVatTuLotInputChange('maLo', e.target.value)} required disabled={!selectedVatTuLot.isNew || !isManager}
+                          />
+                        </div>
+                        
+                        <div className="form-group m-0">
+                          <label className="form-label text-[12.5px]">Chọn Vật tư <span className="text-red-500">*</span></label>
+                          <select 
+                            className="w-full h-9 text-[13px] px-3 border border-[var(--border-color)] rounded-[var(--radius-md)] bg-white text-[var(--text-main)] outline-none focus:border-[var(--primary)] transition-all cursor-pointer" 
+                            value={vatTuLotsFormData.maVatTu} onChange={e => handleVatTuLotInputChange('maVatTu', e.target.value)} required disabled={!isManager}
+                          >
+                            <option value="">-- Chọn vật tư y tế --</option>
+                            {danhMucVatTu.map(v => (
+                              <option key={v.maVatTu || v.maVT} value={v.maVatTu || v.maVT}>{v.tenVatTu || v.tenVT} ({v.donViTinh})</option>
+                            ))}
+                          </select>
+                        </div>
                       </div>
 
                       <div className="form-group m-0">
-                        <label className="form-label text-[12.5px]">Tên nhà cung cấp <span className="text-red-500">*</span></label>
-                        <input 
-                          type="text" className="form-input h-9 text-[13px] !pl-3" placeholder="Nhập tên công ty/đại lý cung ứng..." value={supFormData.tenNCC}
-                          onChange={e => handleSupInputChange('tenNCC', e.target.value)} required disabled={!isManager}
-                        />
+                        <label className="form-label text-[12.5px]">Nhà cung cấp <span className="text-red-500">*</span></label>
+                        <select 
+                          className="w-full h-9 text-[13px] px-3 border border-[var(--border-color)] rounded-[var(--radius-md)] bg-white text-[var(--text-main)] outline-none focus:border-[var(--primary)] transition-all cursor-pointer" 
+                          value={vatTuLotsFormData.maNCC} onChange={e => handleVatTuLotInputChange('maNCC', e.target.value)} required disabled={!isManager}
+                        >
+                          <option value="">-- Chọn nhà cung cấp sản phẩm --</option>
+                          {allSuppliers.map(s => (
+                            <option key={s.maNCC} value={s.maNCC}>{s.tenNCC}</option>
+                          ))}
+                        </select>
                       </div>
 
-                      <div className="form-group m-0">
-                        <label className="form-label text-[12.5px]">Số điện thoại liên lạc</label>
-                        <input 
-                          type="text" className="form-input h-9 text-[13px] !pl-3" placeholder="Nhập số điện thoại..." value={supFormData.sDT}
-                          onChange={e => handleSupInputChange('sDT', e.target.value)} disabled={!isManager}
-                        />
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="form-group m-0">
+                          <label className="form-label text-[12.5px]">Số lượng nhập <span className="text-red-500">*</span></label>
+                          <input 
+                            type="number" min="0" className="form-input h-9 text-[13px] !pl-3" placeholder="Số lượng" value={vatTuLotsFormData.soLuongNhap}
+                            onChange={e => handleVatTuLotInputChange('soLuongNhap', e.target.value)} required disabled={!isManager}
+                          />
+                        </div>
+                        
+                        <div className="form-group m-0">
+                          <label className="form-label text-[12.5px]">Số lượng tồn kho <span className="text-red-500">*</span></label>
+                          <input 
+                            type="number" min="0" className="form-input h-9 text-[13px] !pl-3" placeholder="Số lượng tồn" value={vatTuLotsFormData.soLuongTon}
+                            onChange={e => handleVatTuLotInputChange('soLuongTon', e.target.value)} required disabled={!isManager}
+                          />
+                        </div>
                       </div>
 
-                      <div className="form-group m-0">
-                        <label className="form-label text-[12.5px]">Địa chỉ trụ sở</label>
-                        <input 
-                          type="text" className="form-input h-9 text-[13px] !pl-3" placeholder="Nhập địa chỉ trụ sở..." value={supFormData.diaChi}
-                          onChange={e => handleSupInputChange('diaChi', e.target.value)} disabled={!isManager}
-                        />
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="form-group m-0">
+                          <label className="form-label text-[12.5px]">Giá nhập đơn vị (đ) <span className="text-red-500">*</span></label>
+                          <input 
+                            type="number" min="0" className="form-input h-9 text-[13px] !pl-3" placeholder="Giá nhập" value={vatTuLotsFormData.giaNhap}
+                            onChange={e => handleVatTuLotInputChange('giaNhap', e.target.value)} required disabled={!isManager}
+                          />
+                        </div>
+                        
+                        <div className="form-group m-0">
+                          <label className="form-label text-[12.5px]">Giá bán niêm yết (đ) <span className="text-red-500">*</span></label>
+                          <input 
+                            type="number" min="0" className="form-input h-9 text-[13px] !pl-3" placeholder="Giá bán" value={vatTuLotsFormData.giaBan}
+                            onChange={e => handleVatTuLotInputChange('giaBan', e.target.value)} required disabled={!isManager}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="form-group m-0">
+                          <label className="form-label text-[12.5px]">Ngày sản xuất</label>
+                          <input 
+                            type="date" className="form-input h-9 text-[13px] !pl-3" value={vatTuLotsFormData.ngaySanXuat}
+                            onChange={e => handleVatTuLotInputChange('ngaySanXuat', e.target.value)} disabled={!isManager}
+                          />
+                        </div>
+                        
+                        <div className="form-group m-0">
+                          <label className="form-label text-[12.5px]">Hạn sử dụng <span className="text-red-500">*</span></label>
+                          <input 
+                            type="date" className="form-input h-9 text-[13px] !pl-3" value={vatTuLotsFormData.hanSuDung}
+                            onChange={e => handleVatTuLotInputChange('hanSuDung', e.target.value)} required disabled={!isManager}
+                          />
+                        </div>
                       </div>
                     </div>
 
                     <div className="flex justify-end gap-2.5 border-t border-[var(--border-color)] pt-4 mt-5">
-                      <button type="button" className="btn-outline w-[100px] h-9 flex items-center justify-center p-0 m-0" onClick={() => setSelectedSupplier(null)}>
+                      <button type="button" className="btn-outline w-[100px] h-9 flex items-center justify-center p-0 m-0" onClick={() => setSelectedVatTuLot(null)}>
                         {isManager ? "Hủy" : "Đóng"}
                       </button>
                       {isManager && (
-                        <button type="submit" className="btn-primary w-[120px] h-9 flex items-center justify-center gap-1.5 p-0 m-0 bg-[#0ea5e9] hover:bg-[#0284c7]"><Save size={16} /> Lưu</button>
+                        <button type="submit" className="btn-primary w-[120px] h-9 flex items-center justify-center gap-1.5 p-0 m-0 bg-[#10b981] hover:bg-[#059669]"><Save size={16} /> Lưu</button>
                       )}
                     </div>
                   </form>

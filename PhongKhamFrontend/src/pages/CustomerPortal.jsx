@@ -8,174 +8,7 @@ import {
 import { useToast } from '../utils/ToastContext';
 import { apiGetBacSiCongKhai, apiTraCuuHoSoCongKhai } from '../utils/api';
 
-// Mock doctors database for customer view
-const MOCK_DOCTORS = [
-  {
-    maNV: 'NV003',
-    hoTen: 'Mai Xuân Phúc',
-    chuyenMon: 'Tim mạch / Nội khoa',
-    khoa: 'Nội tổng quát',
-    bangCap: 'Thạc sĩ, Bác sĩ chuyên khoa I - Đại học Y Dược TP.HCM',
-    kinhNghiem: 'Hơn 10 năm kinh nghiệm trong chẩn đoán và điều trị bệnh lý tim mạch, cao huyết áp và rối loạn chuyển hóa.',
-    status: 'Đang làm việc'
-  },
-  {
-    maNV: 'MOCK001',
-    hoTen: 'Nguyễn Thị Minh Thư',
-    chuyenMon: 'Cận lâm sàng / Siêu âm',
-    khoa: 'Chẩn đoán hình ảnh',
-    bangCap: 'Bác sĩ Đa khoa - Đại học Y khoa Phạm Ngọc Thạch',
-    kinhNghiem: '8 năm kinh nghiệm chuyên sâu về chẩn đoán hình ảnh, siêu âm màu tuyến giáp, tim mạch và ổ bụng tổng quát.',
-    status: 'Đang làm việc'
-  },
-  {
-    maNV: 'MOCK002',
-    hoTen: 'Trần Hoàng Bách',
-    chuyenMon: 'Tai Mũi Họng / Nội soi',
-    khoa: 'Chuyên khoa lẻ',
-    bangCap: 'Bác sĩ chuyên khoa I - Đại học Y Hà Nội',
-    kinhNghiem: '12 năm kinh nghiệm khám lâm sàng và thực hiện thủ thuật nội soi điều trị viêm xoang, viêm tai giữa ở người lớn và trẻ em.',
-    status: 'Đang làm việc'
-  }
-];
 
-// Seeded patient medical history database for client-side lookup
-const SEEDED_PATIENT_RECORDS = {
-  'bn260714001': {
-    patient: {
-      maBN: 'BN260714001',
-      hoTen: 'MAI XUÂN KIÊN',
-      sdt: '0896421137',
-      ngaySinh: '18/03/2003',
-      gioiTinh: 'Nam',
-      diaChi: '180 Cao Lỗ, Phường 4, Quận 8, TP.HCM',
-      tienSuBenh: 'Không có tiền sử dị ứng thuốc'
-    },
-    visits: [
-      {
-        maPhieu: 'PK_260714_001',
-        ngayKham: '14/07/2026 15:30',
-        tenBacSi: 'Mai Xuân Phúc',
-        lyDoKham: 'Kiểm tra sức khỏe tổng quát định kỳ',
-        mach: '72',
-        nhietDo: '36.8',
-        huyetAp: '120/80',
-        canNang: '68',
-        chieuCao: '172',
-        ketLuan: 'Sức khỏe lâm sàng bình thường, huyết áp ổn định',
-        icdList: [{ maICD: 'Z00.0', tenBenh: 'Khám sức khỏe tổng quát định kỳ' }],
-        clsList: [
-          { tenDV: 'Siêu âm ổ bụng tổng quát', ketQua: 'Hình ảnh ổ bụng bình thường, chưa phát hiện bệnh lý', trangThaiDichVu: 1 }
-        ],
-        donThuoc: [
-          { tenThuoc: 'Multivitamin tổng quát', soLuong: 30, cachDung: 'Uống 1 viên vào buổi sáng sau ăn' }
-        ]
-      }
-    ]
-  },
-  '0896421137': {
-    patient: {
-      maBN: 'BN260714001',
-      hoTen: 'MAI XUÂN KIÊN',
-      sdt: '0896421137',
-      ngaySinh: '18/03/2003',
-      gioiTinh: 'Nam',
-      diaChi: '180 Cao Lỗ, Phường 4, Quận 8, TP.HCM',
-      tienSuBenh: 'Không có tiền sử dị ứng thuốc'
-    },
-    visits: [
-      {
-        maPhieu: 'PK_260714_001',
-        ngayKham: '14/07/2026 15:30',
-        tenBacSi: 'Mai Xuân Phúc',
-        lyDoKham: 'Kiểm tra sức khỏe tổng quát định kỳ',
-        mach: '72',
-        nhietDo: '36.8',
-        huyetAp: '120/80',
-        canNang: '68',
-        chieuCao: '172',
-        ketLuan: 'Sức khỏe lâm sàng bình thường, huyết áp ổn định',
-        icdList: [{ maICD: 'Z00.0', tenBenh: 'Khám sức khỏe tổng quát định kỳ' }],
-        clsList: [
-          { tenDV: 'Siêu âm ổ bụng tổng quát', ketQua: 'Hình ảnh ổ bụng bình thường, chưa phát hiện bệnh lý', trangThaiDichVu: 1 }
-        ],
-        donThuoc: [
-          { tenThuoc: 'Multivitamin tổng quát', soLuong: 30, cachDung: 'Uống 1 viên vào buổi sáng sau ăn' }
-        ]
-      }
-    ]
-  },
-  'bn260703001': {
-    patient: {
-      maBN: 'BN260703001',
-      hoTen: 'PHAN NHẬT PHÁT',
-      sdt: '0896431456',
-      ngaySinh: '09/12/2007',
-      gioiTinh: 'Nam',
-      diaChi: '22/3A Nguyễn Tri Phương, Quận 5, TP.HCM',
-      tienSuBenh: 'Thiếu máu nhẹ'
-    },
-    visits: [
-      {
-        maPhieu: 'PK_260703_001',
-        ngayKham: '03/07/2026 21:54',
-        tenBacSi: 'Mai Xuân Phúc',
-        lyDoKham: 'Đau đầu dữ dội kèm chóng mặt ù tai',
-        mach: '65',
-        nhietDo: '37.0',
-        huyetAp: '125/87',
-        canNang: '80',
-        chieuCao: '183',
-        ketLuan: 'Thiểu năng tuần hoàn não cấp tính, cơ thể suy nhược do áp lực',
-        icdList: [{ maICD: 'G45.9', tenBenh: 'Cơn thiếu máu não cục bộ thoáng qua, không xác định' }],
-        clsList: [
-          { tenDV: 'Siêu âm ổ bụng tổng quát', ketQua: 'Gan nhiễm mỡ nhẹ độ 1, nhu mô thận và lách bình thường', trangThaiDichVu: 1 },
-          { tenDV: 'Siêu âm tim màu', ketQua: 'Chức năng tâm thu thất trái bình thường, các van tim thanh mảnh hoạt động tốt', trangThaiDichVu: 1 },
-          { tenDV: 'Siêu âm tuyến giáp', ketQua: 'Chưa thấy nhân giáp bất thường, thùy tuyến giáp hai bên kích thước bình thường', trangThaiDichVu: 1 }
-        ],
-        donThuoc: [
-          { tenThuoc: 'Paracetamol 500mg', soLuong: 10, cachDung: 'Ngày uống 2 lần, mỗi lần 1 viên sau ăn khi đau' },
-          { tenThuoc: 'Piracetam 800mg', soLuong: 20, cachDung: 'Ngày uống 2 lần, mỗi lần 1 viên vào sáng và trưa' }
-        ]
-      }
-    ]
-  },
-  '0896431456': {
-    patient: {
-      maBN: 'BN260703001',
-      hoTen: 'PHAN NHẬT PHÁT',
-      sdt: '0896431456',
-      ngaySinh: '09/12/2007',
-      gioiTinh: 'Nam',
-      diaChi: '22/3A Nguyễn Tri Phương, Quận 5, TP.HCM',
-      tienSuBenh: 'Thiếu máu nhẹ'
-    },
-    visits: [
-      {
-        maPhieu: 'PK_260703_001',
-        ngayKham: '03/07/2026 21:54',
-        tenBacSi: 'Mai Xuân Phúc',
-        lyDoKham: 'Đau đầu dữ dội kèm chóng mặt ù tai',
-        mach: '65',
-        nhietDo: '37.0',
-        huyetAp: '125/87',
-        canNang: '80',
-        chieuCao: '183',
-        ketLuan: 'Thiểu năng tuần hoàn não cấp tính, cơ thể suy nhược do áp lực',
-        icdList: [{ maICD: 'G45.9', tenBenh: 'Cơn thiếu máu não cục bộ thoáng qua, không xác định' }],
-        clsList: [
-          { tenDV: 'Siêu âm ổ bụng tổng quát', ketQua: 'Gan nhiễm mỡ nhẹ độ 1, nhu mô thận và lách bình thường', trangThaiDichVu: 1 },
-          { tenDV: 'Siêu âm tim màu', ketQua: 'Chức năng tâm thu thất trái bình thường, các van tim thanh mảnh hoạt động tốt', trangThaiDichVu: 1 },
-          { tenDV: 'Siêu âm tuyến giáp', ketQua: 'Chưa thấy nhân giáp bất thường, thùy tuyến giáp hai bên kích thước bình thường', trangThaiDichVu: 1 }
-        ],
-        donThuoc: [
-          { tenThuoc: 'Paracetamol 500mg', soLuong: 10, cachDung: 'Ngày uống 2 lần, mỗi lần 1 viên sau ăn khi đau' },
-          { tenThuoc: 'Piracetam 800mg', soLuong: 20, cachDung: 'Ngày uống 2 lần, mỗi lần 1 viên vào sáng và trưa' }
-        ]
-      }
-    ]
-  }
-};
 
 function CustomerPortal() {
   const navigate = useNavigate();
@@ -229,7 +62,7 @@ function CustomerPortal() {
         kinhNghiem: 'Nhiều năm kinh nghiệm trong lĩnh vực y tế và chăm sóc sức khỏe bệnh nhân.',
         status: 'Đang làm việc'
       }))
-    : MOCK_DOCTORS;
+    : [];
 
   // Mặc định thiết lập ngày hẹn là ngày mai
   useEffect(() => {
@@ -343,32 +176,7 @@ function CustomerPortal() {
     setSearched(false);
     setSearchResult(null);
 
-    // 1. Kiểm tra xem có khớp dữ liệu Seeded/Mock tĩnh không
-    const mockKey = maBN.toLowerCase() || sdt;
-    if (SEEDED_PATIENT_RECORDS[mockKey]) {
-      const mockRecord = SEEDED_PATIENT_RECORDS[mockKey];
-      // Nếu nhập cả hai, đảm bảo khớp cả SDT
-      if (!maBN || !sdt || mockRecord.patient.sdt === sdt) {
-        // Lấy lịch hẹn từ localStorage
-        let matchedAppts = [];
-        try {
-          const allDatLich = JSON.parse(localStorage.getItem('danhSachDatLich') || '[]');
-          matchedAppts = allDatLich.filter(appt => appt.sdt === mockRecord.patient.sdt);
-        } catch (err) {
-          console.error(err);
-        }
 
-        setSearchResult({
-          patient: mockRecord.patient,
-          visits: mockRecord.visits,
-          appointments: matchedAppts.sort((a, b) => new Date(b.ngayHen) - new Date(a.ngayHen))
-        });
-        setSearched(true);
-        setSearching(false);
-        showSuccess('Tìm thấy thông tin hồ sơ bệnh lý người bệnh (Dữ liệu mẫu)!');
-        return;
-      }
-    }
 
     // 2. Tra cứu dữ liệu từ API công khai thực tế của Backend
     if (maBN && sdt) {

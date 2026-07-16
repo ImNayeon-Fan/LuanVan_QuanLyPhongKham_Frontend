@@ -18,6 +18,17 @@ import {
 
 
 // Giá tiền và số lượng quy đổi được lấy trực tiếp từ Backend API
+const parseDaysFromCachDung = (cachDung) => {
+  if (!cachDung) return '--';
+  const match = cachDung.match(/(\d+)\s*ngày/i);
+  if (match) return match[1];
+  
+  const numbers = cachDung.match(/\d+/g);
+  if (numbers && numbers.length >= 3) {
+    return numbers[2];
+  }
+  return '--';
+};
 
 /**
  * Component chính quản lý màn hình thanh toán hóa đơn viện phí
@@ -463,7 +474,7 @@ function ThanhToanHoaDon() {
                       <div className="font-bold text-[9px] mb-[2px]">[DỊCH VỤ KỸ THUẬT & CLS]</div>
                       {services.map((item, idx) => (
                         <div key={idx} className="pl-[2px] mb-[2px]">
-                          <div>{idx + 1}. {item.tenItem}</div>
+                          <div>{idx + 1}. {item.tenDV}</div>
                           <div className="flex justify-between pl-2 text-[8.5px] text-[#222]">
                             <span>{item.soLuong} x {item.donGia.toLocaleString('vi-VN')}</span>
                             <span>{item.thanhTien.toLocaleString('vi-VN')} đ</span>
@@ -479,9 +490,9 @@ function ThanhToanHoaDon() {
                       <div className="font-bold text-[9px] mb-[2px]">[ĐƠN THUỐC ĐÃ KÊ]</div>
                       {drugs.map((item, idx) => (
                         <div key={idx} className="pl-[2px] mb-[2px]">
-                          <div>{idx + 1}. {item.tenItem}</div>
+                          <div>{idx + 1}. {item.tenThuoc}</div>
                           <div className="flex justify-between pl-2 text-[8.5px] text-[#222]">
-                            <span>{item.soLuong} ({item.lieuDung})</span>
+                            <span>{item.soLuongQuyDoi} ({item.cachDung})</span>
                             <span>{item.thanhTien.toLocaleString('vi-VN')} đ</span>
                           </div>
                         </div>
@@ -495,7 +506,7 @@ function ThanhToanHoaDon() {
                       <div className="font-bold text-[9px] mb-[2px]">[VẬT TƯ TIÊU HAO]</div>
                       {supplies.map((item, idx) => (
                         <div key={idx} className="pl-[2px] mb-[2px]">
-                          <div>{idx + 1}. {item.tenItem}</div>
+                          <div>{idx + 1}. {item.tenVatTu}</div>
                           <div className="flex justify-between pl-2 text-[8.5px] text-[#222]">
                             <span>{item.soLuong} x {item.donGia.toLocaleString('vi-VN')}</span>
                             <span>{item.thanhTien.toLocaleString('vi-VN')} đ</span>
@@ -631,7 +642,7 @@ function ThanhToanHoaDon() {
                           services.map((item, idx) => (
                             <tr key={idx}>
                               <td className="text-center">{idx + 1}</td>
-                              <td style={{ fontWeight: '600' }}>{item.tenItem}</td>
+                              <td style={{ fontWeight: '600' }}>{item.tenDV}</td>
                               <td className="text-center">{item.soLuong}</td>
                               <td className="text-right">{item.donGia.toLocaleString('vi-VN')}</td>
                               <td className="text-right font-[750] text-[var(--text-main)]">{item.thanhTien.toLocaleString('vi-VN')}</td>
@@ -671,10 +682,10 @@ function ThanhToanHoaDon() {
                           drugs.map((item, idx) => (
                             <tr key={idx}>
                               <td className="text-center">{idx + 1}</td>
-                              <td style={{ fontWeight: '600' }}>{item.tenItem}</td>
-                              <td style={{ fontStyle: 'italic', color: 'var(--text-muted)', fontSize: '12px' }}>{item.lieuDung}</td>
-                              <td className="text-center">{item.soNgay} ngày</td>
-                              <td className="text-center">{item.soLuong}</td>
+                              <td style={{ fontWeight: '600' }}>{item.tenThuoc}</td>
+                              <td style={{ fontStyle: 'italic', color: 'var(--text-muted)', fontSize: '12px' }}>{item.cachDung}</td>
+                              <td className="text-center">{parseDaysFromCachDung(item.cachDung)} ngày</td>
+                              <td className="text-center">{item.soLuongQuyDoi}</td>
                               <td className="text-right">{item.donGia.toLocaleString('vi-VN')}</td>
                               <td className="text-right font-[750] text-[var(--text-main)]">{item.thanhTien.toLocaleString('vi-VN')}</td>
                             </tr>
@@ -730,7 +741,7 @@ function ThanhToanHoaDon() {
                           supplies.map((item, idx) => (
                             <tr key={idx}>
                               <td className="text-center">{idx + 1}</td>
-                              <td style={{ fontWeight: '600' }}>{item.tenItem}</td>
+                              <td style={{ fontWeight: '600' }}>{item.tenVatTu}</td>
                               <td className="text-center">{item.soLuong}</td>
                               <td className="text-right">{item.donGia.toLocaleString('vi-VN')}</td>
                               <td className="text-right font-[750] text-[var(--text-main)]">{item.thanhTien.toLocaleString('vi-VN')}</td>
@@ -738,7 +749,7 @@ function ThanhToanHoaDon() {
                                 <td className="text-center">
                                   <button 
                                     className="kb-icon-btn kb-icon-btn--danger"
-                                    onClick={() => handleDeleteSupply(item.id)}
+                                    onClick={() => handleDeleteSupply(item.maVatTu)}
                                     title="Xóa vật tư"
                                     style={{ margin: '0 auto' }}
                                   >

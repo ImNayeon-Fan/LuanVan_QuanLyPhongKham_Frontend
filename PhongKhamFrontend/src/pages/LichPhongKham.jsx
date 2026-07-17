@@ -391,25 +391,7 @@ function LichPhongKham() {
           </button>
         </div>
 
-        {activeTab === 'doctor' && hasLichBacSiAccess && (
-          <button
-            onClick={() => {
-              const tomorrow = new Date();
-              tomorrow.setDate(tomorrow.getDate() + 1);
-              setDocForm({
-                maNV: doctorsList[0]?.maNV || '',
-                ngayLamViec: getISODateString(tomorrow),
-                caLamViec: 'Sang',
-                phongKham: '',
-                ghiChu: ''
-              });
-              setShowDocModal(true);
-            }}
-            className="btn-primary h-8 text-[12px] px-3 flex items-center gap-1 m-0 w-auto mt-0 font-inherit"
-          >
-            <Plus size={14} /> Thêm Lịch Làm Việc
-          </button>
-        )}
+
       </div>
 
       {/* Main Body Content */}
@@ -559,10 +541,10 @@ function LichPhongKham() {
 
                 {/* Bảng dạng cột từ Thứ 2 đến Chủ nhật */}
                 <div className="flex-1 overflow-y-auto">
-                  <table className="w-full border-collapse table-fixed min-w-[1000px]">
+                  <table className="w-full border-collapse table-fixed min-w-[1280px]">
                     <thead>
                       <tr className="bg-[var(--bg-main)] border-b-2 border-[var(--border-color)]">
-                        <th className="w-[200px] py-3 px-2.5 border-r border-[var(--border-color)] text-left text-[13px]">Bác sĩ \ Thứ & Ngày</th>
+                        <th className="w-[220px] py-3 px-2.5 border-r border-[var(--border-color)] text-left text-[13px]">Bác sĩ \ Thứ & Ngày</th>
                         {weekDays.map((day, idx) => {
                           const dateStr = getISODateString(day);
                           const isToday = dateStr === new Date().toISOString().split('T')[0];

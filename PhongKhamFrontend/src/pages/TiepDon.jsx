@@ -38,14 +38,23 @@ function TiepDon() {
   // Trạng thái biểu mẫu nhập liệu (Khởi tạo từ location.state nếu chuyển từ trang Lịch đặt khám)
   const [formData, setFormData] = useState(() => {
     const state = location.state || {};
+    let displayDob = '';
+    if (state.ngaySinh) {
+      const parts = state.ngaySinh.split('-');
+      if (parts.length === 3 && parts[0].length === 4) {
+        displayDob = `${parts[2]}/${parts[1]}/${parts[0]}`;
+      } else {
+        displayDob = state.ngaySinh;
+      }
+    }
     return {
       sdt: state.sdt || '',
       hoTen: state.hoTen || '',
-      ngaySinh: '', // Định dạng hiển thị: DD/MM/YYYY
-      gioiTinh: 'Nam',
-      diaChi: '',
-      tienSuBenh: '',
-      maBacSi: '',
+      ngaySinh: displayDob,
+      gioiTinh: state.gioiTinh || 'Nam',
+      diaChi: state.diaChi || '',
+      tienSuBenh: state.tienSuBenh || '',
+      maBacSi: state.maNV || '',
       lyDoKham: state.lyDoKham || ''
     };
   });

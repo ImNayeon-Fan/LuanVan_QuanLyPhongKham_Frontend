@@ -20,8 +20,14 @@ function CustomerPortal() {
   const [bookingForm, setBookingForm] = useState({
     hoTenKhach: '',
     sdt: '',
+    gioiTinh: 'Nam',
+    ngaySinh: '',
+    diaChi: '',
+    tienSuBenh: '',
     ngayHen: '',
-    yeuCauKham: ''
+    caKham: 'Sang',
+    yeuCauKham: '',
+    maNV: ''
   });
 
   // State phục vụ việc tra cứu lịch sử bệnh án / lịch hẹn
@@ -83,7 +89,7 @@ function CustomerPortal() {
   // Gửi thông tin đặt lịch khám trực tuyến
   const handleBookAppointment = (e) => {
     e.preventDefault();
-    const { hoTenKhach, sdt, ngayHen, yeuCauKham } = bookingForm;
+    const { hoTenKhach, sdt, gioiTinh, ngaySinh, diaChi, tienSuBenh, ngayHen, caKham, yeuCauKham, maNV } = bookingForm;
 
     if (!hoTenKhach.trim()) {
       showError('Vui lòng nhập họ tên người khám!');
@@ -98,6 +104,10 @@ function CustomerPortal() {
       showError('Số điện thoại không hợp lệ (phải gồm 10 chữ số bắt đầu bằng số 0)!');
       return;
     }
+    if (!ngaySinh) {
+      showError('Vui lòng chọn ngày sinh!');
+      return;
+    }
     if (!ngayHen) {
       showError('Vui lòng chọn ngày hẹn khám!');
       return;
@@ -109,16 +119,27 @@ function CustomerPortal() {
       return;
     }
 
+    // Lấy thông tin bác sĩ đã chọn
+    const selectedDoc = displayDoctors.find(d => d.maNV === maNV);
+    const tenBacSi = selectedDoc ? selectedDoc.hoTen : '';
+
     // Tạo mã lịch đặt ngẫu nhiên: DL_yymmdd_RANDOM
     const nextCode = `DL_${new Date().toISOString().slice(2, 10).replace(/-/g, '')}_${String(Math.floor(100 + Math.random() * 900))}`;
     const newAppointment = {
       maDatLich: nextCode,
       hoTenKhach: hoTenKhach.trim().toUpperCase(),
       sdt: sdt.trim(),
+      gioiTinh: gioiTinh,
+      ngaySinh: ngaySinh,
+      diaChi: diaChi.trim(),
+      tienSuBenh: tienSuBenh.trim(),
       ngayHen: ngayHen,
+      caKham: caKham,
       yeuCauKham: yeuCauKham.trim() || 'Khám tổng quát',
       trangThai: 'ChoXacNhan',
-      ngayTao: new Date().toISOString()
+      ngayTao: new Date().toISOString(),
+      maNV: maNV || '',
+      tenBacSi: tenBacSi
     };
 
     try {
@@ -151,8 +172,14 @@ function CustomerPortal() {
       setBookingForm({
         hoTenKhach: '',
         sdt: '',
+        gioiTinh: 'Nam',
+        ngaySinh: '',
+        diaChi: '',
+        tienSuBenh: '',
         ngayHen: ngayHen,
-        yeuCauKham: ''
+        caKham: 'Sang',
+        yeuCauKham: '',
+        maNV: ''
       });
     } catch (err) {
       console.error(err);
@@ -167,8 +194,8 @@ function CustomerPortal() {
     const maBN = searchMaBN.trim();
     const sdt = searchSdt.trim();
 
-    if (!maBN && !sdt) {
-      showError('Vui lòng nhập Mã bệnh nhân hoặc Số điện thoại để tra cứu!');
+    if (!maBN || !sdt) {
+      showError('Vui lòng điền đầy đủ thông tin (cả Mã bệnh nhân và Số điện thoại)!');
       return;
     }
 
@@ -279,7 +306,7 @@ function CustomerPortal() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-between relative overflow-hidden">
+    <div className="h-screen bg-slate-50 flex flex-col justify-between relative overflow-hidden font-inherit">
       {/* Top Header */}
       <header className="bg-white border-b border-slate-200 sticky top-0 z-20 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -307,10 +334,10 @@ function CustomerPortal() {
       </header>
 
       {/* Main Container */}
-      <main className="flex-1 max-w-5xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+      <main className={`flex-1 max-w-7xl w-full mx-auto px-4 py-2 sm:py-3 flex flex-col ${activeTab === 'book' ? 'justify-center overflow-hidden' : 'overflow-y-auto'}`}>
         
         {/* Navigation Tabs */}
-        <div className="flex bg-white rounded-2xl p-1.5 shadow-sm border border-slate-200 mb-8 max-w-md mx-auto">
+        <div className="flex bg-white rounded-2xl p-1 shadow-sm border border-slate-200 mb-3 max-w-2xl w-full mx-auto flex-shrink-0">
           <button
             onClick={() => setActiveTab('book')}
             className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 ${
@@ -350,94 +377,230 @@ function CustomerPortal() {
 
         {/* Tab 1: Đặt Lịch Khám */}
         {activeTab === 'book' && (
-          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200 shadow-sm max-w-2xl mx-auto">
-            <div className="mb-6">
-              <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                <Calendar size={20} className="text-blue-600" />
+          <div className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm max-w-7xl w-full mx-auto">
+            <div className="mb-4">
+              <h2 className="text-[17px] font-bold text-slate-800 flex items-center gap-2">
+                <Calendar size={18} className="text-blue-600 flex-shrink-0" />
                 Đăng Ký Đặt Lịch Hẹn Khám Trực Tuyến
               </h2>
-              <p className="text-slate-500 text-xs sm:text-sm mt-1">
+              <p className="text-slate-500 text-xs mt-1">
                 Vui lòng nhập đầy đủ thông tin để đăng ký lịch hẹn khám. Lễ tân sẽ gọi điện thoại xác nhận trong vòng 15 phút.
               </p>
             </div>
 
-            <form onSubmit={handleBookAppointment} className="space-y-5">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <form onSubmit={handleBookAppointment} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              
+              {/* Cột trái: Thông tin cá nhân */}
+              <div className="space-y-3.5 border-r border-slate-100 pr-0 md:pr-6">
+                <h3 className="text-xs font-bold text-blue-600 uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-100 pb-1.5">
+                  <User size={14} /> 1. Thông tin cá nhân (Hành chính)
+                </h3>
+
                 <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
+                  <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">
                     Họ và tên người khám <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <span className="absolute left-3.5 top-3.5 text-slate-400"><User size={16} /></span>
+                    <span className="absolute left-3 top-2.5 text-slate-400"><User size={15} /></span>
                     <input 
                       type="text"
                       name="hoTenKhach"
                       value={bookingForm.hoTenKhach}
                       onChange={handleInputChange}
                       placeholder="NGUYỄN VĂN A"
-                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-sm transition-all"
+                      className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-xs sm:text-sm transition-all"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
+                  <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">
                     Số điện thoại liên hệ <span className="text-red-500">*</span>
                   </label>
                   <div className="relative">
-                    <span className="absolute left-3.5 top-3.5 text-slate-400"><Phone size={16} /></span>
+                    <span className="absolute left-3 top-2.5 text-slate-400"><Phone size={15} /></span>
                     <input 
                       type="text"
                       name="sdt"
                       value={bookingForm.sdt}
                       onChange={handleInputChange}
                       placeholder="0901234567"
-                      className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-sm transition-all"
+                      className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-xs sm:text-sm transition-all"
                     />
+                  </div>
+                </div>
+
+                {/* Giới tính & Ngày sinh */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">
+                      Giới tính <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-2.5 text-slate-400"><User size={15} /></span>
+                      <select
+                        name="gioiTinh"
+                        value={bookingForm.gioiTinh}
+                        onChange={handleInputChange}
+                        className="w-full pl-9 pr-8 py-2 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-xs sm:text-sm transition-all bg-white"
+                        required
+                      >
+                        <option value="Nam">Nam</option>
+                        <option value="Nữ">Nữ</option>
+                        <option value="Khác">Khác</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">
+                      Ngày sinh <span className="text-red-500">*</span>
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-2.5 text-slate-400"><Clock size={15} /></span>
+                      <input 
+                        type="date"
+                        name="ngaySinh"
+                        value={bookingForm.ngaySinh}
+                        onChange={handleInputChange}
+                        className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-xs sm:text-sm transition-all"
+                        required
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Địa chỉ & Tiền sử */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">
+                      Địa chỉ thường trú
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-2.5 text-slate-400"><FileText size={15} /></span>
+                      <input 
+                        type="text"
+                        name="diaChi"
+                        value={bookingForm.diaChi}
+                        onChange={handleInputChange}
+                        placeholder="Số nhà, đường, xã..."
+                        className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-xs sm:text-sm transition-all"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">
+                      Tiền sử bệnh án
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-2.5 text-slate-400"><FileText size={15} /></span>
+                      <input 
+                        type="text"
+                        name="tienSuBenh"
+                        value={bookingForm.tienSuBenh}
+                        onChange={handleInputChange}
+                        placeholder="Dị ứng, tim mạch..."
+                        className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-xs sm:text-sm transition-all"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
-                  Ngày muốn hẹn khám <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3.5 top-3.5 text-slate-400"><Clock size={16} /></span>
-                  <input 
-                    type="date"
-                    name="ngayHen"
-                    value={bookingForm.ngayHen}
-                    onChange={handleInputChange}
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-sm transition-all"
-                  />
+              {/* Cột phải: Chỉ định khám */}
+              <div className="space-y-3.5 flex flex-col justify-between">
+                <div className="space-y-3.5">
+                  <h3 className="text-xs font-bold text-blue-600 uppercase tracking-wider flex items-center gap-1.5 border-b border-slate-100 pb-1.5">
+                    <Calendar size={14} /> 2. Thông tin đặt lịch khám
+                  </h3>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">
+                        Ngày muốn hẹn khám <span className="text-red-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-2.5 text-slate-400"><Clock size={15} /></span>
+                        <input 
+                          type="date"
+                          name="ngayHen"
+                          value={bookingForm.ngayHen}
+                          onChange={handleInputChange}
+                          className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-xs sm:text-sm transition-all"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">
+                        Ca khám mong muốn <span className="text-red-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-2.5 text-slate-400"><Clock size={15} /></span>
+                        <select
+                          name="caKham"
+                          value={bookingForm.caKham}
+                          onChange={handleInputChange}
+                          className="w-full pl-9 pr-8 py-2 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-xs sm:text-sm transition-all bg-white"
+                          required
+                        >
+                          <option value="Sang">Ca Sáng (7:30 - 11:30)</option>
+                          <option value="Chieu">Ca Chiều (13:30 - 17:30)</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">
+                      Bác sĩ khám mong muốn
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-2.5 text-slate-400"><User size={15} /></span>
+                      <select
+                        name="maNV"
+                        value={bookingForm.maNV}
+                        onChange={handleInputChange}
+                        className="w-full pl-9 pr-8 py-2 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-xs sm:text-sm transition-all bg-white"
+                      >
+                        <option value="">Chọn bác sĩ</option>
+                        {displayDoctors.map(doc => (
+                          <option key={doc.maNV} value={doc.maNV}>
+                            {doc.hoTen} ({doc.chuyenMon})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">
+                      Lý do khám / Triệu chứng bệnh lý
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-2.5 text-slate-400"><FileText size={15} /></span>
+                      <textarea 
+                        name="yeuCauKham"
+                        value={bookingForm.yeuCauKham}
+                        onChange={handleInputChange}
+                        rows="4"
+                        placeholder="Mô tả sơ lược triệu chứng như: Đau họng, ho kéo dài, đau nhức..."
+                        className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-xs sm:text-sm transition-all resize-none"
+                      />
+                    </div>
+                  </div>
                 </div>
+
+                <button 
+                  type="submit"
+                  className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-md shadow-blue-500/20 active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2 text-xs sm:text-sm mt-4 md:mt-0"
+                >
+                  <CheckCircle2 size={16} />
+                  Đăng Ký Đặt Hẹn Ngay
+                </button>
               </div>
 
-              <div>
-                <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-2">
-                  Lý do khám / Triệu chứng bệnh lý
-                </label>
-                <div className="relative">
-                  <span className="absolute left-3.5 top-3.5 text-slate-400"><FileText size={16} /></span>
-                  <textarea 
-                    name="yeuCauKham"
-                    value={bookingForm.yeuCauKham}
-                    onChange={handleInputChange}
-                    rows="3"
-                    placeholder="Mô tả sơ lược triệu chứng như: Đau họng, ho kéo dài, đau nhức xương khớp..."
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-sm transition-all"
-                  />
-                </div>
-              </div>
-
-              <button 
-                type="submit"
-                className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-md shadow-blue-500/20 active:scale-[0.99] transition-all duration-200 flex items-center justify-center gap-2"
-              >
-                <CheckCircle2 size={18} />
-                Đăng Ký Đặt Hẹn Ngay
-              </button>
             </form>
           </div>
         )}
@@ -510,7 +673,7 @@ function CustomerPortal() {
                     type="text"
                     value={searchMaBN}
                     onChange={(e) => setSearchMaBN(e.target.value)}
-                    placeholder="Nhập Mã bệnh nhân (VD: BN260714001)"
+                    placeholder="Nhập Mã bệnh nhân"
                     className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-sm transition-all"
                   />
                 </div>
@@ -520,7 +683,7 @@ function CustomerPortal() {
                     type="text"
                     value={searchSdt}
                     onChange={(e) => setSearchSdt(e.target.value)}
-                    placeholder="Nhập Số điện thoại (VD: 0896421137)"
+                    placeholder="Nhập Số điện thoại"
                     className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-sm transition-all"
                   />
                 </div>
@@ -747,7 +910,7 @@ function CustomerPortal() {
         )}
       </main>
 
-      <footer className="w-full max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 font-medium border-t border-slate-200/50 p-6">
+      <footer className="w-full max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 font-medium border-t border-slate-200/50 p-3 flex-shrink-0">
         <div>&copy; {new Date().getFullYear()} Phòng Khám Đa Khoa Nhật Tảo.</div>
       </footer>
     </div>

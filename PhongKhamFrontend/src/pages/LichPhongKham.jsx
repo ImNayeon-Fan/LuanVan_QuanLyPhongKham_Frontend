@@ -328,6 +328,11 @@ function LichPhongKham() {
       state: {
         hoTen: appt.hoTenKhach,
         sdt: appt.sdt,
+        gioiTinh: appt.gioiTinh || 'Nam',
+        ngaySinh: appt.ngaySinh || '',
+        diaChi: appt.diaChi || '',
+        tienSuBenh: appt.tienSuBenh || '',
+        maNV: appt.maNV || '',
         lyDoKham: appt.yeuCauKham
       }
     });
@@ -531,10 +536,10 @@ function LichPhongKham() {
                   <thead>
                     <tr className="bg-[var(--bg-main)] border-b-2 border-[var(--border-color)]">
                       <th className="w-[50px] text-center p-2.5">STT</th>
-                      <th className="w-[140px] p-2.5 text-left">Mã đặt lịch</th>
+                      <th className="w-[130px] p-2.5 text-left">Mã đặt lịch</th>
                       <th className="w-[160px] p-2.5 text-left">Họ tên khách</th>
-                      <th className="w-[110px] p-2.5 text-left">Số điện thoại</th>
-                      <th className="w-[110px] p-2.5 text-left">Ngày hẹn khám</th>
+                      <th className="w-[115px] p-2.5 text-left">Số điện thoại</th>
+                      <th className="w-[140px] p-2.5 text-left">Ngày hẹn khám</th>
                       <th className="p-2.5 text-left">Yêu cầu khám bệnh</th>
                       <th className="w-[140px] p-2.5 text-center">Trạng thái</th>
                       <th className="w-[150px] p-2.5 text-center">Thao tác</th>
@@ -547,21 +552,36 @@ function LichPhongKham() {
                         <td className="p-2.5 font-semibold">{appt.maDatLich}</td>
                         <td className="p-2.5 font-bold">{appt.hoTenKhach}</td>
                         <td className="p-2.5">{appt.sdt}</td>
-                        <td className="p-2.5 font-semibold">{appt.ngayHen}</td>
-                        <td className="p-2.5 text-[var(--text-muted)]">{appt.yeuCauKham}</td>
+                        <td className="p-2.5 font-semibold">
+                          <div>{appt.ngayHen}</div>
+                          {appt.caKham && (
+                            <div className="text-[11px] text-[var(--text-muted)] font-medium mt-0.5">
+                              Ca: {appt.caKham === 'Sang' ? 'Sáng' : 'Chiều'}
+                            </div>
+                          )}
+                        </td>
+                        <td className="p-2.5 text-[var(--text-muted)]">
+                          <div>{appt.yeuCauKham}</div>
+                          {appt.tenBacSi && (
+                            <div className="text-[11px] text-[var(--primary)] font-bold mt-1">
+                              Yêu cầu bác sĩ: {appt.tenBacSi}
+                            </div>
+                          )}
+                        </td>
                         <td className="p-2.5 text-center">
                           <select
                             value={appt.trangThai}
                             onChange={(e) => handleUpdateStatus(appt.maDatLich, e.target.value)}
-                            className={`form-input h-7 text-[12px] py-0.5 px-1 w-[120px] font-semibold font-inherit ${
-                              appt.trangThai === 'DaXacNhan' ? 'text-[#10b981]' :
-                              appt.trangThai === 'DaKham' ? 'text-[var(--primary)]' :
-                              appt.trangThai === 'DaHuy' ? 'text-[#ef4444]' : 'text-[#6b7280]'
+                            className={`border rounded-md h-8 text-[12px] w-[130px] font-semibold font-inherit outline-none transition-all duration-150 cursor-pointer ${
+                              appt.trangThai === 'DaXacNhan' ? 'text-[#10b981] bg-emerald-50/30 border-emerald-200' :
+                              appt.trangThai === 'DaKham' ? 'text-[var(--primary)] bg-sky-50/30 border-sky-200' :
+                              appt.trangThai === 'DaHuy' ? 'text-[#ef4444] bg-red-50/30 border-red-200' : 'text-[#6b7280] bg-slate-50/30 border-slate-200'
                             }`}
+                            style={{ textAlign: 'center', textAlignLast: 'center', padding: '0 20px 0 8px' }}
                           >
                             <option value="ChoXacNhan">Chờ xác nhận</option>
-                            <option value="DaXacNhan">Đã xác nhận</option>
-                            <option value="DaKham">Đã khám</option>
+                            {appt.trangThai === 'DaXacNhan' && <option value="DaXacNhan">Đã xác nhận</option>}
+                            {appt.trangThai === 'DaKham' && <option value="DaKham">Đã khám</option>}
                             <option value="DaHuy">Đã hủy</option>
                           </select>
                         </td>

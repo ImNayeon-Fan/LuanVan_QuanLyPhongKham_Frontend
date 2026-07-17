@@ -25,6 +25,7 @@ function LichPhongKham() {
 
   // Phân quyền: vai trò & quyền truy cập lịch làm việc bác sĩ
   const [userRole, setUserRole] = useState('');
+  const [currentUser, setCurrentUser] = useState(null);
   const [hasLichBacSiAccess, setHasLichBacSiAccess] = useState(false);
 
   // Tab hiện tại ('appt': Lịch đặt hẹn của bệnh nhân, 'doctor': Lịch trực bác sĩ)
@@ -93,13 +94,14 @@ function LichPhongKham() {
   // Tải dữ liệu phân quyền người dùng và dữ liệu lịch biểu khi load component
   useEffect(() => {
     try {
-      const currentUser = localStorage.getItem('currentUser');
-      if (currentUser) {
-        const parsed = JSON.parse(currentUser);
-        const role = parsed.role || '';
+      const userStr = localStorage.getItem('currentUser');
+      if (userStr) {
+        const parsed = JSON.parse(userStr);
+        setCurrentUser(parsed);
+        const role = parsed.role || parsed.roleName || '';
         setUserRole(role);
-        // Chỉ Admin và LeTan được quyền cấu hình lịch làm việc bác sĩ
-        if (role === 'Admin' || role === 'LeTan') {
+        // Admin, Lễ tân và Bác sĩ đều có quyền thao tác trên lịch trực bác sĩ
+        if (role === 'Admin' || role === 'LeTan' || role === 'BacSi') {
           setHasLichBacSiAccess(true);
         } else {
           setHasLichBacSiAccess(false);
@@ -183,25 +185,112 @@ function LichPhongKham() {
       if (stored) {
         setDoctorSchedules(JSON.parse(stored));
       } else {
-        const todayStr = new Date().toISOString().split('T')[0];
+        const monday = getMonday(new Date());
+        const getOffsetDateStr = (offset) => {
+          const d = new Date(monday);
+          d.setDate(d.getDate() + offset);
+          return d.toISOString().split('T')[0];
+        };
         const defaultDocSchedules = [
           {
-            maLich: 'LNV002',
+            maLich: 'LBS001',
             maNV: 'NV002',
             tenBacSi: 'BS. CK1. Nguyễn Văn An',
-            ngayLamViec: todayStr,
+            chuyenMon: 'Nội tổng quát',
+            ngayLamViec: getOffsetDateStr(0),
             caLamViec: 'Sang',
             phongKham: 'Phòng 101',
-            ghiChu: 'Trực phòng nội'
+            ghiChu: 'Khám nội nhi'
           },
           {
-            maLich: 'LNV003',
+            maLich: 'LBS002',
             maNV: 'NV003',
             tenBacSi: 'BS. CK2. Trần Thị Bình',
-            ngayLamViec: todayStr,
+            chuyenMon: 'Tim mạch',
+            ngayLamViec: getOffsetDateStr(0),
             caLamViec: 'Chieu',
             phongKham: 'Phòng 102',
-            ghiChu: 'Siêu âm tim'
+            ghiChu: 'Siêu âm tim mạch'
+          },
+          {
+            maLich: 'LBS003',
+            maNV: 'NV004',
+            tenBacSi: 'ThS. BS. Phạm Minh Cường',
+            chuyenMon: 'Nhi khoa',
+            ngayLamViec: getOffsetDateStr(1),
+            caLamViec: 'Sang',
+            phongKham: 'Phòng 103',
+            ghiChu: 'Khám nhi sơ sinh'
+          },
+          {
+            maLich: 'LBS004',
+            maNV: 'NV005',
+            tenBacSi: 'BS. Lê Hoài Nam',
+            chuyenMon: 'Tai Mũi Họng',
+            ngayLamViec: getOffsetDateStr(1),
+            caLamViec: 'Chieu',
+            phongKham: 'Phòng 104',
+            ghiChu: 'Nội soi tai mũi họng'
+          },
+          {
+            maLich: 'LBS005',
+            maNV: 'NV002',
+            tenBacSi: 'BS. CK1. Nguyễn Văn An',
+            chuyenMon: 'Nội tổng quát',
+            ngayLamViec: getOffsetDateStr(2),
+            caLamViec: 'Sang',
+            phongKham: 'Phòng 101',
+            ghiChu: 'Hội chẩn trực tuyến'
+          },
+          {
+            maLich: 'LBS006',
+            maNV: 'NV004',
+            tenBacSi: 'ThS. BS. Phạm Minh Cường',
+            chuyenMon: 'Nhi khoa',
+            ngayLamViec: getOffsetDateStr(2),
+            caLamViec: 'Chieu',
+            phongKham: 'Phòng 103',
+            ghiChu: 'Chích ngừa dịch vụ'
+          },
+          {
+            maLich: 'LBS007',
+            maNV: 'NV003',
+            tenBacSi: 'BS. CK2. Trần Thị Bình',
+            chuyenMon: 'Tim mạch',
+            ngayLamViec: getOffsetDateStr(3),
+            caLamViec: 'Sang',
+            phongKham: 'Phòng 102',
+            ghiChu: 'Đọc kết quả Holter'
+          },
+          {
+            maLich: 'LBS008',
+            maNV: 'NV005',
+            tenBacSi: 'BS. Lê Hoài Nam',
+            chuyenMon: 'Tai Mũi Họng',
+            ngayLamViec: getOffsetDateStr(3),
+            caLamViec: 'Chieu',
+            phongKham: 'Phòng 104',
+            ghiChu: 'Rửa tai, hút mũi'
+          },
+          {
+            maLich: 'LBS009',
+            maNV: 'NV002',
+            tenBacSi: 'BS. CK1. Nguyễn Văn An',
+            chuyenMon: 'Nội tổng quát',
+            ngayLamViec: getOffsetDateStr(4),
+            caLamViec: 'Sang',
+            phongKham: 'Phòng 101',
+            ghiChu: 'Khám sức khỏe tổng quát'
+          },
+          {
+            maLich: 'LBS010',
+            maNV: 'NV003',
+            tenBacSi: 'BS. CK2. Trần Thị Bình',
+            chuyenMon: 'Tim mạch',
+            ngayLamViec: getOffsetDateStr(4),
+            caLamViec: 'Chieu',
+            phongKham: 'Phòng 102',
+            ghiChu: 'Khám ngoại trú'
           }
         ];
         localStorage.setItem('danhSachLichLamViec', JSON.stringify(defaultDocSchedules));
@@ -280,10 +369,13 @@ function LichPhongKham() {
       return;
     }
 
+    const chuyenMon = selectedDoc ? (selectedDoc.chuyenMon || selectedDoc.roleName || '') : '';
+
     const newSchedule = {
       maLich: `LBS${Date.now().toString().slice(-6)}`,
       maNV,
       tenBacSi,
+      chuyenMon,
       ngayLamViec,
       caLamViec,
       phongKham: phongKham.trim(),
@@ -544,7 +636,7 @@ function LichPhongKham() {
                   <table className="w-full border-collapse table-fixed min-w-[1280px]">
                     <thead>
                       <tr className="bg-[var(--bg-main)] border-b-2 border-[var(--border-color)]">
-                        <th className="w-[220px] py-3 px-2.5 border-r border-[var(--border-color)] text-left text-[13px]">Bác sĩ \ Thứ & Ngày</th>
+                        <th className="w-[180px] py-3 px-2.5 border-r border-[var(--border-color)] text-center text-[13px] font-extrabold">Ca Trực</th>
                         {weekDays.map((day, idx) => {
                           const dateStr = getISODateString(day);
                           const isToday = dateStr === new Date().toISOString().split('T')[0];
@@ -560,79 +652,155 @@ function LichPhongKham() {
                       </tr>
                     </thead>
                     <tbody>
-                      {doctorsList.map((doc) => (
-                        <tr key={doc.maNV} className="border-b border-[var(--border-color)]">
-                          <td className="py-3 px-2.5 border-r border-[var(--border-color)] bg-[var(--bg-main)] font-semibold">
-                            <div className="text-[13.5px] font-extrabold text-[var(--text-main)]">{doc.hoTen}</div>
-                            <div className="text-[11.5px] text-[var(--text-muted)] mt-0.5">{doc.chuyenMon || 'Bác sĩ trực'}</div>
-                            <div className="text-[10px] text-[var(--primary)] mt-1 italic">Mã: {doc.maNV}</div>
-                          </td>
+                      {/* Dòng 1: Ca Sáng */}
+                      <tr className="border-b border-[var(--border-color)]">
+                        <td className="py-4 px-3 border-r border-[var(--border-color)] bg-[var(--bg-main)] text-center align-middle">
+                          <div className="text-[14px] font-extrabold text-[#0369a1]">Ca Sáng</div>
+                          <div className="text-[11px] text-[var(--text-muted)] mt-1 font-semibold">07:30 - 11:30</div>
+                        </td>
+                        {weekDays.map((day, dayIdx) => {
+                          const dateStr = getISODateString(day);
+                          const isToday = dateStr === new Date().toISOString().split('T')[0];
+                          const daySchedules = doctorSchedules.filter(s => s.ngayLamViec === dateStr && (s.caLamViec === 'Sang' || s.caLamViec === 'CaNgay'));
 
-                          {weekDays.map((day, dayIdx) => {
-                            const dateStr = getISODateString(day);
-                            const isToday = dateStr === new Date().toISOString().split('T')[0];
-                            const daySchedules = doctorSchedules.filter(s => s.maNV === doc.maNV && s.ngayLamViec === dateStr);
-
-                            return (
-                              <td key={dayIdx} className={`py-2 px-1.5 border-r border-[var(--border-color)] align-top h-[110px] ${
-                                isToday ? 'bg-[rgba(14,165,233,0.03)]' : 'bg-transparent'
-                              }`}>
-                                <div className="flex flex-col gap-1.5 h-full">
-                                  
-                                  {daySchedules.map((sched) => (
-                                    <div key={sched.maLich} className={`p-[6px_8px] rounded-md text-[11.5px] font-semibold relative border flex flex-col gap-0.5 shadow-[0_1px_2px_rgba(0,0,0,0.03)] ${
-                                      sched.caLamViec === 'Sang' ? 'bg-[#e0f2fe] text-[#0369a1] border-[#bae6fd]' :
-                                      sched.caLamViec === 'Chieu' ? 'bg-[#fef3c7] text-[#b45309] border-[#fde68a]' : 'bg-[#dcfce7] text-[#15803d] border-[#bbf7d0]'
-                                    }`}>
-                                      <div className="flex justify-between items-center">
-                                        <span className="text-[11px] font-bold">
-                                          {sched.caLamViec === 'Sang' ? 'Ca Sáng' : sched.caLamViec === 'Chieu' ? 'Ca Chiều' : 'Cả ngày'}
-                                        </span>
-                                        {hasLichBacSiAccess && (
+                          return (
+                            <td key={dayIdx} className={`py-3 px-2 border-r border-[var(--border-color)] align-top min-h-[220px] ${
+                              isToday ? 'bg-[rgba(14,165,233,0.03)]' : 'bg-transparent'
+                            }`}>
+                              <div className="flex flex-col gap-2 h-full">
+                                {daySchedules.map((sched) => {
+                                  const isOwnSchedule = currentUser && currentUser.maNV === sched.maNV;
+                                  const canDelete = hasLichBacSiAccess && (userRole === 'Admin' || userRole === 'LeTan' || isOwnSchedule);
+                                  return (
+                                    <div key={sched.maLich} className="p-2 rounded-md text-[11.5px] font-semibold relative border flex flex-col gap-1 shadow-sm bg-[#e0f2fe] text-[#0369a1] border-[#bae6fd]">
+                                      <div className="flex justify-between items-start gap-1">
+                                        <div className="font-bold text-[12px] break-words flex-1 text-[#0369a1]">
+                                          {sched.tenBacSi}
+                                        </div>
+                                        {canDelete && (
                                           <button
                                             onClick={(e) => {
                                               e.stopPropagation();
                                               handleDeleteDoctorSchedule(sched.maLich, sched.tenBacSi);
                                             }}
-                                            className="border-none bg-none text-[#ef4444] cursor-pointer px-0.5 text-[11px] font-bold leading-none font-inherit"
-                                            title="Xóa ca trực này"
+                                            className="border-none bg-none text-[#ef4444] cursor-pointer p-0.5 text-[11.5px] font-bold leading-none font-inherit hover:scale-110 transition-transform"
+                                            title="Hủy đăng ký ca trực này"
                                           >
                                             ✕
                                           </button>
                                         )}
                                       </div>
+                                      {sched.chuyenMon && (
+                                        <div className="text-[10px] text-[var(--text-muted)] italic font-medium">{sched.chuyenMon}</div>
+                                      )}
                                       <div className="text-[11px] flex items-center gap-0.5 text-inherit font-bold mt-0.5">
-                                        <MapPin size={10} /> {sched.phongKham}
+                                        <MapPin size={10} /> {sched.phongKham || 'Phòng khám'}
                                       </div>
                                       {sched.ghiChu && (
-                                        <div className="text-[10px] opacity-80 italic break-words mt-0.5 border-t border-dashed border-[rgba(0,0,0,0.05)] pt-0.5">{sched.ghiChu}</div>
+                                        <div className="text-[10px] opacity-85 italic break-words mt-1 border-t border-dashed border-[rgba(3,105,161,0.15)] pt-1">{sched.ghiChu}</div>
                                       )}
                                     </div>
-                                  ))}
+                                  );
+                                })}
 
-                                  {daySchedules.length === 0 && !hasLichBacSiAccess && (
-                                    <div className="flex-1 flex items-center justify-center text-[#cbd5e1] text-[12px]">-</div>
-                                  )}
+                                {hasLichBacSiAccess && (
+                                  <button
+                                    onClick={() => {
+                                      const defaultMaNV = (userRole === 'BacSi' && currentUser) ? currentUser.maNV : (doctorsList[0]?.maNV || '');
+                                      setDocForm({
+                                        maNV: defaultMaNV,
+                                        ngayLamViec: dateStr,
+                                        caLamViec: 'Sang',
+                                        phongKham: '',
+                                        ghiChu: ''
+                                      });
+                                      setShowDocModal(true);
+                                    }}
+                                    className="w-full p-1.5 border border-dashed border-[var(--border-color)] rounded-[6px] bg-transparent text-[var(--text-muted)] text-[11px] cursor-pointer flex items-center justify-center gap-1 transition-all duration-200 ease-in-out hover:border-[var(--primary)] hover:text-[var(--primary)] hover:bg-[#f0f9ff] mt-auto font-inherit"
+                                  >
+                                    <Plus size={10} /> Đăng ký trực
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          );
+                        })}
+                      </tr>
 
-                                  {hasLichBacSiAccess && (
-                                    <button
-                                      onClick={() => {
-                                        setDocForm({
-                                          maNV: doc.maNV, ngayLamViec: dateStr, caLamViec: 'Sang', phongKham: '', ghiChu: ''
-                                        });
-                                        setShowDocModal(true);
-                                      }}
-                                      className="w-full p-1 border border-dashed border-[var(--border-color)] rounded-[6px] bg-transparent text-[var(--text-muted)] text-[11px] cursor-pointer flex items-center justify-center gap-1 transition-all duration-200 ease-in-out mt-auto font-inherit"
-                                    >
-                                      <Plus size={10} /> Trực
-                                    </button>
-                                  )}
-                                </div>
-                              </td>
-                            );
-                          })}
-                        </tr>
-                      ))}
+                      {/* Dòng 2: Ca Chiều */}
+                      <tr className="border-b border-[var(--border-color)]">
+                        <td className="py-4 px-3 border-r border-[var(--border-color)] bg-[var(--bg-main)] text-center align-middle">
+                          <div className="text-[14px] font-extrabold text-[#b45309]">Ca Chiều</div>
+                          <div className="text-[11px] text-[var(--text-muted)] mt-1 font-semibold">13:30 - 17:00</div>
+                        </td>
+                        {weekDays.map((day, dayIdx) => {
+                          const dateStr = getISODateString(day);
+                          const isToday = dateStr === new Date().toISOString().split('T')[0];
+                          const daySchedules = doctorSchedules.filter(s => s.ngayLamViec === dateStr && (s.caLamViec === 'Chieu' || s.caLamViec === 'CaNgay'));
+
+                          return (
+                            <td key={dayIdx} className={`py-3 px-2 border-r border-[var(--border-color)] align-top min-h-[220px] ${
+                              isToday ? 'bg-[rgba(245,158,11,0.02)]' : 'bg-transparent'
+                            }`}>
+                              <div className="flex flex-col gap-2 h-full">
+                                {daySchedules.map((sched) => {
+                                  const isOwnSchedule = currentUser && currentUser.maNV === sched.maNV;
+                                  const canDelete = hasLichBacSiAccess && (userRole === 'Admin' || userRole === 'LeTan' || isOwnSchedule);
+                                  return (
+                                    <div key={sched.maLich} className="p-2 rounded-md text-[11.5px] font-semibold relative border flex flex-col gap-1 shadow-sm bg-[#fef3c7] text-[#b45309] border-[#fde68a]">
+                                      <div className="flex justify-between items-start gap-1">
+                                        <div className="font-bold text-[12px] break-words flex-1 text-[#b45309]">
+                                          {sched.tenBacSi}
+                                        </div>
+                                        {canDelete && (
+                                          <button
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              handleDeleteDoctorSchedule(sched.maLich, sched.tenBacSi);
+                                            }}
+                                            className="border-none bg-none text-[#ef4444] cursor-pointer p-0.5 text-[11.5px] font-bold leading-none font-inherit hover:scale-110 transition-transform"
+                                            title="Hủy đăng ký ca trực này"
+                                          >
+                                            ✕
+                                          </button>
+                                        )}
+                                      </div>
+                                      {sched.chuyenMon && (
+                                        <div className="text-[10px] text-[var(--text-muted)] italic font-medium">{sched.chuyenMon}</div>
+                                      )}
+                                      <div className="text-[11px] flex items-center gap-0.5 text-inherit font-bold mt-0.5">
+                                        <MapPin size={10} /> {sched.phongKham || 'Phòng khám'}
+                                      </div>
+                                      {sched.ghiChu && (
+                                        <div className="text-[10px] opacity-85 italic break-words mt-1 border-t border-dashed border-[rgba(180,83,9,0.15)] pt-1">{sched.ghiChu}</div>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+
+                                {hasLichBacSiAccess && (
+                                  <button
+                                    onClick={() => {
+                                      const defaultMaNV = (userRole === 'BacSi' && currentUser) ? currentUser.maNV : (doctorsList[0]?.maNV || '');
+                                      setDocForm({
+                                        maNV: defaultMaNV,
+                                        ngayLamViec: dateStr,
+                                        caLamViec: 'Chieu',
+                                        phongKham: '',
+                                        ghiChu: ''
+                                      });
+                                      setShowDocModal(true);
+                                    }}
+                                    className="w-full p-1.5 border border-dashed border-[var(--border-color)] rounded-[6px] bg-transparent text-[var(--text-muted)] text-[11px] cursor-pointer flex items-center justify-center gap-1 transition-all duration-200 ease-in-out hover:border-[var(--primary)] hover:text-[var(--primary)] hover:bg-[#fffbeb] mt-auto font-inherit"
+                                  >
+                                    <Plus size={10} /> Đăng ký trực
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          );
+                        })}
+                      </tr>
                     </tbody>
                   </table>
                 </div>
@@ -651,7 +819,7 @@ function LichPhongKham() {
             <div className="flex items-center justify-between py-3.5 px-5 border-b border-[var(--border-color)] bg-[var(--bg-main)]">
               <h3 className="text-[14.5px] font-extrabold m-0 flex items-center gap-1.5">
                 <ShieldCheck size={18} className="text-[var(--primary)]" />
-                Sắp Lịch Làm Việc Bác Sĩ
+                Đăng Ký Ca Trực Bác Sĩ
               </h3>
               <button onClick={() => setShowDocModal(false)} className="bg-none border-none cursor-pointer text-[var(--text-muted)] text-[16px] font-inherit">✕</button>
             </div>
@@ -664,6 +832,7 @@ function LichPhongKham() {
                   onChange={(e) => setDocForm(prev => ({ ...prev, maNV: e.target.value }))}
                   className="form-input h-9 text-[13px] px-2.5 font-inherit"
                   required
+                  disabled={userRole === 'BacSi'}
                 >
                   {doctorsList.map(doc => (
                     <option key={doc.maNV} value={doc.maNV}>
@@ -692,9 +861,9 @@ function LichPhongKham() {
                   className="form-input h-9 text-[13px] px-2.5 font-inherit"
                   required
                 >
-                  <option value="Sang">Ca Sáng (08:00 - 12:00)</option>
-                  <option value="Chieu">Ca Chiều (13:30 - 17:30)</option>
-                  <option value="CaNgay">Cả ngày (08:00 - 17:30)</option>
+                  <option value="Sang">Ca Sáng (07:30 - 11:30)</option>
+                  <option value="Chieu">Ca Chiều (13:30 - 17:00)</option>
+                  <option value="CaNgay">Cả ngày (07:30 - 17:00)</option>
                 </select>
               </div>
 
@@ -726,7 +895,7 @@ function LichPhongKham() {
                   Đóng lại
                 </button>
                 <button type="submit" className="btn-primary h-[34px] px-5 m-0 w-auto mt-0 text-[13px] font-inherit">
-                  Lưu Lịch Làm Việc
+                  Lưu Đăng Ký Trực
                 </button>
               </div>
             </form>

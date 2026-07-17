@@ -890,11 +890,20 @@ function LichPhongKham() {
                 />
               </div>
 
-              <div className="flex gap-2.5 justify-end mt-2.5">
-                <button type="button" onClick={() => setShowDocModal(false)} className="btn-outline h-[34px] px-4 m-0 text-[13px] font-inherit">
+              <div className="flex gap-2.5 justify-end mt-4">
+                <button 
+                  type="button" 
+                  onClick={() => setShowDocModal(false)} 
+                  className="btn-outline h-[38px] px-5 m-0 text-[13px] font-inherit flex items-center justify-center whitespace-nowrap"
+                  style={{ whiteSpace: 'nowrap' }}
+                >
                   Đóng lại
                 </button>
-                <button type="submit" className="btn-primary h-[34px] px-5 m-0 w-auto mt-0 text-[13px] font-inherit">
+                <button 
+                  type="submit" 
+                  className="btn-primary h-[38px] px-6 m-0 w-auto mt-0 text-[13px] font-inherit flex items-center justify-center whitespace-nowrap"
+                  style={{ whiteSpace: 'nowrap' }}
+                >
                   Lưu Đăng Ký Trực
                 </button>
               </div>

@@ -349,10 +349,7 @@ function LichPhongKham() {
       showError('Vui lòng chọn Ngày làm việc!');
       return;
     }
-    if (!phongKham.trim()) {
-      showError('Vui lòng nhập tên/số Phòng khám!');
-      return;
-    }
+
 
     const selectedDoc = doctorsList.find(d => d.maNV === maNV);
     const tenBacSi = selectedDoc ? selectedDoc.hoTen : 'Bác sĩ';
@@ -378,8 +375,8 @@ function LichPhongKham() {
       chuyenMon,
       ngayLamViec,
       caLamViec,
-      phongKham: phongKham.trim(),
-      ghiChu: ghiChu.trim()
+      phongKham: (phongKham || '').trim(),
+      ghiChu: (ghiChu || '').trim()
     };
 
     try {
@@ -693,9 +690,11 @@ function LichPhongKham() {
                                       {sched.chuyenMon && (
                                         <div className="text-[10px] text-[var(--text-muted)] italic font-medium">{sched.chuyenMon}</div>
                                       )}
-                                      <div className="text-[11px] flex items-center gap-0.5 text-inherit font-bold mt-0.5">
-                                        <MapPin size={10} /> {sched.phongKham || 'Phòng khám'}
-                                      </div>
+                                      {sched.phongKham && (
+                                        <div className="text-[11px] flex items-center gap-0.5 text-inherit font-bold mt-0.5">
+                                          <MapPin size={10} /> {sched.phongKham}
+                                        </div>
+                                      )}
                                       {sched.ghiChu && (
                                         <div className="text-[10px] opacity-85 italic break-words mt-1 border-t border-dashed border-[rgba(3,105,161,0.15)] pt-1">{sched.ghiChu}</div>
                                       )}
@@ -768,9 +767,11 @@ function LichPhongKham() {
                                       {sched.chuyenMon && (
                                         <div className="text-[10px] text-[var(--text-muted)] italic font-medium">{sched.chuyenMon}</div>
                                       )}
-                                      <div className="text-[11px] flex items-center gap-0.5 text-inherit font-bold mt-0.5">
-                                        <MapPin size={10} /> {sched.phongKham || 'Phòng khám'}
-                                      </div>
+                                      {sched.phongKham && (
+                                        <div className="text-[11px] flex items-center gap-0.5 text-inherit font-bold mt-0.5">
+                                          <MapPin size={10} /> {sched.phongKham}
+                                        </div>
+                                      )}
                                       {sched.ghiChu && (
                                         <div className="text-[10px] opacity-85 italic break-words mt-1 border-t border-dashed border-[rgba(180,83,9,0.15)] pt-1">{sched.ghiChu}</div>
                                       )}
@@ -867,17 +868,7 @@ function LichPhongKham() {
                 </select>
               </div>
 
-              <div className="form-group">
-                <label className="form-label font-semibold mb-1.5 text-[13px]">Phòng trực / Phòng khám</label>
-                <input
-                  type="text"
-                  placeholder="Ví dụ: Phòng 101, Phòng Nhi, Phòng Siêu âm..."
-                  value={docForm.phongKham}
-                  onChange={(e) => setDocForm(prev => ({ ...prev, phongKham: e.target.value }))}
-                  className="form-input h-9 text-[13px] px-2.5 font-inherit"
-                  required
-                />
-              </div>
+
 
               <div className="form-group">
                 <label className="form-label font-semibold mb-1.5 text-[13px]">Ghi chú công tác</label>

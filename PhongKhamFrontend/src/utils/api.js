@@ -106,15 +106,26 @@ export const apiChangePassword = async (matKhauCu, matKhauMoi, nhapLaiMatKhauMoi
   });
 };
 
-// API Quên mật khẩu / Đổi mật khẩu kết nối với Backend thực tế qua SQL Server
-export const apiResetPassword = async (email, soDienThoai, matKhauMoi, nhapLaiMatKhauMoi) => {
-  return await apiFetch('/xacthuc/QuenMatKhau', {
+// API Gửi OTP quên mật khẩu
+export const apiSendOtpForgotPass = async (email, soDienThoai) => {
+  return await apiFetch('/xacthuc/GuiOtpQuenMatKhau', {
     method: 'POST',
     body: JSON.stringify({ 
       email: email.trim(), 
-      soDienThoai: soDienThoai.trim(), 
-      matKhauMoi: matKhauMoi.trim(), 
-      nhapLaiMatKhauMoi: nhapLaiMatKhauMoi.trim() 
+      soDienThoai: soDienThoai.trim() 
+    })
+  });
+};
+
+// API Xác nhận OTP và đổi mật khẩu mới
+export const apiVerifyOtpAndResetPass = async (email, otp, matKhauMoi, nhapLaiMatKhauMoi) => {
+  return await apiFetch('/xacthuc/XacNhanOtpVaDoiMatKhau', {
+    method: 'POST',
+    body: JSON.stringify({
+      email: email.trim(),
+      otp: otp.trim(),
+      matKhauMoi: matKhauMoi.trim(),
+      nhapLaiMatKhauMoi: nhapLaiMatKhauMoi.trim()
     })
   });
 };
@@ -661,4 +672,71 @@ export const apiGetThanhToanPDF = async (maHoaDon) => {
   return await response.blob();
 };
 
+// ==========================================
+// API ĐẶT LỊCH HẸN KHÁM & XẾP LỊCH TRỰC
+// ==========================================
 
+export const apiGetAvailableDoctorsOnSchedule = async (ngayHen, maKhoa, caHen = '') => {
+  const queryParams = new URLSearchParams({ ngayHen, maKhoa });
+  if (caHen) queryParams.append('caHen', caHen);
+  return await apiFetch('/DanhSach/bac-si-lich-trong?' + queryParams.toString());
+};
+
+export const apiCreateDatLichKham = async (payload) => {
+  return await apiFetch('/DatLichKham', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  });
+};
+
+export const apiGetDatLichKham = async ({ trangThai = '', ngayHen = '', search = '', page = 1, pageSize = 20 } = {}) => {
+  const queryParams = new URLSearchParams({
+    page: page.toString(),
+    pageSize: pageSize.toString()
+  });
+  if (trangThai) queryParams.append('trangThai', trangThai);
+  if (ngayHen) queryParams.append('ngayHen', ngayHen);
+  if (search) queryParams.append('search', search);
+  return await apiFetch('/DatLichKham?' + queryParams.toString());
+};
+
+export const apiXacNhanDatLich = async (maDatLich) => {
+  return await apiFetch(`/DatLichKham/${maDatLich}/xac-nhan`, {
+    method: 'PUT'
+  });
+};
+
+export const apiHuyDatLich = async (maDatLich) => {
+  return await apiFetch(`/DatLichKham/${maDatLich}/huy`, {
+    method: 'PUT'
+  });
+};
+
+export const apiTiepNhanDatLich = async (maDatLich, payload) => {
+  return await apiFetch(`/DatLichKham/${maDatLich}/tiep-nhan`, {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  });
+};
+
+export const apiGetLichLamViec = async ({ tuNgay = '', denNgay = '', maKhoa = '', maNV = '' } = {}) => {
+  const queryParams = new URLSearchParams();
+  if (tuNgay) queryParams.append('tuNgay', tuNgay);
+  if (denNgay) queryParams.append('denNgay', denNgay);
+  if (maKhoa) queryParams.append('maKhoa', maKhoa);
+  if (maNV) queryParams.append('maNV', maNV);
+  return await apiFetch('/LichLamViec?' + queryParams.toString());
+};
+
+export const apiCreateLichLamViec = async (payload) => {
+  return await apiFetch('/LichLamViec', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  });
+};
+
+export const apiDeleteLichLamViec = async (maLich) => {
+  return await apiFetch(`/LichLamViec/${maLich}`, {
+    method: 'DELETE'
+  });
+};

@@ -1,7 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, LogIn, KeyRound, X, Phone } from 'lucide-react';
-import { apiLogin, apiChangePassword, apiResetPassword, setSession } from '../utils/api';
+import { apiLogin, apiChangePassword, apiSendOtpForgotPass, apiVerifyOtpAndResetPass, setSession } from '../utils/api';
 import { useToast } from '../utils/ToastContext';
 
 function Login() {
@@ -16,38 +16,97 @@ function Login() {
   const [showResetModal, setShowResetModal] = useState(false);
   const [resetEmail, setResetEmail] = useState('');
   const [resetSdt, setResetSdt] = useState('');
+  const [resetStep, setResetStep] = useState(1); // 1: Gửi OTP, 2: Nhập OTP & Đặt mật khẩu mới
+  const [resetOtp, setResetOtp] = useState('');
   const [resetNewPassword, setResetNewPassword] = useState('');
   const [resetConfirmPassword, setResetConfirmPassword] = useState('');
-  
+  const [resendCooldown, setResendCooldown] = useState(0);
+
   const navigate = useNavigate();
   const { showSuccess, showError, showWarning } = useToast();
+
+  // Đếm ngược thời gian gửi lại OTP
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setInterval(() => {
+      setResendCooldown(prev => prev - 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
 
   // Đóng modal và reset tất cả trường nhập liệu
   const closeResetModal = () => {
     setShowResetModal(false);
     setResetEmail('');
     setResetSdt('');
+    setResetOtp('');
     setResetNewPassword('');
     setResetConfirmPassword('');
+    setResetStep(1);
+    setResendCooldown(0);
   };
 
-  // Xử lý yêu cầu đổi mật khẩu (Quên mật khẩu)
+  // Bước 1: Yêu cầu gửi OTP
+  const handleSendOtp = async (e) => {
+    if (e) e.preventDefault();
+    if (!resetEmail.trim() || !resetSdt.trim()) {
+      showError("Vui lòng điền đầy đủ Email và Số điện thoại!");
+      return;
+    }
+    try {
+      const res = await apiSendOtpForgotPass(resetEmail.trim(), resetSdt.trim());
+      showSuccess(res.message || "Mã OTP đã được gửi đến email của bạn. Vui lòng kiểm tra!");
+      setResetStep(2);
+      setResendCooldown(60); // Hạn chế gửi lại sau 60s
+    } catch (err) {
+      showError(err.message || "Email hoặc số điện thoại không chính xác!");
+    }
+  };
+
+  // Bước 2: Xác nhận OTP và đặt lại mật khẩu mới
   const handleResetPassword = async (e) => {
     e.preventDefault();
-    if (!resetEmail.trim() || !resetSdt.trim() || !resetNewPassword.trim() || !resetConfirmPassword.trim()) {
-      showError("Vui lòng điền đầy đủ các thông tin yêu cầu!");
+    if (!resetOtp.trim() || !resetNewPassword.trim() || !resetConfirmPassword.trim()) {
+      showError("Vui lòng điền đầy đủ OTP và thông tin mật khẩu mới!");
       return;
     }
     if (resetNewPassword !== resetConfirmPassword) {
       showError("Mật khẩu mới và xác nhận mật khẩu không trùng khớp!");
       return;
     }
+
+    // Kiểm tra các ràng buộc bảo mật mật khẩu mới phía Client
+    if (resetNewPassword.length < 8 || resetNewPassword.length > 12) {
+      showError("Mật khẩu mới phải dài từ 8 đến 12 ký tự!");
+      return;
+    }
+    if (!/[a-z]/.test(resetNewPassword)) {
+      showError("Mật khẩu mới phải có ít nhất 1 chữ thường (a-z)!");
+      return;
+    }
+    if (!/[A-Z]/.test(resetNewPassword)) {
+      showError("Mật khẩu mới phải có ít nhất 1 chữ hoa (A-Z)!");
+      return;
+    }
+    if (!/[0-9]/.test(resetNewPassword)) {
+      showError("Mật khẩu mới phải có ít nhất 1 chữ số (0-9)!");
+      return;
+    }
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(resetNewPassword)) {
+      showError("Mật khẩu mới phải có ít nhất 1 ký tự đặc biệt!");
+      return;
+    }
+    if (/\s/.test(resetNewPassword)) {
+      showError("Mật khẩu mới không được chứa khoảng trắng!");
+      return;
+    }
+
     try {
-      const response = await apiResetPassword(resetEmail.trim(), resetSdt.trim(), resetNewPassword.trim(), resetConfirmPassword.trim());
+      const response = await apiVerifyOtpAndResetPass(resetEmail, resetOtp, resetNewPassword, resetConfirmPassword);
       showSuccess(response.message || "Đổi mật khẩu thành công!");
       closeResetModal();
     } catch (err) {
-      showError(err.message || "Tài khoản hoặc số điện thoại không tồn tại!");
+      showError(err.message || "Mã OTP không chính xác hoặc đã hết hạn!");
     }
   };
 
@@ -314,96 +373,157 @@ function Login() {
             <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden relative z-10 border border-slate-100 animate-in fade-in zoom-in-95 duration-200" style={{ display: 'flex', flexDirection: 'column' }}>
               {/* Header của Modal */}
               <div className="px-6 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white flex justify-between items-center" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h3 className="font-semibold text-base m-0 text-white" style={{ fontSize: '15px' }}>Đổi mật khẩu tài khoản</h3>
+                <h3 className="font-semibold text-base m-0 text-white" style={{ fontSize: '15px' }}>Quên mật khẩu tài khoản</h3>
                 <button onClick={closeResetModal} className="text-white/80 hover:text-white bg-transparent border-0 cursor-pointer p-0 m-0 flex items-center" style={{ color: 'white', opacity: 0.8 }}>
                   <X size={18} />
                 </button>
               </div>
               
-              {/* Form nhập thông tin */}
-              <form onSubmit={handleResetPassword} className="p-6" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                <div className="form-group m-0" style={{ margin: 0 }}>
-                  <label className="form-label text-xs font-semibold text-slate-600" style={{ fontSize: '12px', color: '#475569', marginBottom: '4px', display: 'block' }}>Email đăng nhập</label>
-                  <div className="input-wrapper">
-                    <Mail className="input-icon" size={16} />
-                    <input
-                      type="email"
-                      className="form-input"
-                      style={{ fontSize: '13px', padding: '8px 12px 8px 36px', height: '36px' }}
-                      placeholder="Nhập địa chỉ email đăng nhập..."
-                      value={resetEmail}
-                      onChange={(e) => setResetEmail(e.target.value)}
-                      required
-                    />
-                  </div>
-                </div>
+              {resetStep === 1 ? (
+                /* Bước 1: Nhập Email + SĐT để nhận mã OTP */
+                <form onSubmit={handleSendOtp} className="p-6" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <p className="text-xs text-slate-500 m-0 leading-relaxed">
+                    Vui lòng cung cấp Email và Số điện thoại đã liên kết với tài khoản để nhận mã xác thực OTP qua Email.
+                  </p>
 
-                <div className="form-group m-0" style={{ margin: 0 }}>
-                  <label className="form-label text-xs font-semibold text-slate-600" style={{ fontSize: '12px', color: '#475569', marginBottom: '4px', display: 'block' }}>Số điện thoại</label>
-                  <div className="input-wrapper">
-                    <Phone className="input-icon" size={16} />
-                    <input
-                      type="text"
-                      className="form-input"
-                      style={{ fontSize: '13px', padding: '8px 12px 8px 36px', height: '36px' }}
-                      placeholder="Nhập số điện thoại liên kết..."
-                      value={resetSdt}
-                      onChange={(e) => setResetSdt(e.target.value)}
-                      required
-                    />
+                  <div className="form-group m-0" style={{ margin: 0 }}>
+                    <label className="form-label text-xs font-semibold text-slate-600" style={{ fontSize: '12px', color: '#475569', marginBottom: '4px', display: 'block' }}>Email đăng nhập</label>
+                    <div className="input-wrapper">
+                      <Mail className="input-icon" size={16} />
+                      <input
+                        type="email"
+                        className="form-input"
+                        style={{ fontSize: '13px', padding: '8px 12px 8px 36px', height: '36px' }}
+                        placeholder="Nhập địa chỉ email đăng ký..."
+                        value={resetEmail}
+                        onChange={(e) => setResetEmail(e.target.value)}
+                        required
+                      />
+                    </div>
                   </div>
-                </div>
 
-                <div className="form-group m-0" style={{ margin: 0 }}>
-                  <label className="form-label text-xs font-semibold text-slate-600" style={{ fontSize: '12px', color: '#475569', marginBottom: '4px', display: 'block' }}>Mật khẩu mới</label>
-                  <div className="input-wrapper">
-                    <Lock className="input-icon" size={16} />
-                    <input
-                      type="password"
-                      className="form-input"
-                      style={{ fontSize: '13px', padding: '8px 12px 8px 36px', height: '36px' }}
-                      placeholder="Nhập mật khẩu mới..."
-                      value={resetNewPassword}
-                      onChange={(e) => setResetNewPassword(e.target.value)}
-                      required
-                    />
+                  <div className="form-group m-0" style={{ margin: 0 }}>
+                    <label className="form-label text-xs font-semibold text-slate-600" style={{ fontSize: '12px', color: '#475569', marginBottom: '4px', display: 'block' }}>Số điện thoại</label>
+                    <div className="input-wrapper">
+                      <Phone className="input-icon" size={16} />
+                      <input
+                        type="text"
+                        className="form-input"
+                        style={{ fontSize: '13px', padding: '8px 12px 8px 36px', height: '36px' }}
+                        placeholder="Nhập số điện thoại liên kết..."
+                        value={resetSdt}
+                        onChange={(e) => setResetSdt(e.target.value)}
+                        required
+                      />
+                    </div>
                   </div>
-                </div>
 
-                <div className="form-group m-0" style={{ margin: 0 }}>
-                  <label className="form-label text-xs font-semibold text-slate-600" style={{ fontSize: '12px', color: '#475569', marginBottom: '4px', display: 'block' }}>Xác nhận mật khẩu</label>
-                  <div className="input-wrapper">
-                    <KeyRound className="input-icon" size={16} />
-                    <input
-                      type="password"
-                      className="form-input"
-                      style={{ fontSize: '13px', padding: '8px 12px 8px 36px', height: '36px' }}
-                      placeholder="Xác nhận lại mật khẩu..."
-                      value={resetConfirmPassword}
-                      onChange={(e) => setResetConfirmPassword(e.target.value)}
-                      required
-                    />
+                  <div className="pt-2" style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                    <button 
+                      type="button" 
+                      onClick={closeResetModal} 
+                      style={{ flex: 1, padding: '8px 16px', backgroundColor: '#f1f5f9', color: '#334155', fontWeight: '600', borderRadius: '8px', fontSize: '12px', cursor: 'pointer', border: 0, transition: 'background-color 0.2s' }}
+                      className="hover:bg-slate-200"
+                    >
+                      Hủy bỏ
+                    </button>
+                    <button 
+                      type="submit" 
+                      style={{ flex: 1, padding: '8px 16px', backgroundColor: '#10b981', color: 'white', fontWeight: '600', borderRadius: '8px', fontSize: '12px', cursor: 'pointer', border: 0, transition: 'background-color 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
+                      className="hover:bg-emerald-600"
+                    >
+                      Gửi mã OTP
+                    </button>
                   </div>
-                </div>
+                </form>
+              ) : (
+                /* Bước 2: Nhập OTP + Đặt mật khẩu mới */
+                <form onSubmit={handleResetPassword} className="p-6" style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div className="p-3 bg-emerald-50 text-emerald-700 rounded-lg text-xs leading-relaxed" style={{ border: '1px solid #d1fae5' }}>
+                    Mã xác thực OTP đã được gửi đến email <strong>{resetEmail}</strong>. Mã có hiệu lực trong 5 phút.
+                  </div>
 
-                <div className="pt-2" style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
-                  <button 
-                    type="button" 
-                    onClick={closeResetModal} 
-                    style={{ flex: 1, padding: '8px 16px', backgroundColor: '#f1f5f9', color: '#334155', fontWeight: '600', borderRadius: '8px', fontSize: '12px', cursor: 'pointer', border: 0, transition: 'background-color 0.2s' }}
-                    className="hover:bg-slate-200"
-                  >
-                    Hủy bỏ
-                  </button>
-                  <button 
-                    type="submit" 
-                    style={{ flex: 1, padding: '8px 16px', backgroundColor: '#10b981', color: 'white', fontWeight: '600', borderRadius: '8px', fontSize: '12px', cursor: 'pointer', border: 0, transition: 'background-color 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
-                    className="hover:bg-emerald-600"
-                  >
-                    <KeyRound size={14} /> Cập nhật
-                  </button>
-                </div>
-              </form>
+                  <div className="form-group m-0" style={{ margin: 0 }}>
+                    <label className="form-label text-xs font-semibold text-slate-600" style={{ fontSize: '12px', color: '#475569', marginBottom: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span>Mã xác thực OTP <span className="text-red-500">*</span></span>
+                      {resendCooldown > 0 ? (
+                        <span className="text-[10px] text-slate-400 font-normal">Gửi lại sau {resendCooldown}s</span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={handleSendOtp}
+                          className="text-[10px] text-blue-600 hover:underline bg-transparent border-0 cursor-pointer p-0 font-semibold"
+                        >
+                          Gửi lại mã
+                        </button>
+                      )}
+                    </label>
+                    <div className="input-wrapper">
+                      <KeyRound className="input-icon" size={16} />
+                      <input
+                        type="text"
+                        className="form-input"
+                        style={{ fontSize: '13px', padding: '8px 12px 8px 36px', height: '36px', letterSpacing: '4px', textAlign: 'center', fontWeight: 'bold' }}
+                        placeholder="Nhập mã OTP 6 chữ số..."
+                        maxLength={6}
+                        value={resetOtp}
+                        onChange={(e) => setResetOtp(e.target.value.replace(/\D/g, ''))}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-group m-0" style={{ margin: 0 }}>
+                    <label className="form-label text-xs font-semibold text-slate-600" style={{ fontSize: '12px', color: '#475569', marginBottom: '4px', display: 'block' }}>Mật khẩu mới</label>
+                    <div className="input-wrapper">
+                      <Lock className="input-icon" size={16} />
+                      <input
+                        type="password"
+                        className="form-input"
+                        style={{ fontSize: '13px', padding: '8px 12px 8px 36px', height: '36px' }}
+                        placeholder="Mật khẩu dài 8-12 ký tự, A-Z, a-z, 0-9..."
+                        value={resetNewPassword}
+                        onChange={(e) => setResetNewPassword(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-group m-0" style={{ margin: 0 }}>
+                    <label className="form-label text-xs font-semibold text-slate-600" style={{ fontSize: '12px', color: '#475569', marginBottom: '4px', display: 'block' }}>Xác nhận mật khẩu</label>
+                    <div className="input-wrapper">
+                      <KeyRound className="input-icon" size={16} />
+                      <input
+                        type="password"
+                        className="form-input"
+                        style={{ fontSize: '13px', padding: '8px 12px 8px 36px', height: '36px' }}
+                        placeholder="Xác nhận lại mật khẩu mới..."
+                        value={resetConfirmPassword}
+                        onChange={(e) => setResetConfirmPassword(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="pt-2" style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                    <button 
+                      type="button" 
+                      onClick={() => setResetStep(1)} 
+                      style={{ flex: 1, padding: '8px 16px', backgroundColor: '#f1f5f9', color: '#334155', fontWeight: '600', borderRadius: '8px', fontSize: '12px', cursor: 'pointer', border: 0 }}
+                      className="hover:bg-slate-200"
+                    >
+                      Quay lại
+                    </button>
+                    <button 
+                      type="submit" 
+                      style={{ flex: 1, padding: '8px 16px', backgroundColor: '#10b981', color: 'white', fontWeight: '600', borderRadius: '8px', fontSize: '12px', cursor: 'pointer', border: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}
+                      className="hover:bg-emerald-600"
+                    >
+                      Xác nhận
+                    </button>
+                  </div>
+                </form>
+              )}
             </div>
           </div>
         )}

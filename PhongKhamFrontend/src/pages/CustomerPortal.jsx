@@ -6,7 +6,19 @@ import {
   ArrowLeft, Heart, CheckCircle2, AlertCircle, Info, Activity
 } from 'lucide-react';
 import { useToast } from '../utils/ToastContext';
-import { apiGetBacSiCongKhai, apiTraCuuHoSoCongKhai } from '../utils/api';
+import { 
+  apiGetBacSiCongKhai, 
+  apiTraCuuHoSoCongKhai, 
+  apiGetAvailableDoctorsOnSchedule, 
+  apiCreateDatLichKham 
+} from '../utils/api';
+
+const DEPARTMENTS = [
+  { maKhoa: 'KHOA01', tenKhoa: 'Nội tổng quát' },
+  { maKhoa: 'KHOA02', tenKhoa: 'Tim mạch' },
+  { maKhoa: 'KHOA03', tenKhoa: 'Nhi khoa' },
+  { maKhoa: 'KHOA04', tenKhoa: 'Tai Mũi Họng' }
+];
 
 
 
@@ -25,7 +37,8 @@ function CustomerPortal() {
     diaChi: '',
     tienSuBenh: '',
     ngayHen: '',
-    caKham: 'Sang',
+    caHen: 'Sang',
+    maKhoa: '',
     yeuCauKham: '',
     maNV: ''
   });
@@ -40,6 +53,41 @@ function CustomerPortal() {
   // State phục vụ load danh sách bác sĩ công khai từ API
   const [doctorsList, setDoctorsList] = useState([]);
   const [loadingDoctors, setLoadingDoctors] = useState(false);
+
+  // State phục vụ lọc danh sách bác sĩ trực thực tế từ API theo Ngày + Khoa + Ca
+  const [availableDoctors, setAvailableDoctors] = useState([]);
+  const [loadingScheduleDoctors, setLoadingScheduleDoctors] = useState(false);
+
+  // Tải danh sách bác sĩ có ca trực thỏa mãn Ngày + Khoa + Ca từ API
+  useEffect(() => {
+    const fetchAvailableDoctors = async () => {
+      const { ngayHen, maKhoa, caHen } = bookingForm;
+      if (!ngayHen || !maKhoa) {
+        setAvailableDoctors([]);
+        return;
+      }
+      setLoadingScheduleDoctors(true);
+      try {
+        const res = await apiGetAvailableDoctorsOnSchedule(ngayHen, maKhoa, caHen);
+        if (Array.isArray(res)) {
+          setAvailableDoctors(res);
+        } else {
+          setAvailableDoctors([]);
+        }
+      } catch (err) {
+        console.error('Không thể tải danh sách bác sĩ trực từ API:', err);
+        setAvailableDoctors([]);
+      } finally {
+        setLoadingScheduleDoctors(false);
+      }
+    };
+    fetchAvailableDoctors();
+  }, [bookingForm.ngayHen, bookingForm.maKhoa, bookingForm.caHen]);
+
+  // Khi maKhoa thay đổi, reset maNV về trống
+  useEffect(() => {
+    setBookingForm(prev => ({ ...prev, maNV: '' }));
+  }, [bookingForm.maKhoa]);
 
   useEffect(() => {
     const fetchDoctors = async () => {
@@ -86,10 +134,35 @@ function CustomerPortal() {
     setBookingForm(prev => ({ ...prev, [name]: value }));
   };
 
+  // Tự động định dạng dấu gạch chéo ngày sinh (DD/MM/YYYY) khi gõ trên cổng khách hàng
+  const handleNgaySinhChange = (e) => {
+    let val = e.target.value;
+    const isDeleting = e.nativeEvent.inputType === 'deleteContentBackward';
+    
+    if (!isDeleting) {
+      const digits = val.replace(/\D/g, '');
+      if (digits.length > 0) {
+        if (digits.length <= 2) val = digits;
+        else if (digits.length <= 4) val = `${digits.slice(0, 2)}/${digits.slice(2)}`;
+        else val = `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4, 8)}`;
+      }
+    }
+    if (val.length <= 10) setBookingForm(prev => ({ ...prev, ngaySinh: val }));
+  };
+
+  const handleNgaySinhBlur = () => {
+    let val = bookingForm.ngaySinh.trim();
+    const digits = val.replace(/\D/g, '');
+    if (digits.length === 8) {
+      val = `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4, 8)}`;
+      setBookingForm(prev => ({ ...prev, ngaySinh: val }));
+    }
+  };
+
   // Gửi thông tin đặt lịch khám trực tuyến
-  const handleBookAppointment = (e) => {
+  const handleBookAppointment = async (e) => {
     e.preventDefault();
-    const { hoTenKhach, sdt, gioiTinh, ngaySinh, diaChi, tienSuBenh, ngayHen, caKham, yeuCauKham, maNV } = bookingForm;
+    const { hoTenKhach, sdt, gioiTinh, ngaySinh, diaChi, tienSuBenh, ngayHen, caHen, maKhoa, yeuCauKham, maNV } = bookingForm;
 
     if (!hoTenKhach.trim()) {
       showError('Vui lòng nhập họ tên người khám!');
@@ -104,12 +177,36 @@ function CustomerPortal() {
       showError('Số điện thoại không hợp lệ (phải gồm 10 chữ số bắt đầu bằng số 0)!');
       return;
     }
-    if (!ngaySinh) {
-      showError('Vui lòng chọn ngày sinh!');
+    if (!ngaySinh.trim()) {
+      showError('Vui lòng nhập ngày sinh!');
+      return;
+    }
+    const isValidDate = (dateStr) => {
+      if (!dateStr) return false;
+      const parts = dateStr.split('/');
+      if (parts.length !== 3) return false;
+      const day = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10);
+      const year = parseInt(parts[2], 10);
+      
+      if (isNaN(day) || isNaN(month) || isNaN(year)) return false;
+      if (month < 1 || month > 12) return false;
+      if (day < 1 || day > 31) return false;
+      if (year < 1900 || year > new Date().getFullYear()) return false;
+      
+      const daysInMonth = new Date(year, month, 0).getDate();
+      return day <= daysInMonth;
+    };
+    if (!isValidDate(ngaySinh) || ngaySinh.length !== 10) {
+      showError('Ngày sinh không hợp lệ (Định dạng đúng: DD/MM/YYYY)!');
       return;
     }
     if (!ngayHen) {
       showError('Vui lòng chọn ngày hẹn khám!');
+      return;
+    }
+    if (!maKhoa) {
+      showError('Vui lòng chọn chuyên khoa khám!');
       return;
     }
 
@@ -119,46 +216,61 @@ function CustomerPortal() {
       return;
     }
 
-    // Lấy thông tin bác sĩ đã chọn
-    const selectedDoc = displayDoctors.find(d => d.maNV === maNV);
+    // Đóng gói thông tin hành chính mở rộng vào yeuCauKham phân tách bằng '###'
+    const extraInfo = `###${gioiTinh}|${ngaySinh}|${(diaChi.trim() || '—')}|${(tienSuBenh.trim() || '—')}`;
+    const fullYeuCauKham = (yeuCauKham.trim() || 'Khám tổng quát') + extraInfo;
+
+    // Lấy tên bác sĩ từ availableDoctors
+    const selectedDoc = availableDoctors.find(d => d.maNV === maNV);
     const tenBacSi = selectedDoc ? selectedDoc.hoTen : '';
 
-    // Tạo mã lịch đặt ngẫu nhiên: DL_yymmdd_RANDOM
-    const nextCode = `DL_${new Date().toISOString().slice(2, 10).replace(/-/g, '')}_${String(Math.floor(100 + Math.random() * 900))}`;
-    const newAppointment = {
-      maDatLich: nextCode,
-      hoTenKhach: hoTenKhach.trim().toUpperCase(),
-      sdt: sdt.trim(),
-      gioiTinh: gioiTinh,
-      ngaySinh: ngaySinh,
-      diaChi: diaChi.trim(),
-      tienSuBenh: tienSuBenh.trim(),
-      ngayHen: ngayHen,
-      caKham: caKham,
-      yeuCauKham: yeuCauKham.trim() || 'Khám tổng quát',
-      trangThai: 'ChoXacNhan',
-      ngayTao: new Date().toISOString(),
-      maNV: maNV || '',
-      tenBacSi: tenBacSi
-    };
-
     try {
+      const payload = {
+        hoTenKhach: hoTenKhach.trim(),
+        sdt: sdt.trim(),
+        ngayHen: ngayHen,
+        caHen: caHen,
+        yeuCauKham: fullYeuCauKham,
+        maNV: maNV || null
+      };
+
+      const res = await apiCreateDatLichKham(payload);
+      const maDatLichStr = String(res.maDatLich);
+
+      const newAppointment = {
+        maDatLich: maDatLichStr,
+        hoTenKhach: hoTenKhach.trim().toUpperCase(),
+        sdt: sdt.trim(),
+        gioiTinh: gioiTinh,
+        ngaySinh: ngaySinh,
+        diaChi: diaChi.trim(),
+        tienSuBenh: tienSuBenh.trim(),
+        ngayHen: ngayHen,
+        caHen: caHen,
+        yeuCauKham: yeuCauKham.trim() || 'Khám tổng quát',
+        trangThai: res.trangThai || 'ChoXacNhan',
+        ngayTao: new Date().toISOString(),
+        maNV: maNV || '',
+        tenBacSi: tenBacSi
+      };
+
+      // Lưu bản sao cục bộ để tra cứu nhanh ở trình duyệt này
       const existing = JSON.parse(localStorage.getItem('danhSachDatLich') || '[]');
-      const updated = [...existing, newAppointment];
+      const updated = [newAppointment, ...existing];
       localStorage.setItem('danhSachDatLich', JSON.stringify(updated));
 
-      showSuccess(`Đặt lịch hẹn khám thành công! Mã lịch hẹn: ${nextCode}`);
+      showSuccess(`Đặt lịch hẹn khám thành công! Mã lịch đặt: ${maDatLichStr}`);
 
-      // Chuyển sang hiển thị chi tiết đặt lịch
+      // Chuyển sang hiển thị kết quả tra cứu
       setSearchResult({
         patient: {
-          maBN: 'Chưa có (Bệnh nhân mới)',
+          maBN: 'Chưa có (Hồ sơ đăng ký trực tuyến)',
           hoTen: newAppointment.hoTenKhach,
           sdt: newAppointment.sdt,
-          ngaySinh: '—',
-          gioiTinh: '—',
-          diaChi: '—',
-          tienSuBenh: '—'
+          ngaySinh: newAppointment.ngaySinh,
+          gioiTinh: newAppointment.gioiTinh,
+          diaChi: newAppointment.diaChi || '—',
+          tienSuBenh: newAppointment.tienSuBenh || '—'
         },
         visits: [],
         appointments: [newAppointment]
@@ -177,17 +289,16 @@ function CustomerPortal() {
         diaChi: '',
         tienSuBenh: '',
         ngayHen: ngayHen,
-        caKham: 'Sang',
+        caHen: 'Sang',
+        maKhoa: '',
         yeuCauKham: '',
         maNV: ''
       });
     } catch (err) {
       console.error(err);
-      showError('Không thể lưu lịch hẹn vào bộ nhớ!');
+      showError(err.message || 'Không thể đăng ký đặt lịch khám với máy chủ!');
     }
-  };
-
-  // Tra cứu lịch sử bệnh án / lịch hẹn
+  };  // Tra cứu lịch sử bệnh án / lịch hẹn
   const handleSearch = async (e) => {
     if (e) e.preventDefault();
     
@@ -459,10 +570,12 @@ function CustomerPortal() {
                     <div className="relative">
                       <span className="absolute left-3 top-2.5 text-slate-400"><Clock size={15} /></span>
                       <input 
-                        type="date"
+                        type="text"
                         name="ngaySinh"
+                        placeholder="Ví dụ: 18/03/2003"
                         value={bookingForm.ngaySinh}
-                        onChange={handleInputChange}
+                        onChange={handleNgaySinhChange}
+                        onBlur={handleNgaySinhBlur}
                         className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-xs sm:text-sm transition-all"
                         required
                       />
@@ -539,8 +652,8 @@ function CustomerPortal() {
                       <div className="relative">
                         <span className="absolute left-3 top-2.5 text-slate-400"><Clock size={15} /></span>
                         <select
-                          name="caKham"
-                          value={bookingForm.caKham}
+                          name="caHen"
+                          value={bookingForm.caHen}
                           onChange={handleInputChange}
                           className="w-full pl-9 pr-8 py-2 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-xs sm:text-sm transition-all bg-white"
                           required
@@ -552,25 +665,61 @@ function CustomerPortal() {
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">
-                      Bác sĩ khám mong muốn
-                    </label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-2.5 text-slate-400"><User size={15} /></span>
-                      <select
-                        name="maNV"
-                        value={bookingForm.maNV}
-                        onChange={handleInputChange}
-                        className="w-full pl-9 pr-8 py-2 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-xs sm:text-sm transition-all bg-white"
-                      >
-                        <option value="">Chọn bác sĩ</option>
-                        {displayDoctors.map(doc => (
-                          <option key={doc.maNV} value={doc.maNV}>
-                            {doc.hoTen} ({doc.chuyenMon})
-                          </option>
-                        ))}
-                      </select>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">
+                        Chuyên khoa khám <span className="text-red-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-2.5 text-slate-400"><Activity size={15} /></span>
+                        <select
+                          name="maKhoa"
+                          value={bookingForm.maKhoa}
+                          onChange={handleInputChange}
+                          className="w-full pl-9 pr-8 py-2 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-xs sm:text-sm transition-all bg-white"
+                          required
+                        >
+                          <option value="">Chọn chuyên khoa</option>
+                          {DEPARTMENTS.map(dept => (
+                            <option key={dept.maKhoa} value={dept.maKhoa}>
+                              {dept.tenKhoa}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">
+                        Bác sĩ khám mong muốn
+                      </label>
+                      <div className="relative">
+                        <span className="absolute left-3 top-2.5 text-slate-400"><User size={15} /></span>
+                        <select
+                          name="maNV"
+                          value={bookingForm.maNV}
+                          onChange={handleInputChange}
+                          className="w-full pl-9 pr-8 py-2 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-xs sm:text-sm transition-all bg-white"
+                          disabled={!bookingForm.maKhoa || loadingScheduleDoctors}
+                        >
+                          {!bookingForm.maKhoa ? (
+                            <option value="">Chọn chuyên khoa trước</option>
+                          ) : loadingScheduleDoctors ? (
+                            <option value="">Đang tải bác sĩ...</option>
+                          ) : availableDoctors.length === 0 ? (
+                            <option value="">Không có bác sĩ trực ca này</option>
+                          ) : (
+                            <>
+                              <option value="">Chọn bác sĩ (Tùy chọn)</option>
+                              {availableDoctors.map(doc => (
+                                <option key={doc.maNV} value={doc.maNV}>
+                                  {doc.hoTen} ({doc.chuyenMon})
+                                </option>
+                              ))}
+                            </>
+                          )}
+                        </select>
+                      </div>
                     </div>
                   </div>
 

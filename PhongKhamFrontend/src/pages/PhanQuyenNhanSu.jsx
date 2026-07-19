@@ -255,7 +255,7 @@ function PhanQuyenNhanSu() {
           hoTen: formData.hoTen.trim(),
           sdt: formData.sdt.trim(),
           email: formData.email.trim(),
-          chuyenMon: formData.chuyenMon?.trim() || null,
+          chuyenMon: formData.roleName === 'BacSi' ? (formData.chuyenMon?.trim() || null) : null,
           username: formData.email.trim(),
           password: formData.passwordHash ? formData.passwordHash : null,
           roleID: mappedRoleID,
@@ -269,7 +269,7 @@ function PhanQuyenNhanSu() {
           hoTen: formData.hoTen.trim(),
           sdt: formData.sdt.trim(),
           email: formData.email.trim(),
-          chuyenMon: formData.chuyenMon?.trim() || null,
+          chuyenMon: formData.roleName === 'BacSi' ? (formData.chuyenMon?.trim() || null) : null,
           username: formData.email.trim(),
           password: formData.passwordHash,
           roleID: mappedRoleID,
@@ -632,13 +632,14 @@ function PhanQuyenNhanSu() {
                       </div>
 
                       <div className="form-group m-0">
-                        <label className="form-label text-[12.5px]">Khoa (Chuyên môn)</label>
+                        <label className={`form-label text-[12.5px] ${formData.roleName !== 'BacSi' ? 'text-slate-400' : ''}`}>Khoa (Chuyên môn)</label>
                         <input
                           type="text"
-                          className="form-input h-[34px] text-[13px] pl-3"
-                          placeholder="Nhập tên khoa / chuyên môn (VD: Nội tổng quát)"
-                          value={formData.chuyenMon || ''}
+                          className={`form-input h-[34px] text-[13px] pl-3 ${formData.roleName !== 'BacSi' ? 'bg-slate-100/60 cursor-not-allowed opacity-70' : ''}`}
+                          placeholder={formData.roleName === 'BacSi' ? "Nhập tên khoa / chuyên môn (VD: Nội tổng quát)" : "Chỉ áp dụng cho Bác sĩ"}
+                          value={formData.roleName === 'BacSi' ? (formData.chuyenMon || '') : ''}
                           onChange={e => setFormData({ ...formData, chuyenMon: e.target.value })}
+                          disabled={formData.roleName !== 'BacSi'}
                         />
                       </div>
 

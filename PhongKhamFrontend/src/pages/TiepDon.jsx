@@ -4,7 +4,7 @@ import {
   ArrowLeft, User, Stethoscope, Save, UserPlus, CheckCircle, AlertCircle
 } from 'lucide-react';
 import { useToast } from '../utils/ToastContext';
-import { apiTraCuuBenhNhan, apiTiepNhanBenhNhan, apiGetBacSiList, apiGetKhoaList } from '../utils/api';
+import { apiTraCuuBenhNhan, apiTiepNhanBenhNhan, apiGetBacSiList, apiGetKhoaList, apiTiepNhanDatLich } from '../utils/api';
 
 // Hàm kiểm tra định dạng ngày sinh hợp lệ (DD/MM/YYYY)
 const isValidDate = (dateStr) => {
@@ -216,24 +216,45 @@ function TiepDon() {
       formattedNgaySinh = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
     }
 
-    const payload = {
-      maBN: foundPatient?.maBN || null,
-      hoTen: formData.hoTen.trim(),
-      ngaySinh: formattedNgaySinh,
-      gioiTinh: formData.gioiTinh,
-      sdt: formData.sdt.trim(),
-      diaChi: formData.diaChi.trim() || null,
-      tienSuBenh: formData.tienSuBenh.trim() || null,
-      maBacSi: formData.maBacSi || null,
-      maNV: formData.maBacSi || null,
-      lyDoKham: formData.lyDoKham.trim()
-    };
-
     try {
-      const res = await apiTiepNhanBenhNhan(payload);
-      if (res && res.data) {
-        showSuccess(`Tiếp nhận bệnh nhân thành công! Mã BN: ${res.data.maBN}, Mã Phiếu: ${res.data.maPhieu}`, 5000);
+      let res;
+      if (location.state?.maDatLich) {
+        // Tiếp nhận từ Lịch đặt hẹn khám
+        const payload = {
+          maBacSiChiDinh: formData.maBacSi || null,
+          benhNhan: {
+            maBN: foundPatient?.maBN || null,
+            gioiTinh: formData.gioiTinh,
+            ngaySinh: formattedNgaySinh,
+            diaChi: formData.diaChi.trim() || null,
+            tienSuBenh: formData.tienSuBenh.trim() || null
+          }
+        };
+        res = await apiTiepNhanDatLich(location.state.maDatLich, payload);
+      } else {
+        // Tiếp nhận vãng lai trực tiếp
+        const payload = {
+          maBN: foundPatient?.maBN || null,
+          hoTen: formData.hoTen.trim(),
+          ngaySinh: formattedNgaySinh,
+          gioiTinh: formData.gioiTinh,
+          sdt: formData.sdt.trim(),
+          diaChi: formData.diaChi.trim() || null,
+          tienSuBenh: formData.tienSuBenh.trim() || null,
+          maBacSi: formData.maBacSi || null,
+          maNV: formData.maBacSi || null,
+          lyDoKham: formData.lyDoKham.trim()
+        };
+        res = await apiTiepNhanBenhNhan(payload);
+      }
+
+      if (res && (res.data || res.maPhieu)) {
+        const maBN = res.data?.maBN || res.maBN;
+        const maPhieu = res.data?.maPhieu || res.maPhieu;
+        showSuccess(`Tiếp nhận bệnh nhân thành công! Mã BN: ${maBN}, Mã Phiếu: ${maPhieu}`, 5000);
         handleCancel();
+        // Xóa location.state bằng cách điều hướng lại chính nó với state = null để tránh thao tác lặp lại
+        navigate('/tiep-don', { replace: true, state: null });
       }
     } catch (err) {
       let errMsg = err.message || 'Lỗi kết nối máy chủ, vui lòng thử lại.';
@@ -243,7 +264,6 @@ function TiepDon() {
       showError(errMsg);
     }
   };
-
   // 1. Tải danh sách bác sĩ và danh mục khoa phòng từ backend
   useEffect(() => {
     const fetchDoctors = async () => {

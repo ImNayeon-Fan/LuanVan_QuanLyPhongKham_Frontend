@@ -5,7 +5,15 @@ import {
   Trash2, Search, ArrowRight, ShieldCheck, MapPin,
   ChevronLeft, ChevronRight
 } from 'lucide-react';
-import { apiGetStaffList } from '../utils/api';
+import { 
+  apiGetStaffList, 
+  apiGetDatLichKham, 
+  apiXacNhanDatLich, 
+  apiHuyDatLich, 
+  apiGetLichLamViec, 
+  apiCreateLichLamViec, 
+  apiDeleteLichLamViec 
+} from '../utils/api';
 import { useToast } from '../utils/ToastContext';
 
 // Danh sách Bác sĩ mặc định nếu API không trả về
@@ -91,7 +99,7 @@ function LichPhongKham() {
     maNV: '', ngayLamViec: '', caLamViec: 'Sang', phongKham: '', ghiChu: ''
   });
 
-  // Tải dữ liệu phân quyền người dùng và dữ liệu lịch biểu khi load component
+  // Tải dữ liệu phân quyền người dùng khi load component
   useEffect(() => {
     try {
       const userStr = localStorage.getItem('currentUser');
@@ -100,21 +108,37 @@ function LichPhongKham() {
         setCurrentUser(parsed);
         const role = parsed.role || parsed.roleName || '';
         setUserRole(role);
-        // Admin, Lễ tân và Bác sĩ đều có quyền thao tác trên lịch trực bác sĩ
+        // Admin, Lễ tân và Bác sĩ đều có quyền xem/thao tác trên lịch trực bác sĩ
         if (role === 'Admin' || role === 'LeTan' || role === 'BacSi') {
           setHasLichBacSiAccess(true);
         } else {
           setHasLichBacSiAccess(false);
         }
+
+        // Nếu là Bác sĩ, mặc định chuyển sang tab Lịch trực làm việc bác sĩ
+        if (role === 'BacSi') {
+          setActiveTab('doctor');
+        }
       }
     } catch (e) {
       console.error('Lỗi phân quyền:', e);
     }
-
-    loadAppointments();
-    loadDoctorSchedules();
     fetchDoctors();
   }, []);
+
+  // Tải lại danh sách lịch hẹn khi bộ lọc thay đổi hoặc tab chuyển đổi (chỉ dành cho Admin/Lễ tân)
+  useEffect(() => {
+    if (activeTab === 'appt' && (userRole === 'Admin' || userRole === 'LeTan')) {
+      loadAppointments();
+    }
+  }, [apptFilters.search, apptFilters.date, activeTab, userRole]);
+
+  // Tải lại danh sách lịch trực bác sĩ khi tuần hiển thị hoặc tab chuyển đổi
+  useEffect(() => {
+    if (activeTab === 'doctor') {
+      loadDoctorSchedules();
+    }
+  }, [currentMonday, activeTab]);
 
   /**
    * Lấy danh sách bác sĩ từ hệ thống/API để đưa vào selectbox
@@ -140,281 +164,163 @@ function LichPhongKham() {
   };
 
   /**
-   * Tải danh sách lịch hẹn khám bệnh nhân từ LocalStorage
+   * Tải danh sách lịch hẹn khám bệnh nhân từ API
    */
-  const loadAppointments = () => {
+  const loadAppointments = async () => {
     try {
-      const stored = localStorage.getItem('danhSachDatLich');
-      if (stored) {
-        setAppointments(JSON.parse(stored));
-      } else {
-        const defaultAppts = [
-          {
-            maDatLich: 'DL_260603_001',
-            hoTenKhach: 'NGUYỄN VĂN AN',
-            sdt: '0901234567',
-            ngayHen: new Date().toISOString().split('T')[0],
-            yeuCauKham: 'Đau tức ngực, khó thở nhẹ',
-            trangThai: 'DaXacNhan',
-            ngayTao: new Date().toISOString()
-          },
-          {
-            maDatLich: 'DL_260603_002',
-            hoTenKhach: 'LÊ THỊ MAI',
-            sdt: '0987654321',
-            ngayHen: new Date(Date.now() + 86400000).toISOString().split('T')[0],
-            yeuCauKham: 'Khám mắt định kỳ',
-            trangThai: 'ChoXacNhan',
-            ngayTao: new Date().toISOString()
-          }
-        ];
-        localStorage.setItem('danhSachDatLich', JSON.stringify(defaultAppts));
-        setAppointments(defaultAppts);
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  /**
-   * Tải danh sách ca trực bác sĩ từ LocalStorage
-   */
-  const loadDoctorSchedules = () => {
-    try {
-      const stored = localStorage.getItem('danhSachLichLamViec');
-      if (stored) {
-        setDoctorSchedules(JSON.parse(stored));
-      } else {
-        const monday = getMonday(new Date());
-        const getOffsetDateStr = (offset) => {
-          const d = new Date(monday);
-          d.setDate(d.getDate() + offset);
-          return d.toISOString().split('T')[0];
-        };
-        const defaultDocSchedules = [
-          {
-            maLich: 'LBS001',
-            maNV: 'NV002',
-            tenBacSi: 'BS. CK1. Nguyễn Văn An',
-            chuyenMon: 'Nội tổng quát',
-            ngayLamViec: getOffsetDateStr(0),
-            caLamViec: 'Sang',
-            phongKham: 'Phòng 101',
-            ghiChu: 'Khám nội nhi'
-          },
-          {
-            maLich: 'LBS002',
-            maNV: 'NV003',
-            tenBacSi: 'BS. CK2. Trần Thị Bình',
-            chuyenMon: 'Tim mạch',
-            ngayLamViec: getOffsetDateStr(0),
-            caLamViec: 'Chieu',
-            phongKham: 'Phòng 102',
-            ghiChu: 'Siêu âm tim mạch'
-          },
-          {
-            maLich: 'LBS003',
-            maNV: 'NV004',
-            tenBacSi: 'ThS. BS. Phạm Minh Cường',
-            chuyenMon: 'Nhi khoa',
-            ngayLamViec: getOffsetDateStr(1),
-            caLamViec: 'Sang',
-            phongKham: 'Phòng 103',
-            ghiChu: 'Khám nhi sơ sinh'
-          },
-          {
-            maLich: 'LBS004',
-            maNV: 'NV005',
-            tenBacSi: 'BS. Lê Hoài Nam',
-            chuyenMon: 'Tai Mũi Họng',
-            ngayLamViec: getOffsetDateStr(1),
-            caLamViec: 'Chieu',
-            phongKham: 'Phòng 104',
-            ghiChu: 'Nội soi tai mũi họng'
-          },
-          {
-            maLich: 'LBS005',
-            maNV: 'NV002',
-            tenBacSi: 'BS. CK1. Nguyễn Văn An',
-            chuyenMon: 'Nội tổng quát',
-            ngayLamViec: getOffsetDateStr(2),
-            caLamViec: 'Sang',
-            phongKham: 'Phòng 101',
-            ghiChu: 'Hội chẩn trực tuyến'
-          },
-          {
-            maLich: 'LBS006',
-            maNV: 'NV004',
-            tenBacSi: 'ThS. BS. Phạm Minh Cường',
-            chuyenMon: 'Nhi khoa',
-            ngayLamViec: getOffsetDateStr(2),
-            caLamViec: 'Chieu',
-            phongKham: 'Phòng 103',
-            ghiChu: 'Chích ngừa dịch vụ'
-          },
-          {
-            maLich: 'LBS007',
-            maNV: 'NV003',
-            tenBacSi: 'BS. CK2. Trần Thị Bình',
-            chuyenMon: 'Tim mạch',
-            ngayLamViec: getOffsetDateStr(3),
-            caLamViec: 'Sang',
-            phongKham: 'Phòng 102',
-            ghiChu: 'Đọc kết quả Holter'
-          },
-          {
-            maLich: 'LBS008',
-            maNV: 'NV005',
-            tenBacSi: 'BS. Lê Hoài Nam',
-            chuyenMon: 'Tai Mũi Họng',
-            ngayLamViec: getOffsetDateStr(3),
-            caLamViec: 'Chieu',
-            phongKham: 'Phòng 104',
-            ghiChu: 'Rửa tai, hút mũi'
-          },
-          {
-            maLich: 'LBS009',
-            maNV: 'NV002',
-            tenBacSi: 'BS. CK1. Nguyễn Văn An',
-            chuyenMon: 'Nội tổng quát',
-            ngayLamViec: getOffsetDateStr(4),
-            caLamViec: 'Sang',
-            phongKham: 'Phòng 101',
-            ghiChu: 'Khám sức khỏe tổng quát'
-          },
-          {
-            maLich: 'LBS010',
-            maNV: 'NV003',
-            tenBacSi: 'BS. CK2. Trần Thị Bình',
-            chuyenMon: 'Tim mạch',
-            ngayLamViec: getOffsetDateStr(4),
-            caLamViec: 'Chieu',
-            phongKham: 'Phòng 102',
-            ghiChu: 'Khám ngoại trú'
-          }
-        ];
-        localStorage.setItem('danhSachLichLamViec', JSON.stringify(defaultDocSchedules));
-        setDoctorSchedules(defaultDocSchedules);
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  /**
-   * Cập nhật trạng thái duyệt lịch đặt khám
-   */
-  const handleUpdateStatus = (maDatLich, newStatus) => {
-    try {
-      const updated = appointments.map(appt => {
-        if (appt.maDatLich === maDatLich) {
-          return { ...appt, trangThai: newStatus };
-        }
-        return appt;
+      const res = await apiGetDatLichKham({
+        trangThai: '',
+        ngayHen: apptFilters.date || '',
+        search: apptFilters.search || '',
+        page: 1,
+        pageSize: 100
       });
-      localStorage.setItem('danhSachDatLich', JSON.stringify(updated));
-      setAppointments(updated);
-      showSuccess('Cập nhật trạng thái lịch hẹn thành công!');
+      if (res && res.data) {
+        setAppointments(res.data);
+      } else {
+        setAppointments([]);
+      }
     } catch (err) {
-      showError('Lỗi cập nhật trạng thái!');
+      console.error('Không thể tải lịch hẹn từ API:', err);
+      showError(err.message || 'Lỗi kết nối máy chủ không thể tải danh sách lịch hẹn khám!');
     }
   };
 
   /**
-   * Tiếp nhận bệnh nhân: Điền thông tin vào luồng tiếp đón
+   * Tải danh sách ca trực bác sĩ của tuần hiện tại từ API
    */
-  const handleReceivePatient = (appt) => {
+  const loadDoctorSchedules = async () => {
+    try {
+      const tuNgay = getISODateString(weekDays[0]);
+      const denNgay = getISODateString(weekDays[6]);
+      const res = await apiGetLichLamViec({ tuNgay, denNgay });
+      if (Array.isArray(res)) {
+        setDoctorSchedules(res);
+      } else {
+        setDoctorSchedules([]);
+      }
+    } catch (err) {
+      console.error('Không thể tải lịch trực bác sĩ từ API:', err);
+    }
+  };
+
+  /**
+   * Cập nhật trạng thái duyệt lịch đặt khám từ API
+   */
+  const handleUpdateStatus = async (maDatLich, newStatus) => {
+    try {
+      if (newStatus === 'DaXacNhan') {
+        await apiXacNhanDatLich(maDatLich);
+        showSuccess('Đã duyệt xác nhận lịch hẹn!');
+      } else if (newStatus === 'DaHuy') {
+        await apiHuyDatLich(maDatLich);
+        showSuccess('Đã hủy lịch hẹn!');
+      } else {
+        showError('Thao tác không được hỗ trợ!');
+        return;
+      }
+      loadAppointments();
+    } catch (err) {
+      showError(err.message || 'Lỗi cập nhật trạng thái lịch hẹn!');
+    }
+  };
+
+  /**
+   * Tiếp nhận bệnh nhân: Giải mã thông tin phụ và truyền sang màn hình Tiếp đón
+   */
+  const handleReceivePatient = async (appt) => {
+    // Nếu lịch hẹn đang ở trạng thái Chờ xác nhận, tự động xác nhận qua API trước khi tiếp nhận
+    if (appt.trangThai === 'ChoXacNhan') {
+      try {
+        await apiXacNhanDatLich(appt.maDatLich);
+      } catch (err) {
+        console.warn('Không thể tự động chuyển trạng thái lịch hẹn sang Đã xác nhận:', err);
+      }
+    }
+
+    let gioiTinh = 'Nam';
+    let ngaySinh = '';
+    let diaChi = '';
+    let tienSuBenh = '';
+    let lyDoKham = appt.yeuCauKham || '';
+
+    if (lyDoKham.includes('###')) {
+      const parts = lyDoKham.split('###');
+      lyDoKham = parts[0].trim();
+      const extraStr = parts[1] || '';
+      const extraParts = extraStr.split('|');
+      if (extraParts.length >= 4) {
+        gioiTinh = extraParts[0] || 'Nam';
+        ngaySinh = extraParts[1] || '';
+        diaChi = extraParts[2] || '';
+        tienSuBenh = extraParts[3] || '';
+      }
+    }
+
     navigate('/tiep-don', {
       state: {
+        maDatLich: appt.maDatLich,
         hoTen: appt.hoTenKhach,
         sdt: appt.sdt,
-        gioiTinh: appt.gioiTinh || 'Nam',
-        ngaySinh: appt.ngaySinh || '',
-        diaChi: appt.diaChi || '',
-        tienSuBenh: appt.tienSuBenh || '',
+        gioiTinh: gioiTinh,
+        ngaySinh: ngaySinh,
+        diaChi: diaChi === '—' ? '' : diaChi,
+        tienSuBenh: tienSuBenh === '—' ? '' : tienSuBenh,
         maNV: appt.maNV || '',
-        lyDoKham: appt.yeuCauKham
+        lyDoKham: lyDoKham
       }
     });
-    showSuccess(`Đã chọn bệnh nhân ${appt.hoTenKhach}. Đang chuyển sang Tiếp đón...`);
+    showSuccess(`Đã tiếp nhận lịch hẹn của ${appt.hoTenKhach}. Đang chuyển sang màn hình Tiếp đón...`);
   };
 
   /**
-   * Thêm lịch trực làm việc mới cho bác sĩ
+   * Bác sĩ tự đăng ký ca trực trực tiếp qua API
    */
-  const handleAddDoctorSchedule = (e) => {
+  const handleAddDoctorSchedule = async (e) => {
     if (e) e.preventDefault();
-    const { maNV, ngayLamViec, caLamViec, phongKham, ghiChu } = docForm;
+    const { ngayLamViec, caLamViec, phongKham, ghiChu } = docForm;
 
-    if (!maNV) {
-      showError('Vui lòng chọn Bác sĩ!');
-      return;
-    }
     if (!ngayLamViec) {
       showError('Vui lòng chọn Ngày làm việc!');
       return;
     }
 
-
-    const selectedDoc = doctorsList.find(d => d.maNV === maNV);
-    const tenBacSi = selectedDoc ? selectedDoc.hoTen : 'Bác sĩ';
-
-    // Kiểm tra xung đột trùng ca làm việc của cùng bác sĩ trong cùng ngày
-    const isConflict = doctorSchedules.some(s => 
-      s.maNV === maNV && 
-      s.ngayLamViec === ngayLamViec && 
-      (s.caLamViec === caLamViec || s.caLamViec === 'CaNgay' || caLamViec === 'CaNgay')
-    );
-
-    if (isConflict) {
-      showWarning(`${tenBacSi} đã có lịch trực vào ca này ngày ${ngayLamViec}!`);
-      return;
-    }
-
-    const chuyenMon = selectedDoc ? (selectedDoc.chuyenMon || selectedDoc.roleName || '') : '';
-
-    const newSchedule = {
-      maLich: `LBS${Date.now().toString().slice(-6)}`,
-      maNV,
-      tenBacSi,
-      chuyenMon,
-      ngayLamViec,
-      caLamViec,
-      phongKham: (phongKham || '').trim(),
-      ghiChu: (ghiChu || '').trim()
-    };
-
     try {
-      const updated = [...doctorSchedules, newSchedule];
-      localStorage.setItem('danhSachLichLamViec', JSON.stringify(updated));
-      setDoctorSchedules(updated);
-      showSuccess(`Sắp lịch trực cho ${tenBacSi} thành công!`);
+      const payload = {
+        ngayLamViec,
+        caLamViec,
+        phongKham: (phongKham || '').trim() || null,
+        ghiChu: (ghiChu || '').trim() || null
+      };
+
+      await apiCreateLichLamViec(payload);
+      showSuccess('Đăng ký ca trực của bạn thành công!');
       setShowDocModal(false);
+      loadDoctorSchedules();
       
-      setDocForm({
-        maNV: doctorsList[0]?.maNV || '',
+      setDocForm(prev => ({
+        ...prev,
         ngayLamViec: '',
         caLamViec: 'Sang',
         phongKham: '',
         ghiChu: ''
-      });
-    } catch (e) {
-      showError('Lỗi lưu lịch làm việc!');
+      }));
+    } catch (err) {
+      showError(err.message || 'Không thể đăng ký ca trực, vui lòng kiểm tra lại ràng buộc!');
     }
   };
 
   /**
-   * Xóa một ca trực của bác sĩ
+   * Admin xóa ca trực qua API
    */
-  const handleDeleteDoctorSchedule = (maLich, tenBacSi) => {
+  const handleDeleteDoctorSchedule = async (maLich, tenBacSi) => {
     if (window.confirm(`Bạn có chắc chắn muốn xóa ca trực này của ${tenBacSi}?`)) {
       try {
-        const updated = doctorSchedules.filter(s => s.maLich !== maLich);
-        localStorage.setItem('danhSachLichLamViec', JSON.stringify(updated));
-        setDoctorSchedules(updated);
+        await apiDeleteLichLamViec(maLich);
         showSuccess('Đã xóa ca trực thành công!');
+        loadDoctorSchedules();
       } catch (err) {
-        showError('Không thể xóa ca trực!');
+        showError(err.message || 'Không thể xóa ca trực!');
       }
     }
   };
@@ -463,16 +369,18 @@ function LichPhongKham() {
       {/* Tab Navigation header */}
       <div className="flex border-b border-[var(--border-color)] bg-white px-5 h-[46px] items-center justify-between flex-shrink-0 font-inherit">
         <div className="flex gap-2 h-full font-inherit">
-          <button
-            onClick={() => setActiveTab('appt')}
-            className={`px-5 border-none bg-none text-[14px] cursor-pointer h-full font-inherit transition-all duration-150 ease-in-out ${
-              activeTab === 'appt'
-                ? 'font-extrabold text-[var(--primary)] border-b-[3px] border-[var(--primary)]'
-                : 'font-medium text-[var(--text-muted)] border-b-0'
-            }`}
-          >
-            Lịch Đặt Khám Bệnh Nhân ({appointments.length})
-          </button>
+          {(userRole === 'Admin' || userRole === 'LeTan') && (
+            <button
+              onClick={() => setActiveTab('appt')}
+              className={`px-5 border-none bg-none text-[14px] cursor-pointer h-full font-inherit transition-all duration-150 ease-in-out ${
+                activeTab === 'appt'
+                  ? 'font-extrabold text-[var(--primary)] border-b-[3px] border-[var(--primary)]'
+                  : 'font-medium text-[var(--text-muted)] border-b-0'
+              }`}
+            >
+              Lịch Đặt Khám Bệnh Nhân ({appointments.length})
+            </button>
+          )}
           <button
             onClick={() => setActiveTab('doctor')}
             className={`px-5 border-none bg-none text-[14px] cursor-pointer h-full font-inherit transition-all duration-150 ease-in-out ${
@@ -492,7 +400,7 @@ function LichPhongKham() {
       <div className="flex-1 bg-[var(--bg-main)] overflow-y-auto p-5 flex flex-col">
         
         {/* TAB 1: LỊCH ĐẶT KHÁM BỆNH NHÂN */}
-        {activeTab === 'appt' && (
+        {activeTab === 'appt' && (userRole === 'Admin' || userRole === 'LeTan') && (
           <div className="bg-white rounded-[10px] border border-[var(--border-color)] flex flex-col flex-1 overflow-hidden">
             {/* Thanh tìm kiếm & lọc */}
             <div className="py-3 px-4 flex gap-3 border-b border-[var(--border-color)] bg-[var(--bg-main)]">
@@ -561,7 +469,7 @@ function LichPhongKham() {
                           )}
                         </td>
                         <td className="p-2.5 text-[var(--text-muted)]">
-                          <div>{appt.yeuCauKham}</div>
+                          <div>{appt.yeuCauKham && appt.yeuCauKham.includes('###') ? appt.yeuCauKham.split('###')[0].trim() : appt.yeuCauKham}</div>
                           {appt.tenBacSi && (
                             <div className="text-[11px] text-[var(--primary)] font-bold mt-1">
                               Yêu cầu bác sĩ: {appt.tenBacSi}
@@ -686,8 +594,7 @@ function LichPhongKham() {
                             }`}>
                               <div className="flex flex-col gap-2 h-full">
                                 {daySchedules.map((sched) => {
-                                  const isOwnSchedule = currentUser && currentUser.maNV === sched.maNV;
-                                  const canDelete = hasLichBacSiAccess && (userRole === 'Admin' || userRole === 'LeTan' || isOwnSchedule);
+                                  const canDelete = userRole === 'Admin';
                                   return (
                                     <div key={sched.maLich} className="p-2 rounded-md text-[11.5px] font-semibold relative border flex flex-col gap-1 shadow-sm bg-[#e0f2fe] text-[#0369a1] border-[#bae6fd]">
                                       <div className="flex justify-between items-start gap-1">
@@ -722,12 +629,11 @@ function LichPhongKham() {
                                   );
                                 })}
 
-                                {hasLichBacSiAccess && (
+                                {userRole === 'BacSi' && (
                                   <button
                                     onClick={() => {
-                                      const defaultMaNV = (userRole === 'BacSi' && currentUser) ? currentUser.maNV : (doctorsList[0]?.maNV || '');
                                       setDocForm({
-                                        maNV: defaultMaNV,
+                                        maNV: currentUser?.maNV || '',
                                         ngayLamViec: dateStr,
                                         caLamViec: 'Sang',
                                         phongKham: '',
@@ -763,8 +669,7 @@ function LichPhongKham() {
                             }`}>
                               <div className="flex flex-col gap-2 h-full">
                                 {daySchedules.map((sched) => {
-                                  const isOwnSchedule = currentUser && currentUser.maNV === sched.maNV;
-                                  const canDelete = hasLichBacSiAccess && (userRole === 'Admin' || userRole === 'LeTan' || isOwnSchedule);
+                                  const canDelete = userRole === 'Admin';
                                   return (
                                     <div key={sched.maLich} className="p-2 rounded-md text-[11.5px] font-semibold relative border flex flex-col gap-1 shadow-sm bg-[#fef3c7] text-[#b45309] border-[#fde68a]">
                                       <div className="flex justify-between items-start gap-1">
@@ -799,12 +704,11 @@ function LichPhongKham() {
                                   );
                                 })}
 
-                                {hasLichBacSiAccess && (
+                                {userRole === 'BacSi' && (
                                   <button
                                     onClick={() => {
-                                      const defaultMaNV = (userRole === 'BacSi' && currentUser) ? currentUser.maNV : (doctorsList[0]?.maNV || '');
                                       setDocForm({
-                                        maNV: defaultMaNV,
+                                        maNV: currentUser?.maNV || '',
                                         ngayLamViec: dateStr,
                                         caLamViec: 'Chieu',
                                         phongKham: '',
@@ -846,23 +750,6 @@ function LichPhongKham() {
             </div>
 
             <form onSubmit={handleAddDoctorSchedule} className="p-5 flex flex-col gap-3.5">
-              <div className="form-group">
-                <label className="form-label font-semibold mb-1.5 text-[13px]">Chọn Bác sĩ</label>
-                <select
-                  value={docForm.maNV}
-                  onChange={(e) => setDocForm(prev => ({ ...prev, maNV: e.target.value }))}
-                  className="form-input h-9 text-[13px] px-2.5 font-inherit"
-                  required
-                  disabled={userRole === 'BacSi'}
-                >
-                  {doctorsList.map(doc => (
-                    <option key={doc.maNV} value={doc.maNV}>
-                      {doc.hoTen} ({doc.chuyenMon || 'Bác sĩ'})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
               <div className="form-group">
                 <label className="form-label font-semibold mb-1.5 text-[13px]">Ngày làm việc</label>
                 <input

@@ -30,10 +30,10 @@ function DanhSachTiepNhan() {
   const [selectedDoctor, setSelectedDoctor] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
   
-  // Mặc định Từ ngày và Đến ngày là hôm nay (Khoá lọc ngày theo yêu cầu giảng viên)
+  // Mặc định Từ ngày và Đến ngày là hôm nay (Cho phép chọn Từ ngày - Đến ngày để xem hồ sơ cũ)
   const todayStr = new Date().toISOString().split('T')[0];
-  const [tuNgay] = useState(todayStr);
-  const [denNgay] = useState(todayStr);
+  const [tuNgay, setTuNgay] = useState(todayStr);
+  const [denNgay, setDenNgay] = useState(todayStr);
 
   const [dsPhieuKham, setDsPhieuKham] = useState([]); // Danh sách phiếu khám tải từ backend
   const [docList, setDocList] = useState([]); // Danh sách bác sĩ phục vụ bộ lọc
@@ -172,24 +172,24 @@ function DanhSachTiepNhan() {
       >
         
         {/* Bộ lọc nâng cao */}
-        <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius-lg)] py-3 px-4 flex gap-4 items-center flex-wrap shadow-[var(--shadow-sm)]">
-          {/* Ô tìm kiếm thông tin */}
-          <div className="flex items-center gap-2 flex-[2] min-w-[240px] relative">
-            <Search size={16} className="absolute left-3 text-[var(--text-muted)]" />
+        <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius-lg)] py-2.5 px-4 flex gap-3 items-center flex-wrap shadow-[var(--shadow-sm)]">
+          {/* Ô tìm kiếm thông tin - Thu gọn kích thước để nhường chỗ cho Từ ngày - Đến ngày */}
+          <div className="flex items-center gap-2 flex-1 min-w-[170px] max-w-[210px] relative">
+            <Search size={15} className="absolute left-3 text-[var(--text-muted)]" />
             <input
-              type="text" className="form-input pl-[34px] h-10 py-1.5"
-              placeholder="Tìm họ tên, SĐT, mã bệnh nhân..."
+              type="text" className="form-input pl-[32px] pr-2 h-9 text-[13px]"
+              placeholder="Tìm tên, SĐT, mã BN..."
               value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
             />
           </div>
 
           {/* Lọc theo bác sĩ */}
-          <div className="flex-1 min-w-[180px]">
+          <div className="flex-1 min-w-[160px]">
             <select
-              className="form-input pl-3 h-10 py-1.5"
+              className="form-input px-2.5 h-9 text-[13px]"
               value={selectedDoctor} onChange={e => setSelectedDoctor(e.target.value)}
             >
-              <option value="">-- Lọc theo Bác sĩ chỉ định --</option>
+              <option value="">-- Tất cả bác sĩ chỉ định --</option>
               {docList.map(doc => {
                 const tenKhoa = khoaMapping[doc.maKhoa] || doc.maKhoa || 'Khoa lâm sàng';
                 return (
@@ -201,19 +201,33 @@ function DanhSachTiepNhan() {
             </select>
           </div>
 
-          {/* Lọc theo khoảng thời gian tiếp đón (Khoá cố định Ngày hiện tại) */}
-          <div className="flex items-center gap-2 bg-slate-100/70 border border-slate-200 py-1 px-3 rounded-[var(--radius-md)] cursor-not-allowed opacity-90" title="Chỉ hiển thị danh sách tiếp đón trong ngày hiện tại theo quy định">
-            <Calendar size={14} className="text-[var(--primary)]" />
-            <span className="text-[12.5px] font-bold text-[var(--text-main)]">Ngày tiếp đón:</span>
-            <span className="text-[12.5px] font-extrabold text-[var(--primary)] bg-white px-2 py-0.5 rounded border border-slate-200">
-              {formatDateVN(tuNgay)} (Hôm nay)
-            </span>
+          {/* Lọc theo khoảng thời gian tiếp đón (Cho phép chọn Từ ngày - Đến ngày, Mặc định ngày hôm nay) */}
+          <div className="flex items-center gap-2 bg-white border border-[var(--border-color)] p-1 rounded-[var(--radius-md)] shadow-[var(--shadow-sm)]">
+            <Calendar size={14} className="text-[var(--primary)] shrink-0 ml-1.5" />
+            <div className="flex items-center gap-1">
+              <span className="text-[var(--text-muted)] text-[12px] font-semibold shrink-0">Từ:</span>
+              <input
+                type="date" 
+                className="form-input h-7 text-[12px] px-1.5 border border-slate-200 bg-[var(--bg-main)] rounded cursor-pointer font-medium"
+                value={tuNgay} 
+                onChange={e => setTuNgay(e.target.value)}
+              />
+            </div>
+            <div className="flex items-center gap-1">
+              <span className="text-[var(--text-muted)] text-[12px] font-semibold shrink-0">Đến:</span>
+              <input
+                type="date" 
+                className="form-input h-7 text-[12px] px-1.5 border border-slate-200 bg-[var(--bg-main)] rounded cursor-pointer font-medium"
+                value={denNgay} 
+                onChange={e => setDenNgay(e.target.value)}
+              />
+            </div>
           </div>
 
           {/* Lọc theo trạng thái khám */}
-          <div className="flex-1 min-w-[160px]">
+          <div className="flex-1 min-w-[140px]">
             <select
-              className="form-input pl-3 h-10 py-1.5"
+              className="form-input px-2.5 h-9 text-[13px]"
               value={selectedStatus} onChange={e => setSelectedStatus(e.target.value)}
             >
               <option value="">-- Tất cả trạng thái --</option>

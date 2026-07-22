@@ -13,7 +13,7 @@ import {
   apiDeleteThanhToanVatTu, 
   apiXacNhanThanhToan, 
   apiGetThanhToanPDF,
-  apiGetVatTuList
+  apiGetDanhSachVatTu
 } from '../utils/api';
 
 
@@ -105,16 +105,16 @@ function ThanhToanHoaDon() {
     }
   };
 
-  // Tải danh mục vật tư y tế phục vụ kê thêm
+  // Tải danh mục vật tư y tế phục vụ kê thêm (dành cho Thu ngân & Bác sĩ)
   const loadDanhMucVatTu = async () => {
     try {
-      const res = await apiGetVatTuList('', '', 1, 100);
+      const res = await apiGetDanhSachVatTu();
       if (res && res.data) {
         const mapped = res.data.map(item => ({
           maVatTu: item.maVatTu || item.MaVatTu,
           tenVatTu: item.tenVatTu || item.TenVatTu,
           donViTinh: item.donViTinh || item.DonViTinh,
-          isActive: item.isActive || item.IsActive
+          tonKho: item.tonKho ?? 0
         }));
         setDanhMucVatTu(mapped);
       }

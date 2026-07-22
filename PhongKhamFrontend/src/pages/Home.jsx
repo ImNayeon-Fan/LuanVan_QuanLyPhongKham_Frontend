@@ -151,17 +151,14 @@ function Home() {
       )}
 
       <div className="home-header">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <div style={{ backgroundColor: 'var(--primary-light)', padding: '8px', borderRadius: '8px', color: 'var(--primary)' }}>
-            <HomeIcon size={24} />
-          </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <img 
+            src="/clinic_logo.png" 
+            alt="Logo Phòng Khám Đa Khoa Nhật Tảo" 
+            className="h-12 w-auto object-contain rounded-xl p-1 bg-white border border-slate-200 shadow-sm"
+          />
           <div>
-            <h1>Trang chủ</h1>
-            {(userInfo.name || userInfo.role) && (
-              <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginTop: '4px', fontWeight: '500' }}>
-                {userInfo.role ? `${userInfo.role} - ` : ''}{userInfo.name}
-              </p>
-            )}
+            <h1 className="text-xl font-bold text-slate-800 tracking-tight">Hệ thống quản lý phòng khám</h1>
           </div>
         </div>
 

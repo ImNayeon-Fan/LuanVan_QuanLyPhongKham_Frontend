@@ -12,7 +12,7 @@ import {
   apiCapNhatKhamBenh, 
   apiGetDichVuCLSList, 
   apiGetThuocList,
-  apiGetVatTuList
+  apiGetDanhSachVatTu
 } from '../utils/api';
 
 // Khớp với PhieuKham.TrangThaiKham trong C# SQL Database:
@@ -92,13 +92,10 @@ function KhamBenh() {
   const { showSuccess, showError } = useToast();
   const [search, setSearch]       = useState('');
 
-  // Mặc định Từ ngày là 30 ngày trước, Đến ngày là hôm nay
-  const [tuNgay, setTuNgay] = useState(() => {
-    const d = new Date();
-    d.setDate(d.getDate() - 30);
-    return d.toISOString().split('T')[0];
-  });
-  const [denNgay, setDenNgay] = useState(() => new Date().toISOString().split('T')[0]);
+  // Mặc định Từ ngày và Đến ngày là ngày hiện tại (Hôm nay)
+  const todayStr = new Date().toISOString().split('T')[0];
+  const [tuNgay, setTuNgay] = useState(todayStr);
+  const [denNgay, setDenNgay] = useState(todayStr);
 
   const [dsBenhNhan, setDsBenhNhan] = useState([]);
   const [loadingList, setLoadingList] = useState(false);
@@ -244,15 +241,15 @@ function KhamBenh() {
         console.error('Lỗi tải danh mục thuốc:', err);
       }
 
-      // 4. Tải danh mục vật tư y tế
+      // 4. Tải danh mục vật tư y tế còn tồn kho (Dành cho Bác sĩ & Thu ngân)
       try {
-        const resVatTu = await apiGetVatTuList('', '', 1, 1000);
+        const resVatTu = await apiGetDanhSachVatTu();
         if (resVatTu && resVatTu.data) {
           setDanhMucVatTu(resVatTu.data.map(item => ({
             maVatTu: item.maVatTu || item.MaVatTu || '',
             tenVatTu: item.tenVatTu || item.TenVatTu || '',
             donViTinh: item.donViTinh || item.DonViTinh || 'Cái',
-            isActive: item.isActive ?? true
+            tonKho: item.tonKho ?? 0
           })));
         } else {
           setDanhMucVatTu([]);

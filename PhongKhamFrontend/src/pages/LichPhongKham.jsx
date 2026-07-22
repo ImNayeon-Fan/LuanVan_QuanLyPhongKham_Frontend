@@ -293,8 +293,9 @@ function LichPhongKham() {
         ghiChu: (ghiChu || '').trim() || null
       };
 
-      await apiCreateLichLamViec(payload);
-      showSuccess('Đăng ký ca trực của bạn thành công!');
+      const res = await apiCreateLichLamViec(payload);
+      const count = res?.lichDaDangKy?.length || 1;
+      showSuccess(`Đã đăng ký thành công ${count} ca trực của bạn!`);
       setShowDocModal(false);
       loadDoctorSchedules();
       

@@ -116,16 +116,28 @@ function Login() {
     try {
       const response = await apiLogin(email.trim(), password);
       
-      // Nếu mật khẩu đăng nhập là mật khẩu mặc định "STUCaoLo"
+      // Nếu mật khẩu đăng nhập là mật khẩu mặc định "STUCaoLo" (Lần đầu đăng nhập)
       if (password === 'STUCaoLo') {
-        setTempUser({
-          username: email.trim(),
-          hoTen: response.hoTen,
-          roleName: response.roleName,
-          token: response.token
-        });
-        setViewMode('forceChange');
-        showWarning("Tài khoản của bạn đã được reset mật khẩu. Vui lòng thiết lập mật khẩu mới để tiếp tục!");
+        const userEmail = response.email || email.trim();
+        const userSdt = response.sdt || '';
+        setResetEmail(userEmail);
+        setResetSdt(userSdt);
+        setShowResetModal(true);
+
+        if (userSdt) {
+          try {
+            await apiSendOtpForgotPass(userEmail, userSdt);
+            showSuccess("Đăng nhập lần đầu! Mã OTP đã được gửi đến email của bạn để thiết lập mật khẩu mới.");
+            setResetStep(2);
+            setResendCooldown(60);
+          } catch (otpErr) {
+            setResetStep(1);
+            showWarning("Đây là lần đăng nhập đầu tiên. Vui lòng xác nhận Email và SĐT để gửi mã OTP đổi mật khẩu!");
+          }
+        } else {
+          setResetStep(1);
+          showWarning("Đây là lần đăng nhập đầu tiên. Vui lòng xác nhận Email và SĐT để nhận mã OTP đổi mật khẩu!");
+        }
         return;
       }
 

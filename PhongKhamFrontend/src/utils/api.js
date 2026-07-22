@@ -180,6 +180,17 @@ export const apiGetBacSiList = async () => {
   return await apiFetch('/DanhSach/bac-si');
 };
 
+// API Lấy danh sách vật tư y tế khả dụng còn tồn kho từ DanhSachController
+export const apiGetDanhSachVatTu = async () => {
+  return await apiFetch('/DanhSach/vat-tu');
+};
+
+// API Lấy danh sách mã ICD-10 từ DanhSachController
+export const apiGetDanhSachICD = async () => {
+  return await apiFetch('/DanhSach/icd');
+};
+
+
 // API Tra cứu bệnh nhân cũ theo SĐT kết nối với Backend thực tế
 export const apiTraCuuBenhNhan = async (sdt) => {
   return await apiFetch(`/TiepDon/tra-cuu?sdt=${encodeURIComponent(sdt)}`);

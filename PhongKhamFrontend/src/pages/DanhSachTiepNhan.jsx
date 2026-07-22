@@ -30,13 +30,10 @@ function DanhSachTiepNhan() {
   const [selectedDoctor, setSelectedDoctor] = useState('');
   const [selectedStatus, setSelectedStatus] = useState('');
   
-  // Mặc định Từ ngày là 30 ngày trước, Đến ngày là hôm nay
-  const [tuNgay, setTuNgay] = useState(() => {
-    const d = new Date();
-    d.setDate(d.getDate() - 30);
-    return d.toISOString().split('T')[0];
-  });
-  const [denNgay, setDenNgay] = useState(() => new Date().toISOString().split('T')[0]);
+  // Mặc định Từ ngày và Đến ngày là hôm nay (Khoá lọc ngày theo yêu cầu giảng viên)
+  const todayStr = new Date().toISOString().split('T')[0];
+  const [tuNgay] = useState(todayStr);
+  const [denNgay] = useState(todayStr);
 
   const [dsPhieuKham, setDsPhieuKham] = useState([]); // Danh sách phiếu khám tải từ backend
   const [docList, setDocList] = useState([]); // Danh sách bác sĩ phục vụ bộ lọc
@@ -204,34 +201,13 @@ function DanhSachTiepNhan() {
             </select>
           </div>
 
-          {/* Lọc theo khoảng thời gian tiếp đón */}
-          <div className="flex items-center gap-2">
-            <span className="text-[var(--text-muted)] text-[13.5px] font-semibold shrink-0">Từ</span>
-            <div className="relative w-[130px] h-10">
-              <Calendar size={14} className="absolute left-2.5 top-[13px] text-[var(--text-muted)] z-10 pointer-events-none" />
-              <input
-                type="date" 
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
-                value={tuNgay} 
-                onChange={e => setTuNgay(e.target.value)}
-              />
-              <div className="form-input pl-[28px] pr-2 h-10 flex items-center justify-center text-[13px] bg-white border border-[var(--border-color)] rounded-[var(--radius-md)] pointer-events-none w-full font-medium shadow-[var(--shadow-sm)]">
-                {formatDateVN(tuNgay)}
-              </div>
-            </div>
-            <span className="text-[var(--text-muted)] text-[13.5px] font-semibold shrink-0">đến</span>
-            <div className="relative w-[130px] h-10">
-              <Calendar size={14} className="absolute left-2.5 top-[13px] text-[var(--text-muted)] z-10 pointer-events-none" />
-              <input
-                type="date" 
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
-                value={denNgay} 
-                onChange={e => setDenNgay(e.target.value)}
-              />
-              <div className="form-input pl-[28px] pr-2 h-10 flex items-center justify-center text-[13px] bg-white border border-[var(--border-color)] rounded-[var(--radius-md)] pointer-events-none w-full font-medium shadow-[var(--shadow-sm)]">
-                {formatDateVN(denNgay)}
-              </div>
-            </div>
+          {/* Lọc theo khoảng thời gian tiếp đón (Khoá cố định Ngày hiện tại) */}
+          <div className="flex items-center gap-2 bg-slate-100/70 border border-slate-200 py-1 px-3 rounded-[var(--radius-md)] cursor-not-allowed opacity-90" title="Chỉ hiển thị danh sách tiếp đón trong ngày hiện tại theo quy định">
+            <Calendar size={14} className="text-[var(--primary)]" />
+            <span className="text-[12.5px] font-bold text-[var(--text-main)]">Ngày tiếp đón:</span>
+            <span className="text-[12.5px] font-extrabold text-[var(--primary)] bg-white px-2 py-0.5 rounded border border-slate-200">
+              {formatDateVN(tuNgay)} (Hôm nay)
+            </span>
           </div>
 
           {/* Lọc theo trạng thái khám */}

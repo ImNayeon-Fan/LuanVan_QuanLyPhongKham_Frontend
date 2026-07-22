@@ -120,11 +120,69 @@ function KhoNhapKho() {
   const loadVatTu = async () => {
     try {
       const res = await apiGetVatTuList('', '', 1, 1000);
-      if (res && res.data) {
-        setDanhMucVatTu(res.data);
-      } else {
-        setDanhMucVatTu([]);
-      }
+      let apiItems = (res && res.data) ? res.data.map(v => ({
+        maVatTu: v.maVatTu || v.maVT,
+        tenVatTu: v.tenVatTu || v.tenVT,
+        donViTinh: v.donViTinh,
+        quyCach: v.quyCach
+      })) : [];
+
+      let localItems = [];
+      try {
+        const stored = localStorage.getItem('danhMucVatTu');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          localItems = parsed.map(v => ({
+            maVatTu: v.maVT || v.maVatTu,
+            tenVatTu: v.tenVT || v.tenVatTu,
+            donViTinh: v.donViTinh,
+            quyCach: v.quyCach
+          }));
+        }
+      } catch (e) {}
+
+      // Default 30 supplies fallback
+      const default30 = [
+        { maVatTu: 'VT001', tenVatTu: 'Găng tay y tế không bột (Size M)', donViTinh: 'Hộp' },
+        { maVatTu: 'VT002', tenVatTu: 'Băng thun cuộn y tế', donViTinh: 'Cuộn' },
+        { maVatTu: 'VT003', tenVatTu: 'Kim tiêm dùng một lần 5ml', donViTinh: 'Hộp' },
+        { maVatTu: 'VT004', tenVatTu: 'Bông gòn y tế kháng khuẩn', donViTinh: 'Gói' },
+        { maVatTu: 'VT005', tenVatTu: 'Cồn sát trùng 70 độ', donViTinh: 'Chai' },
+        { maVatTu: 'VT006', tenVatTu: 'Khẩu trang y tế 4 lớp', donViTinh: 'Hộp' },
+        { maVatTu: 'VT007', tenVatTu: 'Kim tiêm dùng một lần 3ml', donViTinh: 'Hộp' },
+        { maVatTu: 'VT008', tenVatTu: 'Nước muối sinh lý NaCl 0.9%', donViTinh: 'Chai' },
+        { maVatTu: 'VT009', tenVatTu: 'Băng cá nhân vô trùng Urgosteril', donViTinh: 'Hộp' },
+        { maVatTu: 'VT010', tenVatTu: 'Gạc phẫu thuật tiệt trùng', donViTinh: 'Gói' },
+        { maVatTu: 'VT011', tenVatTu: 'Dây truyền dịch vô trùng', donViTinh: 'Bộ' },
+        { maVatTu: 'VT012', tenVatTu: 'Que đè lưỡi gỗ tiệt trùng', donViTinh: 'Hộp' },
+        { maVatTu: 'VT013', tenVatTu: 'Chỉ khâu phẫu thuật tự tiêu 3/0', donViTinh: 'Hộp' },
+        { maVatTu: 'VT014', tenVatTu: 'Cồn đỏ Povidine 10%', donViTinh: 'Chai' },
+        { maVatTu: 'VT015', tenVatTu: 'Bơm tiêm dùng một lần 10ml', donViTinh: 'Hộp' },
+        { maVatTu: 'VT016', tenVatTu: 'Băng keo cuộn giấy y tế', donViTinh: 'Cuộn' },
+        { maVatTu: 'VT017', tenVatTu: 'Khăn ướt cồn Alcohol Pads', donViTinh: 'Hộp' },
+        { maVatTu: 'VT018', tenVatTu: 'Ống lấy máu chân không EDTA', donViTinh: 'Khay' },
+        { maVatTu: 'VT019', tenVatTu: 'Ống lấy máu chân không Serum', donViTinh: 'Khay' },
+        { maVatTu: 'VT020', tenVatTu: 'Que thử thai nhanh (Quickstrip)', donViTinh: 'Hộp' },
+        { maVatTu: 'VT021', tenVatTu: 'Gel siêu âm y tế', donViTinh: 'Bình' },
+        { maVatTu: 'VT022', tenVatTu: 'Mũ phẫu thuật con sâu', donViTinh: 'Bịch' },
+        { maVatTu: 'VT023', tenVatTu: 'Tấm lót y tế chống thấm', donViTinh: 'Gói' },
+        { maVatTu: 'VT024', tenVatTu: 'Ống thông tiểu Foley 2 nhánh', donViTinh: 'Sợi' },
+        { maVatTu: 'VT025', tenVatTu: 'Kim cánh bướm lấy máu 23G', donViTinh: 'Hộp' },
+        { maVatTu: 'VT026', tenVatTu: 'Nhiệt kế điện tử hồng ngoại', donViTinh: 'Cái' },
+        { maVatTu: 'VT027', tenVatTu: 'Dung dịch sát khuẩn tay nhanh', donViTinh: 'Chai' },
+        { maVatTu: 'VT028', tenVatTu: 'Băng cuộn y tế (băng gạc)', donViTinh: 'Cuộn' },
+        { maVatTu: 'VT029', tenVatTu: 'Kim châm cứu tiệt trùng', donViTinh: 'Hộp' },
+        { maVatTu: 'VT030', tenVatTu: 'Túi đựng rác thải y tế lây nhiễm', donViTinh: 'Xấp' }
+      ];
+
+      // Hop nhat danh sach theo maVatTu
+      const itemMap = new Map();
+      default30.forEach(item => itemMap.set(item.maVatTu, item));
+      localItems.forEach(item => { if (item.maVatTu) itemMap.set(item.maVatTu, item); });
+      apiItems.forEach(item => { if (item.maVatTu) itemMap.set(item.maVatTu, item); });
+
+      const mergedList = Array.from(itemMap.values());
+      setDanhMucVatTu(mergedList);
     } catch (err) {
       console.error('Lỗi tải danh mục vật tư:', err);
       setDanhMucVatTu([]);

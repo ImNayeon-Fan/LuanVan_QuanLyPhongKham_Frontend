@@ -338,7 +338,7 @@ function HoSoBenhAn() {
                           </div>
                           <div className="text-[13px] mt-1 text-left">
                             <span className="text-[var(--text-muted)]">Chẩn đoán lâm sàng: </span>
-                            <strong className="text-[var(--text-main)]">{rec.chanDoan || 'Chưa cập nhật'}</strong>
+                            <strong className="text-[var(--text-main)]">{rec.ketLuan || rec.chanDoan || 'Chưa cập nhật'}</strong>
                           </div>
                         </div>
                         <div className="text-[var(--text-muted)] flex items-center">

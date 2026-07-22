@@ -582,12 +582,12 @@ function ThanhToanHoaDon() {
                 {/* 2. Thông tin chẩn đoán lâm sàng */}
                 <div className="grid grid-cols-[1.2fr_1fr_1fr] gap-4 border border-[var(--border-color)] rounded-[var(--radius-lg)] p-4 text-[13px]">
                    <div>
-                    <span className="text-[var(--text-muted)]">Chẩn đoán bệnh lý (ICD):</span>
-                    {selectedPhieu.icdList && selectedPhieu.icdList.length > 0 ? (
+                    <span className="text-[var(--text-muted)] font-medium">Chẩn đoán bệnh lý (ICD):</span>
+                    {((billingDetails && billingDetails.icdList && billingDetails.icdList.length > 0) || (selectedPhieu.icdList && selectedPhieu.icdList.length > 0)) ? (
                       <div className="flex flex-wrap gap-1 mt-1 mb-1">
-                        {selectedPhieu.icdList.map(item => (
-                          <span key={item.maICD} className="bg-[#eff6ff] border border-[#bfdbfe] text-[#1e40af] px-1.5 py-[1px] rounded text-[11px] font-medium" title={item.tenBenh}>
-                            {item.maICD}
+                        {((billingDetails && billingDetails.icdList) || selectedPhieu.icdList).map(item => (
+                          <span key={item.maICD} className="bg-[#eff6ff] border border-[#bfdbfe] text-[#1e40af] px-2 py-[2px] rounded text-[11.5px] font-semibold" title={item.tenBenh}>
+                            [{item.maICD}] {item.tenBenh}
                           </span>
                         ))}
                       </div>

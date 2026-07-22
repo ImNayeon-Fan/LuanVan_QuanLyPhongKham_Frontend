@@ -879,7 +879,7 @@ function KhamBenh() {
                         <input 
                           type="number" 
                           min="1"
-                          className="form-input py-1 px-2 text-[13px] w-28 text-center border border-[var(--border-color)] rounded-[var(--radius-md)] disabled:opacity-50 disabled:cursor-not-allowed" 
+                          className="form-input py-1 px-3 text-[14px] font-bold w-24 text-center border border-[var(--border-color)] rounded-[var(--radius-md)] bg-white focus:border-[var(--primary)] shadow-sm disabled:opacity-50 disabled:cursor-not-allowed" 
                           value={t.soLuong} 
                           disabled={!!t.trangThaiPhatThuoc}
                           onChange={e => capNhatSoLuongThuoc(t.id, e.target.value)} 
@@ -1004,7 +1004,7 @@ function KhamBenh() {
                         <input 
                           type="number" 
                           min="1"
-                          className="form-input py-1 px-3 text-[13px] text-center w-20 border border-[var(--border-color)] rounded-[var(--radius-md)]" 
+                          className="form-input py-1 px-3 text-[14px] font-bold w-24 text-center border border-[var(--border-color)] rounded-[var(--radius-md)] bg-white focus:border-[var(--primary)] shadow-sm" 
                           value={v.soLuong} 
                           onChange={e => capNhatSoLuongVatTu(v.id, e.target.value)} 
                         />

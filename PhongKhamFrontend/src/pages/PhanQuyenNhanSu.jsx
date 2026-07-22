@@ -632,15 +632,28 @@ function PhanQuyenNhanSu() {
                       </div>
 
                       <div className="form-group m-0">
-                        <label className={`form-label text-[12.5px] ${formData.roleName !== 'BacSi' ? 'text-slate-400' : ''}`}>Khoa (Chuyên môn)</label>
-                        <input
-                          type="text"
-                          className={`form-input h-[34px] text-[13px] pl-3 ${formData.roleName !== 'BacSi' ? 'bg-slate-100/60 cursor-not-allowed opacity-70' : ''}`}
-                          placeholder={formData.roleName === 'BacSi' ? "Nhập tên khoa / chuyên môn (VD: Nội tổng quát)" : "Chỉ áp dụng cho Bác sĩ"}
+                        <label className={`form-label text-[12.5px] ${formData.roleName !== 'BacSi' ? 'text-slate-400' : ''}`}>
+                          Khoa (Chuyên môn) {formData.roleName === 'BacSi' && <span className="text-red-500">*</span>}
+                        </label>
+                        <select
+                          className={`form-input h-[34px] text-[13px] px-2.5 bg-white cursor-pointer ${formData.roleName !== 'BacSi' ? 'bg-slate-100/60 cursor-not-allowed opacity-70' : ''}`}
                           value={formData.roleName === 'BacSi' ? (formData.chuyenMon || '') : ''}
                           onChange={e => setFormData({ ...formData, chuyenMon: e.target.value })}
                           disabled={formData.roleName !== 'BacSi'}
-                        />
+                          required={formData.roleName === 'BacSi'}
+                        >
+                          <option value="">-- Chọn Khoa chuyên môn --</option>
+                          <option value="Nội tổng quát">Nội tổng quát</option>
+                          <option value="Tim mạch">Tim mạch</option>
+                          <option value="Nhi khoa">Nhi khoa</option>
+                          <option value="Tai Mũi Họng">Tai Mũi Họng</option>
+                          <option value="Răng Hàm Mặt">Răng Hàm Mặt</option>
+                          <option value="Sản phụ khoa">Sản phụ khoa</option>
+                          <option value="Mắt">Mắt</option>
+                          <option value="Da liễu">Da liễu</option>
+                          <option value="Chẩn đoán hình ảnh">Chẩn đoán hình ảnh</option>
+                          <option value="Xét nghiệm">Xét nghiệm</option>
+                        </select>
                       </div>
 
                       <div className="form-group m-0 col-span-2">

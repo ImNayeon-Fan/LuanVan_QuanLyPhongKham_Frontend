@@ -237,17 +237,20 @@ function KhoDanhMucThuoc() {
         showSuccess(res.message || "Thêm mới danh mục thuốc thành công!");
         setSelectedDrug(null);
       } else {
-        // Gọi API cập nhật thông tin chung
+        // Gọi API cập nhật thông tin chung bao gồm cả trạng thái isActive
         const updatePayload = {
           tenThuoc: payload.tenThuoc,
           hoatChat: payload.hoatChat,
-          donViTinh: payload.donViTinh
+          donViTinh: payload.donViTinh,
+          isActive: formData.isActive
         };
         const res = await apiUpdateThuoc(payload.maThuoc, updatePayload);
 
         // Nếu chuyển đổi trạng thái từ Active sang Inactive (ngừng sử dụng)
         if (selectedDrug.isActive !== false && formData.isActive === false) {
-          await apiDeleteThuoc(payload.maThuoc);
+          try {
+            await apiDeleteThuoc(payload.maThuoc);
+          } catch (delErr) {}
         }
 
         showSuccess(res.message || "Cập nhật thông tin danh mục thuốc thành công!");
@@ -342,8 +345,8 @@ function KhoDanhMucThuoc() {
                   <td className="p-1">
                     <input 
                       type="text" 
-                      placeholder="Lọc..." 
-                      className="form-input h-[26px] text-[12px] py-0.5 px-1.5" 
+                      placeholder="Lọc mã..." 
+                      className="form-input h-[28px] text-[12px] py-0.5 px-2 text-left" 
                       value={filters.maThuoc}
                       onChange={e => handleFilterChange('maThuoc', e.target.value)}
                     />
@@ -351,8 +354,8 @@ function KhoDanhMucThuoc() {
                   <td className="p-1">
                     <input 
                       type="text" 
-                      placeholder="Lọc..." 
-                      className="form-input h-[26px] text-[12px] py-0.5 px-1.5" 
+                      placeholder="Lọc tên thuốc..." 
+                      className="form-input h-[28px] text-[12px] py-0.5 px-2 text-left" 
                       value={filters.tenThuoc}
                       onChange={e => handleFilterChange('tenThuoc', e.target.value)}
                     />
@@ -360,19 +363,19 @@ function KhoDanhMucThuoc() {
                   <td className="p-1">
                     <input 
                       type="text" 
-                      placeholder="Lọc..." 
-                      className="form-input h-[26px] text-[12px] py-0.5 px-1.5" 
+                      placeholder="Lọc hoạt chất..." 
+                      className="form-input h-[28px] text-[12px] py-0.5 px-2 text-left" 
                       value={filters.hoatChat}
                       onChange={e => handleFilterChange('hoatChat', e.target.value)}
                     />
                   </td>
                   <td className="p-1">
                     <select 
-                      className="form-input h-[26px] text-[12px] px-1" 
+                      className="form-input h-[28px] text-[12px] px-2 text-left" 
                       value={filters.donViTinh}
                       onChange={e => handleFilterChange('donViTinh', e.target.value)}
                     >
-                      <option value="">Tất cả</option>
+                      <option value="">Tất cả ĐVT</option>
                       {DON_VI_OPTIONS.map(opt => (
                         <option key={opt} value={opt}>{opt}</option>
                       ))}
@@ -605,7 +608,7 @@ function KhoDanhMucThuoc() {
                           value={formData.isActive ? 'true' : 'false'}
                           onChange={e => handleInputChange('isActive', e.target.value === 'true')}
                           required
-                          disabled={!isManager || selectedDrug?.isActive === false}
+                          disabled={!isManager}
                         >
                           <option value="true">Đang được sử dụng</option>
                           <option value="false">Ngừng sử dụng</option>

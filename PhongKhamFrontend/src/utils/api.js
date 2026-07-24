@@ -587,6 +587,12 @@ export const apiTraCuuHoSoCongKhai = async (maBN, sdt) => {
   return await apiFetch(`/CongKhai/tra-cuu-ho-so?maBN=${encodeURIComponent(maBN)}&sdt=${encodeURIComponent(sdt)}`);
 };
 
+// API Công khai - Tra cứu lịch hẹn khám bệnh đã đặt bằng Họ tên và số điện thoại (anonymous)
+export const apiTraCuuLichHenCongKhai = async (hoTen, sdt) => {
+  return await apiFetch(`/CongKhai/tra-cuu-lich-hen?hoTen=${encodeURIComponent(hoTen.trim())}&sdt=${encodeURIComponent(sdt.trim())}`);
+};
+
+
 // API Lấy danh sách danh mục vật tư y tế (có hỗ trợ tìm kiếm và phân trang)
 export const apiGetVatTuList = async (query = '', donViTinh = '', page = 1, pageSize = 100) => {
   const queryParams = new URLSearchParams({

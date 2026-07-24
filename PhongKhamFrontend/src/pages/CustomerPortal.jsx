@@ -50,6 +50,15 @@ function CustomerPortal() {
   const [searchResult, setSearchResult] = useState(null);
   const [searched, setSearched] = useState(false);
 
+  // State phục vụ tra cứu lịch hẹn khám đã đặt (Họ tên + Số điện thoại)
+  const [apptSearchName, setApptSearchName] = useState('');
+  const [apptSearchPhone, setApptSearchPhone] = useState('');
+  const [apptSearchResults, setApptSearchResults] = useState([]);
+  const [apptSearched, setApptSearched] = useState(false);
+  const [selectedKhoa, setSelectedKhoa] = useState('all');
+
+
+
   // State phục vụ load danh sách bác sĩ công khai từ API
   const [doctorsList, setDoctorsList] = useState([]);
   const [loadingDoctors, setLoadingDoctors] = useState(false);
@@ -58,17 +67,17 @@ function CustomerPortal() {
   const [availableDoctors, setAvailableDoctors] = useState([]);
   const [loadingScheduleDoctors, setLoadingScheduleDoctors] = useState(false);
 
-  // Tải danh sách bác sĩ có ca trực thỏa mãn Ngày + Khoa + Ca từ API
+  // Tải danh sách bác sĩ có ca trực thỏa mãn Ngày + Khoa từ API
   useEffect(() => {
     const fetchAvailableDoctors = async () => {
-      const { ngayHen, maKhoa, caHen } = bookingForm;
+      const { ngayHen, maKhoa } = bookingForm;
       if (!ngayHen || !maKhoa) {
         setAvailableDoctors([]);
         return;
       }
       setLoadingScheduleDoctors(true);
       try {
-        const res = await apiGetAvailableDoctorsOnSchedule(ngayHen, maKhoa, caHen);
+        const res = await apiGetAvailableDoctorsOnSchedule(ngayHen, maKhoa, '');
         if (Array.isArray(res)) {
           setAvailableDoctors(res);
         } else {
@@ -82,12 +91,12 @@ function CustomerPortal() {
       }
     };
     fetchAvailableDoctors();
-  }, [bookingForm.ngayHen, bookingForm.maKhoa, bookingForm.caHen]);
+  }, [bookingForm.ngayHen, bookingForm.maKhoa]);
 
-  // Khi maKhoa thay đổi, reset maNV về trống
+  // Khi maKhoa hoặc ngayHen thay đổi, reset maNV về trống và caHen mặc định
   useEffect(() => {
-    setBookingForm(prev => ({ ...prev, maNV: '' }));
-  }, [bookingForm.maKhoa]);
+    setBookingForm(prev => ({ ...prev, maNV: '', caHen: 'Sang' }));
+  }, [bookingForm.maKhoa, bookingForm.ngayHen]);
 
   useEffect(() => {
     const fetchDoctors = async () => {
@@ -106,7 +115,7 @@ function CustomerPortal() {
     fetchDoctors();
   }, []);
 
-  const displayDoctors = doctorsList.length > 0 
+  const allDisplayDoctors = doctorsList.length > 0 
     ? doctorsList.map(doc => ({
         maNV: doc.maNV,
         hoTen: doc.hoTen,
@@ -117,6 +126,12 @@ function CustomerPortal() {
         status: 'Đang làm việc'
       }))
     : [];
+
+  const displayDoctors = selectedKhoa === 'all'
+    ? allDisplayDoctors
+    : allDisplayDoctors.filter(doc => doc.khoa === selectedKhoa);
+
+  const uniqueKhoas = ['all', ...new Set(allDisplayDoctors.map(doc => doc.khoa))];
 
   // Mặc định thiết lập ngày hẹn là ngày mai
   useEffect(() => {
@@ -131,32 +146,88 @@ function CustomerPortal() {
   // Xử lý thay đổi thông tin trên form đặt lịch
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    if (name === 'ngayHen') {
+      const todayStr = new Date().toISOString().split('T')[0];
+      if (value && value < todayStr) {
+        showWarning('Không thể chọn ngày hẹn khám trong quá khứ!');
+        return;
+      }
+    }
     setBookingForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  // Hàm định dạng và tự động ràng buộc Ngày sinh (DD/MM/YYYY): Ngày <= 31, Tháng <= 12, Năm <= Năm hiện tại
+  const formatAndValidateDob = (inputVal, isDeleting = false) => {
+    if (isDeleting) return inputVal;
+
+    const digits = inputVal.replace(/\D/g, '').slice(0, 8);
+    if (!digits) return '';
+
+    let dayStr = '';
+    let monthStr = '';
+    let yearStr = '';
+
+    // 1. Ngày (tối đa 31)
+    if (digits.length >= 2) {
+      let day = parseInt(digits.slice(0, 2), 10);
+      if (isNaN(day) || day < 1) day = 1;
+      if (day > 31) day = 31;
+      dayStr = String(day).padStart(2, '0');
+    } else {
+      dayStr = digits;
+    }
+
+    // 2. Tháng (tối đa 12)
+    if (digits.length >= 4) {
+      let month = parseInt(digits.slice(2, 4), 10);
+      if (isNaN(month) || month < 1) month = 1;
+      if (month > 12) month = 12;
+      monthStr = String(month).padStart(2, '0');
+    } else if (digits.length === 3) {
+      monthStr = digits.slice(2, 3);
+    }
+
+    // 3. Năm (tối đa năm hiện tại, VD: 2026)
+    if (digits.length >= 5) {
+      yearStr = digits.slice(4);
+      if (digits.length === 8) {
+        let year = parseInt(yearStr, 10);
+        const currentYear = new Date().getFullYear();
+        if (year > currentYear) year = currentYear;
+        if (year < 1900) year = 1900;
+        yearStr = String(year);
+      }
+    }
+
+    // 4. Ràng buộc số ngày tối đa theo thực tế của tháng/năm
+    if (digits.length >= 4) {
+      let day = parseInt(dayStr, 10);
+      let month = parseInt(monthStr, 10);
+      let year = yearStr.length === 4 ? parseInt(yearStr, 10) : 2024;
+      const maxDays = new Date(year, month, 0).getDate();
+      if (day > maxDays) {
+        dayStr = String(maxDays).padStart(2, '0');
+      }
+    }
+
+    if (digits.length <= 2) return dayStr;
+    if (digits.length <= 4) return `${dayStr}/${monthStr}`;
+    return `${dayStr}/${monthStr}/${yearStr}`;
   };
 
   // Tự động định dạng dấu gạch chéo ngày sinh (DD/MM/YYYY) khi gõ trên cổng khách hàng
   const handleNgaySinhChange = (e) => {
     let val = e.target.value;
     const isDeleting = e.nativeEvent.inputType === 'deleteContentBackward';
-    
-    if (!isDeleting) {
-      const digits = val.replace(/\D/g, '');
-      if (digits.length > 0) {
-        if (digits.length <= 2) val = digits;
-        else if (digits.length <= 4) val = `${digits.slice(0, 2)}/${digits.slice(2)}`;
-        else val = `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4, 8)}`;
-      }
-    }
-    if (val.length <= 10) setBookingForm(prev => ({ ...prev, ngaySinh: val }));
+    const formatted = formatAndValidateDob(val, isDeleting);
+    if (formatted.length <= 10) setBookingForm(prev => ({ ...prev, ngaySinh: formatted }));
   };
 
   const handleNgaySinhBlur = () => {
     let val = bookingForm.ngaySinh.trim();
-    const digits = val.replace(/\D/g, '');
-    if (digits.length === 8) {
-      val = `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4, 8)}`;
-      setBookingForm(prev => ({ ...prev, ngaySinh: val }));
-    }
+    if (!val) return;
+    const formatted = formatAndValidateDob(val, false);
+    setBookingForm(prev => ({ ...prev, ngaySinh: formatted }));
   };
 
   // Gửi thông tin đặt lịch khám trực tuyến
@@ -182,23 +253,24 @@ function CustomerPortal() {
       return;
     }
     const isValidDate = (dateStr) => {
-      if (!dateStr) return false;
+      if (!dateStr || dateStr.length !== 10) return false;
       const parts = dateStr.split('/');
       if (parts.length !== 3) return false;
       const day = parseInt(parts[0], 10);
       const month = parseInt(parts[1], 10);
       const year = parseInt(parts[2], 10);
+      const currentYear = new Date().getFullYear();
       
       if (isNaN(day) || isNaN(month) || isNaN(year)) return false;
-      if (month < 1 || month > 12) return false;
       if (day < 1 || day > 31) return false;
-      if (year < 1900 || year > new Date().getFullYear()) return false;
+      if (month < 1 || month > 12) return false;
+      if (year < 1900 || year > currentYear) return false;
       
       const daysInMonth = new Date(year, month, 0).getDate();
       return day <= daysInMonth;
     };
-    if (!isValidDate(ngaySinh) || ngaySinh.length !== 10) {
-      showError('Ngày sinh không hợp lệ (Định dạng đúng: DD/MM/YYYY)!');
+    if (!isValidDate(ngaySinh)) {
+      showError(`Ngày sinh không hợp lệ (Ngày ≤ 31, Tháng ≤ 12, Năm ≤ ${new Date().getFullYear()})!`);
       return;
     }
     if (!ngayHen) {
@@ -261,24 +333,12 @@ function CustomerPortal() {
 
       showSuccess(`Đặt lịch hẹn khám thành công! Mã lịch đặt: ${maDatLichStr}`);
 
-      // Chuyển sang hiển thị kết quả tra cứu
-      setSearchResult({
-        patient: {
-          maBN: 'Chưa có (Hồ sơ đăng ký trực tuyến)',
-          hoTen: newAppointment.hoTenKhach,
-          sdt: newAppointment.sdt,
-          ngaySinh: newAppointment.ngaySinh,
-          gioiTinh: newAppointment.gioiTinh,
-          diaChi: newAppointment.diaChi || '—',
-          tienSuBenh: newAppointment.tienSuBenh || '—'
-        },
-        visits: [],
-        appointments: [newAppointment]
-      });
-      setActiveTab('search');
-      setSearchMaBN('');
-      setSearchSdt(newAppointment.sdt);
-      setSearched(true);
+      // Chuyển sang hiển thị kết quả tra cứu lịch hẹn
+      setApptSearchName(hoTenKhach.trim());
+      setApptSearchPhone(sdt.trim());
+      setApptSearchResults([newAppointment, ...existing.filter(a => a.sdt === sdt.trim() && (a.hoTenKhach || '').toLowerCase() === hoTenKhach.trim().toLowerCase())]);
+      setApptSearched(true);
+      setActiveTab('appointments');
 
       // Reset form
       setBookingForm({
@@ -416,6 +476,118 @@ function CustomerPortal() {
     }
   };
 
+  // Tra cứu thông tin ngày hẹn khám bệnh theo Họ tên và Số điện thoại (Bảo mật: Yêu cầu khớp cả 2 thông tin)
+  const handleSearchAppointment = async (e) => {
+    if (e) e.preventDefault();
+    const nameQuery = apptSearchName.trim().toLowerCase();
+    const phoneQuery = apptSearchPhone.trim();
+
+    if (!nameQuery || !phoneQuery) {
+      showError('Vui lòng nhập đầy đủ cả Họ tên và Số điện thoại chính xác để tra cứu lịch hẹn!');
+      return;
+    }
+
+    setApptSearched(true);
+
+    // Thử truy vấn API CSDL thực tế nếu có kết nối
+    let apiAppts = [];
+    try {
+      const res = await apiGetDatLichKham({ search: phoneQuery, pageSize: 100 });
+      if (res && res.data) {
+        apiAppts = res.data;
+      }
+    } catch (err) {
+      console.warn('Truy vấn API lịch hẹn trực tiếp (anonymous):', err);
+    }
+
+    try {
+      const allDatLich = JSON.parse(localStorage.getItem('danhSachDatLich') || '[]');
+
+      // Đồng bộ trạng thái thực tế từ Backend (nếu có) vào localStorage
+      let updatedLocal = [...allDatLich];
+      if (apiAppts.length > 0) {
+        updatedLocal = allDatLich.map(item => {
+          const match = apiAppts.find(a => String(a.maDatLich) === String(item.maDatLich));
+          return match ? { ...item, trangThai: match.trangThai } : item;
+        });
+        localStorage.setItem('danhSachDatLich', JSON.stringify(updatedLocal));
+      }
+
+      // Lọc danh sách BẢO MẬT: Bắt buộc TRÙNG KHỚP CHÍNH XÁC cả Số điện thoại VÀ Họ tên
+      let filtered = [];
+      if (apiAppts.length > 0) {
+        filtered = apiAppts.filter(appt => {
+          const samePhone = (appt.sdt || '').trim() === phoneQuery;
+          const sameName = (appt.hoTenKhach || '').trim().toLowerCase() === nameQuery;
+          return samePhone && sameName;
+        }).map(appt => ({
+          maDatLich: String(appt.maDatLich),
+          hoTenKhach: appt.hoTenKhach,
+          sdt: appt.sdt,
+          ngayHen: appt.ngayHen,
+          caHen: appt.caKham || appt.caHen || 'Sang',
+          yeuCauKham: appt.yeuCauKham || '',
+          trangThai: appt.trangThai,
+          tenBacSi: appt.tenBacSi || ''
+        }));
+      }
+
+      if (filtered.length === 0) {
+        filtered = updatedLocal.filter(appt => {
+          const samePhone = (appt.sdt || '').trim() === phoneQuery;
+          const sameName = (appt.hoTenKhach || '').trim().toLowerCase() === nameQuery;
+          return samePhone && sameName;
+        });
+      }
+
+      setApptSearchResults(filtered.sort((a, b) => new Date(b.ngayHen) - new Date(a.ngayHen)));
+
+      if (filtered.length > 0) {
+        showSuccess(`Tìm thấy ${filtered.length} lịch hẹn khám của bạn!`);
+      } else {
+        showWarning('Không tìm thấy lịch hẹn khám nào trùng khớp với thông tin đã nhập!');
+      }
+    } catch (err) {
+      console.error('Lỗi tra cứu lịch hẹn:', err);
+      showError('Không thể truy xuất dữ liệu lịch hẹn!');
+    }
+  };
+
+  const getApptStatusBadge = (status) => {
+    switch (status) {
+      case 'ChoXacNhan':
+        return (
+          <span className="inline-flex items-center gap-1 bg-slate-50 text-slate-500 border border-slate-200 px-2.5 py-1 rounded-full text-xs font-bold">
+            <Clock size={12} /> Đang xử lý
+          </span>
+        );
+      case 'DaXacNhan':
+        return (
+          <span className="inline-flex items-center gap-1 bg-emerald-50 text-emerald-700 border border-emerald-200/80 px-2.5 py-1 rounded-full text-xs font-bold">
+            <CheckCircle2 size={12} /> Đã xác nhận
+          </span>
+        );
+      case 'DaTiepNhan':
+        return (
+          <span className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 border border-blue-200/80 px-2.5 py-1 rounded-full text-xs font-bold">
+            <Activity size={12} /> Đã tiếp nhận
+          </span>
+        );
+      case 'DaHuy':
+        return (
+          <span className="inline-flex items-center gap-1 bg-rose-50 text-rose-700 border border-rose-200/80 px-2.5 py-1 rounded-full text-xs font-bold">
+            <AlertCircle size={12} /> Đã hủy
+          </span>
+        );
+      default:
+        return (
+          <span className="inline-flex items-center gap-1 bg-slate-50 text-slate-500 border border-slate-200 px-2.5 py-1 rounded-full text-xs font-bold">
+            <Clock size={12} /> Đang xử lý
+          </span>
+        );
+    }
+  };
+
   return (
     <div className="h-screen bg-slate-50 flex flex-col justify-between relative overflow-hidden font-inherit">
       {/* Top Header */}
@@ -448,10 +620,10 @@ function CustomerPortal() {
       <main className={`flex-1 max-w-7xl w-full mx-auto px-4 py-2 sm:py-3 flex flex-col ${activeTab === 'book' ? 'justify-center overflow-hidden' : 'overflow-y-auto'}`}>
         
         {/* Navigation Tabs */}
-        <div className="flex bg-white rounded-2xl p-1 shadow-sm border border-slate-200 mb-3 max-w-2xl w-full mx-auto flex-shrink-0">
+        <div className="flex bg-white rounded-2xl p-1 shadow-sm border border-slate-200 mb-3 max-w-3xl w-full mx-auto flex-shrink-0">
           <button
             onClick={() => setActiveTab('book')}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 ${
+            className={`flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 px-2 sm:px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 ${
               activeTab === 'book'
                 ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
@@ -463,7 +635,7 @@ function CustomerPortal() {
           
           <button
             onClick={() => setActiveTab('doctors')}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 ${
+            className={`flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 px-2 sm:px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 ${
               activeTab === 'doctors'
                 ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
@@ -474,8 +646,20 @@ function CustomerPortal() {
           </button>
 
           <button
+            onClick={() => setActiveTab('appointments')}
+            className={`flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 px-2 sm:px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 ${
+              activeTab === 'appointments'
+                ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+            }`}
+          >
+            <Clock size={16} />
+            Tra cứu lịch hẹn
+          </button>
+
+          <button
             onClick={() => setActiveTab('search')}
-            className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 ${
+            className={`flex-1 flex items-center justify-center gap-1.5 sm:gap-2 py-2.5 sm:py-3 px-2 sm:px-4 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 ${
               activeTab === 'search'
                 ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
@@ -631,13 +815,14 @@ function CustomerPortal() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">
-                        Ngày muốn hẹn khám <span className="text-red-500">*</span>
+                        Ngày hẹn khám <span className="text-red-500">*</span>
                       </label>
                       <div className="relative">
-                        <span className="absolute left-3 top-2.5 text-slate-400"><Clock size={15} /></span>
-                        <input 
+                        <span className="absolute left-3 top-2.5 text-slate-400"><Calendar size={15} /></span>
+                        <input
                           type="date"
                           name="ngayHen"
+                          min={new Date().toISOString().split('T')[0]}
                           value={bookingForm.ngayHen}
                           onChange={handleInputChange}
                           className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-xs sm:text-sm transition-all"
@@ -645,27 +830,6 @@ function CustomerPortal() {
                       </div>
                     </div>
 
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">
-                        Ca khám mong muốn <span className="text-red-500">*</span>
-                      </label>
-                      <div className="relative">
-                        <span className="absolute left-3 top-2.5 text-slate-400"><Clock size={15} /></span>
-                        <select
-                          name="caHen"
-                          value={bookingForm.caHen}
-                          onChange={handleInputChange}
-                          className="w-full pl-9 pr-8 py-2 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-xs sm:text-sm transition-all bg-white"
-                          required
-                        >
-                          <option value="Sang">Ca Sáng (7:30 - 11:30)</option>
-                          <option value="Chieu">Ca Chiều (13:30 - 17:30)</option>
-                        </select>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">
                         Chuyên khoa khám <span className="text-red-500">*</span>
@@ -688,38 +852,51 @@ function CustomerPortal() {
                         </select>
                       </div>
                     </div>
+                  </div>
 
-                    <div>
-                      <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">
-                        Bác sĩ khám mong muốn
-                      </label>
-                      <div className="relative">
-                        <span className="absolute left-3 top-2.5 text-slate-400"><User size={15} /></span>
-                        <select
-                          name="maNV"
-                          value={bookingForm.maNV}
-                          onChange={handleInputChange}
-                          className="w-full pl-9 pr-8 py-2 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-xs sm:text-sm transition-all bg-white"
-                          disabled={!bookingForm.maKhoa || loadingScheduleDoctors}
-                        >
-                          {!bookingForm.maKhoa ? (
-                            <option value="">Chọn chuyên khoa trước</option>
-                          ) : loadingScheduleDoctors ? (
-                            <option value="">Đang tải bác sĩ...</option>
-                          ) : availableDoctors.length === 0 ? (
-                            <option value="">Không có bác sĩ trực ca này</option>
-                          ) : (
-                            <>
-                              <option value="">Chọn bác sĩ (Tùy chọn)</option>
-                              {availableDoctors.map(doc => (
-                                <option key={doc.maNV} value={doc.maNV}>
-                                  {doc.hoTen} ({doc.chuyenMon})
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1">
+                      Bác sĩ khám mong muốn
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-2.5 text-slate-400"><User size={15} /></span>
+                      <select
+                        name="doctorSelect"
+                        value={bookingForm.maNV ? `${bookingForm.maNV}_${bookingForm.caHen}` : ''}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (!val) {
+                            setBookingForm(prev => ({ ...prev, maNV: '', caHen: 'Sang' }));
+                          } else {
+                            const parts = val.split('_');
+                            const mNV = parts[0];
+                            const cHen = parts[1] || 'Sang';
+                            setBookingForm(prev => ({ ...prev, maNV: mNV, caHen: cHen }));
+                          }
+                        }}
+                        className="w-full pl-9 pr-8 py-2 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-xs sm:text-sm transition-all bg-white"
+                        disabled={!bookingForm.maKhoa || loadingScheduleDoctors}
+                      >
+                        {!bookingForm.maKhoa ? (
+                          <option value="">Chọn chuyên khoa trước</option>
+                        ) : loadingScheduleDoctors ? (
+                          <option value="">Đang tải bác sĩ trực...</option>
+                        ) : availableDoctors.length === 0 ? (
+                          <option value="">Không có bác sĩ trực ngày này</option>
+                        ) : (
+                          <>
+                            <option value="">Chọn bác sĩ (Tùy chọn)</option>
+                            {availableDoctors.map((doc, idx) => {
+                              const caTen = doc.caLamViec === 'Sang' ? 'Ca Sáng (07:30 - 11:30)' : doc.caLamViec === 'Chieu' ? 'Ca Chiều (13:30 - 17:00)' : doc.caLamViec;
+                              return (
+                                <option key={`${doc.maNV}_${doc.caLamViec}_${idx}`} value={`${doc.maNV}_${doc.caLamViec}`}>
+                                  {doc.hoTen} - {caTen}
                                 </option>
-                              ))}
-                            </>
-                          )}
-                        </select>
-                      </div>
+                              );
+                            })}
+                          </>
+                        )}
+                      </select>
                     </div>
                   </div>
 
@@ -767,6 +944,29 @@ function CustomerPortal() {
               </p>
             </div>
 
+            {/* Bộ lọc chuyên khoa bác sĩ phong cách hiện đại */}
+            {uniqueKhoas.length > 1 && (
+              <div className="flex flex-wrap items-center gap-1 p-1 bg-slate-100/90 border border-slate-200/60 rounded-2xl max-w-fit mb-2 shadow-inner">
+                {uniqueKhoas.map(khoa => {
+                  const isSelected = selectedKhoa === khoa;
+                  return (
+                    <button
+                      key={khoa}
+                      type="button"
+                      onClick={() => setSelectedKhoa(khoa)}
+                      className={`px-5 py-2 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer border-none ${
+                        isSelected 
+                          ? 'bg-white text-blue-600 shadow-[0_4px_12px_rgba(0,0,0,0.06)]'
+                          : 'bg-transparent text-slate-500 hover:text-slate-800 hover:bg-slate-200/50'
+                      }`}
+                    >
+                      {khoa === 'all' ? 'Tất cả chuyên khoa' : khoa}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {displayDoctors.map((doc) => (
                 <div key={doc.maNV} className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex flex-col justify-between">
@@ -805,7 +1005,116 @@ function CustomerPortal() {
           </div>
         )}
 
-        {/* Tab 3: Tra Cứu Hồ Sơ */}
+        {/* Tab 3: Tra Cứu Lịch Hẹn Khám */}
+        {activeTab === 'appointments' && (
+          <div className="max-w-4xl mx-auto space-y-6">
+            <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+              <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2 mb-1">
+                <Clock size={18} className="text-blue-600" />
+                Tra Cứu Ngày Hẹn Khám Bệnh Đã Đặt
+              </h2>
+              <p className="text-slate-500 text-xs sm:text-sm mb-4">
+                Nhập Họ tên và Số điện thoại đã đăng ký để kiểm tra Ngày hẹn khám, Ca khám và Trạng thái xử lý lịch hẹn.
+              </p>
+              
+              <form onSubmit={handleSearchAppointment} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="relative">
+                  <span className="absolute left-3.5 top-3.5 text-slate-400"><User size={16} /></span>
+                  <input 
+                    type="text"
+                    value={apptSearchName}
+                    onChange={(e) => setApptSearchName(e.target.value)}
+                    placeholder="Nhập Họ và tên (VD: NGUYỄN VĂN A)"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-sm transition-all"
+                  />
+                </div>
+                <div className="relative">
+                  <span className="absolute left-3.5 top-3.5 text-slate-400"><Phone size={16} /></span>
+                  <input 
+                    type="text"
+                    value={apptSearchPhone}
+                    onChange={(e) => setApptSearchPhone(e.target.value)}
+                    placeholder="Nhập Số điện thoại liên hệ"
+                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none text-sm transition-all"
+                  />
+                </div>
+                <div className="md:col-span-2 flex justify-end">
+                  <button 
+                    type="submit"
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-xl text-sm transition-colors active:scale-95 flex items-center gap-2 shadow-md shadow-blue-500/20"
+                  >
+                    <Search size={16} /> Tra Cứu Lịch Hẹn
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            {/* Empty Result Message */}
+            {apptSearched && apptSearchResults.length === 0 && (
+              <div className="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm text-center max-w-md mx-auto">
+                <AlertCircle size={40} className="text-amber-500 mx-auto mb-3" />
+                <h3 className="font-bold text-slate-800">Chưa tìm thấy lịch hẹn khám</h3>
+                <p className="text-slate-500 text-xs sm:text-sm mt-1 leading-relaxed">
+                  Không tìm thấy lịch hẹn trùng khớp với Họ tên hoặc Số điện thoại đã nhập. Vui lòng kiểm tra lại chính xác hoặc thực hiện đặt lịch hẹn mới.
+                </p>
+              </div>
+            )}
+
+            {/* Results Display */}
+            {apptSearched && apptSearchResults.length > 0 && (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between px-1">
+                  <h3 className="font-bold text-slate-800 text-sm flex items-center gap-2">
+                    <Calendar size={16} className="text-blue-600" />
+                    Danh Sách Lịch Hẹn Đã Đăng Ký ({apptSearchResults.length})
+                  </h3>
+                </div>
+
+                {apptSearchResults.map((appt, idx) => {
+                  const caLabel = appt.caHen === 'Sang' ? 'Ca Sáng (07:30 - 11:30)' : appt.caHen === 'Chieu' ? 'Ca Chiều (13:30 - 17:00)' : appt.caHen;
+                  const formattedDate = appt.ngayHen ? appt.ngayHen.split('-').reverse().join('/') : '—';
+                  return (
+                    <div key={appt.maDatLich || idx} className="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm transition-all hover:border-blue-300">
+                      <div className="flex items-center gap-2 border-b border-slate-100 pb-3 mb-3">
+                        <span className="text-sm font-bold text-slate-700">{appt.hoTenKhach}</span>
+                        <span className="text-slate-300">•</span>
+                        <span className="text-xs text-slate-500 font-medium">{appt.sdt}</span>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 text-xs sm:text-sm">
+                        <div className="bg-blue-50/60 p-3 rounded-xl border border-blue-100">
+                          <span className="text-slate-500 text-xs block mb-0.5 font-semibold">📅 NGÀY HẸN KHÁM:</span>
+                          <strong className="text-blue-700 text-base">{formattedDate}</strong>
+                        </div>
+                        <div className="bg-amber-50/60 p-3 rounded-xl border border-amber-100">
+                          <span className="text-slate-500 text-xs block mb-0.5 font-semibold">⏰ CA KHÁM ĐÃ CHỌN:</span>
+                          <strong className="text-amber-800">{caLabel}</strong>
+                        </div>
+                        <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                          <span className="text-slate-500 text-xs block mb-0.5 font-semibold">👨‍⚕️ BÁC SĨ KHÁM:</span>
+                          <strong className="text-slate-800">{appt.tenBacSi || 'Bác sĩ chuyên khoa'}</strong>
+                        </div>
+                      </div>
+
+                      {appt.yeuCauKham && (
+                        <div className="mt-3 pt-3 border-t border-slate-100 text-xs text-slate-600">
+                          <span className="font-bold text-slate-700">Mô tả triệu chứng / Lý do khám: </span>
+                          <span className="italic">{appt.yeuCauKham}</span>
+                        </div>
+                      )}
+
+                      <div className="mt-3 pt-2 text-[11px] text-slate-400 flex items-center justify-between">
+                        <span>Lưu ý: Vui lòng có mặt tại quầy lễ tân trước ca khám 15 phút.</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Tab 4: Tra Cứu Hồ Sơ */}
         {activeTab === 'search' && (
           <div className="max-w-4xl mx-auto space-y-6">
             

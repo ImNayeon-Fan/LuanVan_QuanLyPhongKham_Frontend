@@ -25,9 +25,42 @@ function DanhSachTiepNhan() {
   const navigate = useNavigate();
   const { showError } = useToast();
   
+  // Xác định thông tin bác sĩ đang đăng nhập
+  const currentDoctorId = (() => {
+    try {
+      const userStr = localStorage.getItem('currentUser');
+      if (userStr) {
+        const parsed = JSON.parse(userStr);
+        const rawRole = (parsed.role || parsed.roleName || '').toString().toLowerCase();
+        const isDoc = rawRole === 'bacsi' || rawRole.includes('bác sĩ') || rawRole.includes('bac si') || parsed.roleID === 2 || parsed.roleId === 2;
+        if (isDoc) {
+          return parsed.maNV || '';
+        }
+      }
+    } catch (e) {
+      console.error('Lỗi đọc thông tin bác sĩ đăng nhập:', e);
+    }
+    return '';
+  })();
+
+  // Xác định vai trò của người dùng hiện tại
+  const userRole = (() => {
+    try {
+      const userStr = localStorage.getItem('currentUser');
+      if (userStr) {
+        const parsed = JSON.parse(userStr);
+        const rawRole = (parsed.role || parsed.roleName || '').toString().toLowerCase();
+        if (rawRole === 'bacsi' || rawRole.includes('bác sĩ') || rawRole.includes('bac si') || parsed.roleID === 2 || parsed.roleId === 2) {
+          return 'BacSi';
+        }
+      }
+    } catch (e) {}
+    return 'Other';
+  })();
+
   // Trạng thái lưu trữ bộ lọc trên giao diện
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedDoctor, setSelectedDoctor] = useState('');
+  const [selectedDoctor, setSelectedDoctor] = useState(currentDoctorId);
   const [selectedStatus, setSelectedStatus] = useState('');
   
   // Mặc định Từ ngày và Đến ngày là hôm nay (Cho phép chọn Từ ngày - Đến ngày để xem hồ sơ cũ)
@@ -173,8 +206,8 @@ function DanhSachTiepNhan() {
         
         {/* Bộ lọc nâng cao */}
         <div className="bg-[var(--bg-card)] border border-[var(--border-color)] rounded-[var(--radius-lg)] py-2.5 px-4 flex gap-3 items-center flex-wrap shadow-[var(--shadow-sm)]">
-          {/* Ô tìm kiếm thông tin - Thu gọn kích thước để nhường chỗ cho Từ ngày - Đến ngày */}
-          <div className="flex items-center gap-2 flex-1 min-w-[170px] max-w-[210px] relative">
+          {/* Ô tìm kiếm thông tin */}
+          <div className="flex items-center gap-2 flex-1 min-w-[200px] max-w-[260px] relative">
             <Search size={15} className="absolute left-3 text-[var(--text-muted)]" />
             <input
               type="text" className="form-input pl-[32px] pr-2 h-9 text-[13px]"
@@ -183,41 +216,44 @@ function DanhSachTiepNhan() {
             />
           </div>
 
-          {/* Lọc theo bác sĩ */}
-          <div className="flex-1 min-w-[160px]">
-            <select
-              className="form-input px-2.5 h-9 text-[13px]"
-              value={selectedDoctor} onChange={e => setSelectedDoctor(e.target.value)}
-            >
-              <option value="">-- Tất cả bác sĩ chỉ định --</option>
-              {docList.map(doc => {
-                const tenKhoa = khoaMapping[doc.maKhoa] || doc.maKhoa || 'Khoa lâm sàng';
-                return (
-                  <option key={doc.maNV} value={doc.maNV}>
-                    {doc.hoTen} - {tenKhoa}
-                  </option>
-                );
-              })}
-            </select>
-          </div>
+          {/* Lọc theo bác sĩ (Ẩn đối với Bác sĩ để tránh xem bệnh nhân của nhau) */}
+          {userRole !== 'BacSi' && (
+            <div className="w-[220px] min-w-[180px]">
+              <select
+                className="form-input px-2.5 h-9 text-[13px]"
+                value={selectedDoctor} onChange={e => setSelectedDoctor(e.target.value)}
+              >
+                <option value="">Tất cả bác sĩ</option>
+                {docList.map(doc => {
+                  const tenKhoa = khoaMapping[doc.maKhoa] || doc.maKhoa || 'Khoa lâm sàng';
+                  return (
+                    <option key={doc.maNV} value={doc.maNV}>
+                      {doc.hoTen} - {tenKhoa}
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+          )}
 
-          {/* Lọc theo khoảng thời gian tiếp đón (Cho phép chọn Từ ngày - Đến ngày, Mặc định ngày hôm nay) */}
-          <div className="flex items-center gap-2 bg-white border border-[var(--border-color)] p-1 rounded-[var(--radius-md)] shadow-[var(--shadow-sm)]">
-            <Calendar size={14} className="text-[var(--primary)] shrink-0 ml-1.5" />
+          {/* Lọc theo khoảng thời gian tiếp đón */}
+          <div className="flex items-center gap-2 bg-white border border-[var(--border-color)] py-1 px-2 rounded-[var(--radius-md)] shadow-[var(--shadow-sm)]">
+            <Calendar size={14} className="text-[var(--primary)] shrink-0" />
             <div className="flex items-center gap-1">
               <span className="text-[var(--text-muted)] text-[12px] font-semibold shrink-0">Từ:</span>
               <input
                 type="date" 
-                className="form-input h-7 text-[12px] px-1.5 border border-slate-200 bg-[var(--bg-main)] rounded cursor-pointer font-medium"
+                className="form-input h-7 text-[12px] px-1.5 border border-slate-200 bg-[var(--bg-main)] rounded cursor-pointer font-medium min-w-[130px]"
                 value={tuNgay} 
                 onChange={e => setTuNgay(e.target.value)}
               />
             </div>
+            <span className="text-[var(--text-muted)] text-[11px]">→</span>
             <div className="flex items-center gap-1">
               <span className="text-[var(--text-muted)] text-[12px] font-semibold shrink-0">Đến:</span>
               <input
                 type="date" 
-                className="form-input h-7 text-[12px] px-1.5 border border-slate-200 bg-[var(--bg-main)] rounded cursor-pointer font-medium"
+                className="form-input h-7 text-[12px] px-1.5 border border-slate-200 bg-[var(--bg-main)] rounded cursor-pointer font-medium min-w-[130px]"
                 value={denNgay} 
                 onChange={e => setDenNgay(e.target.value)}
               />
@@ -225,12 +261,12 @@ function DanhSachTiepNhan() {
           </div>
 
           {/* Lọc theo trạng thái khám */}
-          <div className="flex-1 min-w-[140px]">
+          <div className="w-[180px] min-w-[150px]">
             <select
               className="form-input px-2.5 h-9 text-[13px]"
               value={selectedStatus} onChange={e => setSelectedStatus(e.target.value)}
             >
-              <option value="">-- Tất cả trạng thái --</option>
+              <option value="">Tất cả trạng thái</option>
               <option value="0">Chờ khám</option>
               <option value="1">Đang khám</option>
               <option value="2">Chờ CLS</option>

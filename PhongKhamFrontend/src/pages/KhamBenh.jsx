@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   ArrowLeft, Search, User, Stethoscope, FlaskConical,
-  Pill, ClipboardCheck, Plus, Trash2, Save, ChevronRight, X, Package
+  Pill, ClipboardCheck, Plus, Trash2, Save, ChevronRight, X, Package,
+  Lock, AlertCircle
 } from 'lucide-react';
 import { useToast } from '../utils/ToastContext';
 import { 
@@ -10,6 +11,7 @@ import {
   apiGetDSBenhNhanChoKham, 
   apiGetChiTietPhieuKhamBenh, 
   apiCapNhatKhamBenh, 
+  apiXoaChiDinhCLS,
   apiGetDichVuCLSList, 
   apiGetThuocList,
   apiGetDanhSachVatTu
@@ -130,6 +132,28 @@ function KhamBenh() {
   const [danhMucCLS, setDanhMucCLS] = useState([]);
   const [danhMucThuoc, setDanhMucThuoc] = useState([]);
   const [danhMucVatTu, setDanhMucVatTu] = useState([]);
+
+  // Kiểm tra khóa các bước khám bệnh theo đúng thứ tự logic quy trình khám
+  const isSinhHieuCompleted = selectedBN && (
+    (selectedBN.trangThaiKham ?? selectedBN.trangThai) > 0 ||
+    selectedIcdList.length > 0
+  );
+
+  const hasPendingCLS = chiDinh.some(c => c.trangThaiDichVu === 0);
+
+  const isMenuLocked = (key) => {
+    if (!selectedBN) return true; // Chưa chọn bệnh nhân thì khóa hết
+    if (key === 'sinhHieu') return false; // Tab đầu luôn mở
+    
+    // Chưa lưu Khám cơ bản (Sinh hiệu + ICD) thì không cho qua các tab khác
+    if (!isSinhHieuCompleted) return true;
+    if (key === 'chiDinh') return false;
+
+    // Có chỉ định CLS nhưng chưa hoàn thành thì không cho Kê đơn/Vật tư/Kết luận
+    if (hasPendingCLS) return true;
+
+    return false;
+  };
 
   // Hàm chuyển đổi ngày tháng định dạng Việt Nam
   const formatDateVN = (dateStr) => {
@@ -342,6 +366,12 @@ function KhamBenh() {
       return;
     }
 
+    // Bắt buộc nhập cách dùng cho tất cả thuốc trong đơn
+    if (donThuoc.some(t => !t.trangThaiPhatThuoc && (!t.cachDung || !t.cachDung.trim()))) {
+      showError('Vui lòng nhập hướng dẫn cách dùng cho tất cả các loại thuốc trong đơn!');
+      return;
+    }
+
     if (newTrangThai === 1 && selectedIcdList.length === 0) {
       showError('Vui lòng nhập ít nhất 1 chẩn đoán ICD trước khi lưu khám cơ bản!');
       return;
@@ -484,8 +514,44 @@ function KhamBenh() {
     setShowClsDropdown(false);
   };
   
-  // Xóa chỉ định cận lâm sàng khỏi danh sách
-  const xoaChiDinh = (id) => setChiDinh(chiDinh.filter(c => c.id !== id && c.maDV !== id));
+  // Xóa chỉ định cận lâm sàng khỏi danh sách (Hỗ trợ gọi API xóa nếu đã lưu CSDL)
+  const xoaChiDinh = async (id) => {
+    const clsItem = chiDinh.find(c => c.id === id || c.maDV === id);
+    if (!clsItem) return;
+
+    // Check điều kiện được phép xóa (trangThaiCLS == 0 và chưa có ketQua)
+    if (clsItem.trangThaiDichVu === 1 || (clsItem.ketQua && clsItem.ketQua.trim() !== '')) {
+      showError('Không thể xóa chỉ định CLS đã thực hiện hoặc đã có kết quả!');
+      return;
+    }
+
+    // Nếu là chỉ định mới chưa lưu DB (isNew) -> xóa local khỏi state mảng
+    if (clsItem.isNew) {
+      setChiDinh(prev => prev.filter(c => c.id !== id && c.maDV !== id));
+      showSuccess('Đã bỏ chọn chỉ định CLS');
+      return;
+    }
+
+    // Nếu đã lưu trong DB -> gọi API DELETE /api/KhamBenh/{maPhieu}/chi-dinh-cls/{maChiTiet}
+    try {
+      const maChiTietInt = parseInt(clsItem.id || id, 10);
+      const res = await apiXoaChiDinhCLS(selectedBN.maPhieu, maChiTietInt);
+      if (res && res.data) {
+        showSuccess(res.message || 'Xóa chỉ định CLS thành công!');
+        const data = res.data;
+        setChiDinh(data.chiDinhCLS ? data.chiDinhCLS.map(c => ({
+          id: c.maChiTiet,
+          maDV: c.maDV,
+          tenXN: c.tenDV,
+          ketQua: c.ketQua,
+          trangThaiDichVu: c.trangThaiCLS !== undefined ? c.trangThaiCLS : c.trangThaiDichVu,
+          isNew: false
+        })) : []);
+      }
+    } catch (err) {
+      showError(err.message || 'Không thể xóa chỉ định CLS này!');
+    }
+  };
 
   // Thay đổi trạng thái thực hiện của dịch vụ cận lâm sàng (Đã làm / Chưa thực hiện) qua API
   const toggleTrangThaiCLS = async (id) => {
@@ -496,7 +562,11 @@ function KhamBenh() {
     if (cls.isNew) {
       setChiDinh(prev => prev.map(c =>
         c.id === id || c.maDV === id
-          ? { ...c, trangThaiDichVu: c.trangThaiDichVu === 1 ? 0 : 1 }
+          ? { 
+              ...c, 
+              trangThaiDichVu: c.trangThaiDichVu === 1 ? 0 : 1,
+              ketQua: c.trangThaiDichVu === 1 ? null : c.ketQua
+            }
           : c
       ));
       return;
@@ -514,7 +584,11 @@ function KhamBenh() {
       });
       setChiDinh(prev => prev.map(c =>
         c.id === id || c.maDV === id
-          ? { ...c, trangThaiDichVu: newTrangThai }
+          ? { 
+              ...c, 
+              trangThaiDichVu: newTrangThai,
+              ketQua: newTrangThai === 0 ? null : c.ketQua
+            }
           : c
       ));
       showSuccess(newTrangThai === 1 ? 'Đã cập nhật: CLS hoàn thành!' : 'Đã cập nhật: CLS chưa thực hiện!');
@@ -537,7 +611,7 @@ function KhamBenh() {
       maThuoc: thuoc.maThuoc,
       tenThuoc: thuoc.tenThuoc,
       soLuong: 1, // Mặc định số lượng là 1
-      cachDung: 'Ngày uống 2 lần, mỗi lần 1 viên' // Mặc định hướng dẫn cách dùng
+      cachDung: '' // Để trống để bác sĩ tự nhập
     }]);
 
     setThuocQuery('');
@@ -763,9 +837,15 @@ function KhamBenh() {
                       >
                         {c.trangThaiDichVu === 1 ? 'Đã làm CLS' : 'Chưa thực hiện'}
                       </button>
-                      <button className="kb-icon-btn kb-icon-btn--danger" onClick={() => xoaChiDinh(c.id)}>
-                        <Trash2 size={14} />
-                      </button>
+                      {c.trangThaiDichVu === 0 && (!c.ketQua || c.ketQua.trim() === '') ? (
+                        <button className="kb-icon-btn kb-icon-btn--danger" onClick={() => xoaChiDinh(c.id)} title="Xóa chỉ định này">
+                          <Trash2 size={14} />
+                        </button>
+                      ) : (
+                        <button className="kb-icon-btn opacity-40 cursor-not-allowed text-slate-400" disabled title="Không thể xóa CLS đã thực hiện hoặc đã có kết quả">
+                          <Trash2 size={14} />
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -816,6 +896,30 @@ function KhamBenh() {
                 )}
               </div>
             </div>
+
+            {/* Ghi chú chẩn đoán chi tiết / Kết luận lâm sàng */}
+            <div className="form-group mt-4 border-t border-[var(--border-color)] pt-3.5">
+              <label className="form-label text-left block font-semibold text-[13px]">Ghi chú chẩn đoán chi tiết / Kết luận lâm sàng</label>
+              <textarea 
+                className="form-input kb-textarea" 
+                placeholder={
+                  chiDinh.length === 0 
+                    ? "Vui lòng chỉ định dịch vụ cận lâm sàng..." 
+                    : !chiDinh.some(c => c.trangThaiDichVu === 1)
+                      ? "Chỉ được phép nhập sau khi đã chuyển trạng thái cận lâm sàng sang 'Đã làm CLS'..."
+                      : "Nhập chẩn đoán lâm sàng chi tiết..."
+                }
+                value={ketLuan.chanDoan} 
+                onChange={e => setKetLuan({ ...ketLuan, chanDoan: e.target.value })}
+                disabled={!chiDinh.some(c => c.trangThaiDichVu === 1)}
+              />
+              {!chiDinh.some(c => c.trangThaiDichVu === 1) && (
+                <p className="text-amber-600 text-[11.5px] mt-1 text-left font-medium">
+                  ⚠ Chỉ cho phép nhập sau khi đã cập nhật trạng thái cận lâm sàng sang "Đã làm CLS".
+                </p>
+              )}
+            </div>
+
             <div className="kb-action-row mt-4 border-t border-[var(--border-color)] pt-3.5">
               <button
                 className="btn-primary !w-fit !mt-0 py-[10px] px-6 flex items-center gap-2"
@@ -836,7 +940,6 @@ function KhamBenh() {
         );
 
       case 'donThuoc': {
-        const hasPendingCLS = chiDinh.some(c => c.trangThaiDichVu === 0);
         return (
           <div className="kb-content-inner">
             <div className="kb-content-title">
@@ -876,7 +979,8 @@ function KhamBenh() {
                         <input 
                           type="number" 
                           min="1"
-                          className="form-input py-1 px-3 text-[14px] font-bold w-24 text-center border border-[var(--border-color)] rounded-[var(--radius-md)] bg-white focus:border-[var(--primary)] shadow-sm disabled:opacity-50 disabled:cursor-not-allowed" 
+                          style={{ paddingLeft: '8px', paddingRight: '8px', width: '70px', textAlign: 'center' }}
+                          className="form-input py-1 text-[14px] font-bold text-center border border-[var(--border-color)] rounded-[var(--radius-md)] bg-white focus:border-[var(--primary)] shadow-sm disabled:opacity-50 disabled:cursor-not-allowed" 
                           value={t.soLuong} 
                           disabled={!!t.trangThaiPhatThuoc}
                           onChange={e => capNhatSoLuongThuoc(t.id, e.target.value)} 
@@ -1001,7 +1105,8 @@ function KhamBenh() {
                         <input 
                           type="number" 
                           min="1"
-                          className="form-input py-1 px-3 text-[14px] font-bold w-24 text-center border border-[var(--border-color)] rounded-[var(--radius-md)] bg-white focus:border-[var(--primary)] shadow-sm" 
+                          style={{ paddingLeft: '8px', paddingRight: '8px', width: '70px', textAlign: 'center' }}
+                          className="form-input py-1 text-[14px] font-bold text-center border border-[var(--border-color)] rounded-[var(--radius-md)] bg-white focus:border-[var(--primary)] shadow-sm" 
                           value={v.soLuong} 
                           onChange={e => capNhatSoLuongVatTu(v.id, e.target.value)} 
                         />
@@ -1101,11 +1206,7 @@ function KhamBenh() {
               </div>
             </div>
 
-            <div className="form-group">
-              <label className="form-label text-left block">Ghi chú chẩn đoán chi tiết / Kết luận lâm sàng</label>
-              <textarea className="form-input kb-textarea" placeholder="Nhập chẩn đoán lâm sàng chi tiết..."
-                value={ketLuan.chanDoan} onChange={e => setKetLuan({ ...ketLuan, chanDoan: e.target.value })} />
-            </div>
+
             <div className="form-group">
               <label className="form-label text-left block">Lời dặn / Hướng điều trị</label>
               <textarea className="form-input kb-textarea" placeholder="Nhập lời dặn cho bệnh nhân..."
@@ -1141,26 +1242,26 @@ function KhamBenh() {
   return (
     <div className="kb-wrapper">
       {/* Thanh tiêu đề topbar */}
-      <div className="kb-topbar">
-        <button className="kb-back-btn" onClick={() => navigate('/staff')}>
-          <ArrowLeft size={18} /> Quay về trang chủ
-        </button>
-        <div className="kb-topbar-title">
+      <div className="kb-topbar h-[50px] px-5 flex items-center justify-between">
+        <div className="w-[180px] flex justify-start">
+          <button className="kb-back-btn" onClick={() => navigate('/staff')}>
+            <ArrowLeft size={18} /> Quay về trang chủ
+          </button>
+        </div>
+        <div className="kb-topbar-title flex-1 flex justify-center items-center text-[16px] font-semibold gap-2">
           <Stethoscope size={20} />
           <span>Khám bệnh cho bệnh nhân</span>
         </div>
-        {selectedBN && ketLuan.chanDoan.trim() && selectedIcdList.length > 0 ? (
-          <button 
-            className="kb-save-btn !bg-[#16a34a] hover:!bg-[#15803d] text-white border-none flex items-center gap-1.5 px-4 py-2 rounded font-semibold transition-all shadow cursor-pointer" 
-            onClick={() => luuPhieuKham(3)}
-          >
-            <ClipboardCheck size={16} /> Kết thúc khám
-          </button>
-        ) : (
-          <button className="kb-save-btn" onClick={() => luuPhieuKham()}>
-            <Save size={16} /> Lưu phiếu khám
-          </button>
-        )}
+        <div className="w-[180px] flex justify-end">
+          {selectedBN && (
+            <button 
+              className="kb-save-btn !bg-[#16a34a] hover:!bg-[#15803d] text-white border-none flex items-center gap-1.5 px-4 py-2 rounded font-semibold transition-all shadow cursor-pointer" 
+              onClick={() => luuPhieuKham(3)}
+            >
+              <ClipboardCheck size={16} /> Kết thúc khám
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="kb-body">
@@ -1254,17 +1355,29 @@ function KhamBenh() {
         {/* CỘT PHẢI: Menu các chức năng khám */}
         <div className="kb-right-menu">
           <p className="kb-section-label pt-4 px-[14px] pb-2">Chức năng</p>
-          {MENU_ITEMS.map(item => (
-            <button
-              key={item.key}
-              className={`kb-menu-btn ${activeMenu === item.key ? 'kb-menu-btn--active' : ''}`}
-              onClick={() => { setActiveMenu(item.key); }}
-            >
-              <span className="kb-menu-icon">{item.icon}</span>
-              <span className="kb-menu-label">{item.label}</span>
-              {activeMenu === item.key && <ChevronRight size={16} className="ml-auto" />}
-            </button>
-          ))}
+          {MENU_ITEMS.map(item => {
+            const locked = isMenuLocked(item.key);
+            return (
+              <button
+                key={item.key}
+                disabled={locked}
+                className={`kb-menu-btn ${activeMenu === item.key ? 'kb-menu-btn--active' : ''} ${locked ? 'opacity-40 cursor-not-allowed bg-slate-50/50' : ''}`}
+                onClick={() => { if (!locked) setActiveMenu(item.key); }}
+                title={
+                  locked 
+                    ? item.key === 'chiDinh' 
+                      ? 'Vui lòng lưu thông tin Khám cơ bản trước!'
+                      : 'Vui lòng hoàn thành tất cả dịch vụ cận lâm sàng trước!'
+                    : ''
+                }
+              >
+                <span className="kb-menu-icon">{item.icon}</span>
+                <span className="kb-menu-label">{item.label}</span>
+                {activeMenu === item.key && !locked && <ChevronRight size={16} className="ml-auto" />}
+                {locked && <Lock size={12} className="ml-auto text-slate-400" />}
+              </button>
+            );
+          })}
         </div>
 
       </div>

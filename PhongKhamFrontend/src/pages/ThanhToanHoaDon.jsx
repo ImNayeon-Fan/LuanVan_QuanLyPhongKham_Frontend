@@ -60,6 +60,8 @@ function ThanhToanHoaDon() {
   // Các bộ lọc tìm kiếm danh sách phiếu thu
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('All'); // 'All', 'Unpaid', 'Paid'
+  const [filterDate, setFilterDate] = useState('');
+  const [hasSetInitialDate, setHasSetInitialDate] = useState(false);
 
   // Thu ngân đang thao tác
   const [thuNgan, setThuNgan] = useState('Thu ngân hệ thống');
@@ -77,6 +79,16 @@ function ThanhToanHoaDon() {
       });
       if (res && res.data) {
         setDsPhieuKham(res.data);
+        
+        // Tự động lọc theo ngày mới nhất trong danh sách ở lần tải đầu tiên
+        if (!hasSetInitialDate && res.data.length > 0) {
+          const dates = res.data.map(p => p.ngayKham ? p.ngayKham.split('T')[0] : '').filter(Boolean);
+          if (dates.length > 0) {
+            const latestDate = [...dates].sort().pop(); // Sắp xếp tăng dần và lấy phần tử cuối cùng (mới nhất)
+            setFilterDate(latestDate);
+            setHasSetInitialDate(true);
+          }
+        }
         
         // Cập nhật selectedPhieu
         if (selectedCode) {
@@ -300,7 +312,22 @@ function ThanhToanHoaDon() {
     }
   };
 
-  const filteredPhieuKham = dsPhieuKham;
+  const filteredPhieuKham = dsPhieuKham.filter(pk => {
+    if (!filterDate) return true;
+    return pk.ngayKham && pk.ngayKham.startsWith(filterDate);
+  });
+
+  // Đồng bộ selectedPhieu khi danh sách bệnh nhân sau lọc thay đổi
+  useEffect(() => {
+    if (filteredPhieuKham.length > 0) {
+      const exists = filteredPhieuKham.some(p => p.maPhieu === selectedPhieu?.maPhieu);
+      if (!exists) {
+        setSelectedPhieu(filteredPhieuKham[0]);
+      }
+    } else {
+      setSelectedPhieu(null);
+    }
+  }, [filteredPhieuKham, selectedPhieu?.maPhieu]);
 
   const services = billingDetails?.cls || [];
   const drugs = billingDetails?.thuoc || [];
@@ -352,25 +379,50 @@ function ThanhToanHoaDon() {
               <Search size={14} className="absolute left-2.5 top-[9px] text-[var(--text-muted)]" />
             </div>
 
+            {/* Lọc theo ngày tháng */}
+            <div className="flex items-center gap-1.5 mb-2.5">
+              <div className="flex items-center gap-1.5 bg-white border border-slate-200 py-[3px] px-2 rounded-md shadow-sm w-fit">
+                <Calendar size={12} className="text-[var(--primary)] shrink-0" />
+                <span className="text-[var(--text-muted)] text-[11px] font-semibold shrink-0">Ngày:</span>
+                <input
+                  type="date"
+                  className="border-none outline-none bg-transparent text-[11.5px] font-medium text-[var(--text-main)] cursor-pointer w-[120px]"
+                  value={filterDate}
+                  max={new Date().toISOString().split('T')[0]}
+                  onChange={e => setFilterDate(e.target.value)}
+                />
+              </div>
+              {filterDate && (
+                <button
+                  type="button"
+                  onClick={() => setFilterDate('')}
+                  className="text-[10.5px] text-[#ef4444] bg-[#fee2e2] px-1.5 py-[3px] rounded-md font-semibold border-none cursor-pointer hover:bg-[#fecaca] transition-all whitespace-nowrap shrink-0"
+                  title="Xóa bộ lọc ngày"
+                >
+                  Xóa lọc
+                </button>
+              )}
+            </div>
+
             {/* Tab lọc trạng thái */}
             <div className="flex gap-1 bg-[#e2e8f0] p-[2px] rounded-[6px]">
               <button 
                 onClick={() => setStatusFilter('All')}
                 className={`flex-1 py-[5px] px-[5px] border-none text-[11.5px] font-semibold rounded-[4px] cursor-pointer transition-all duration-150 ${statusFilter === 'All' ? 'bg-white text-inherit' : 'bg-transparent text-inherit'}`}
               >
-                Tất cả ({dsPhieuKham.length})
+                Tất cả
               </button>
               <button 
                 onClick={() => setStatusFilter('Unpaid')}
                 className={`flex-1 py-[5px] px-[5px] border-none text-[11.5px] font-semibold rounded-[4px] cursor-pointer transition-all duration-150 ${statusFilter === 'Unpaid' ? 'bg-white text-[#dc2626]' : 'bg-transparent text-[#dc2626]'}`}
               >
-                Chưa TT ({dsPhieuKham.filter(p => !p.daThanhToan).length})
+                Chưa TT
               </button>
               <button 
                 onClick={() => setStatusFilter('Paid')}
                 className={`flex-1 py-[5px] px-[5px] border-none text-[11.5px] font-semibold rounded-[4px] cursor-pointer transition-all duration-150 ${statusFilter === 'Paid' ? 'bg-white text-[#16a34a]' : 'bg-transparent text-[#16a34a]'}`}
               >
-                Đã TT ({dsPhieuKham.filter(p => p.daThanhToan).length})
+                Đã TT
               </button>
             </div>
           </div>

@@ -555,6 +555,13 @@ export const apiCapNhatKhamBenh = async (maPhieu, payload) => {
   });
 };
 
+// API Xóa chỉ định CLS đã lưu (khi chưa thực hiện và chưa có kết quả)
+export const apiXoaChiDinhCLS = async (maPhieu, maChiTiet) => {
+  return await apiFetch(`/KhamBenh/${maPhieu}/chi-dinh-cls/${maChiTiet}`, {
+    method: 'DELETE'
+  });
+};
+
 // API Tra cứu hồ sơ bệnh án hành chính theo mã/họ tên/SĐT
 export const apiTraCuuHoSoBenhAn = async (query) => {
   return await apiFetch(`/HoSoBenhAn/tra-cuu?query=${encodeURIComponent(query)}`);

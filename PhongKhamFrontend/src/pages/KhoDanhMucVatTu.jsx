@@ -297,8 +297,7 @@ function KhoDanhMucVatTu() {
                   <td className="p-1">
                     <input 
                       type="text" 
-                      placeholder="Lọc mã..." 
-                      className="form-input h-[30px] text-[12px] py-1 px-2 text-left" 
+                      className="form-input h-[30px] text-[12px] py-1 px-2 text-center w-full" 
                       value={filters.maVT}
                       onChange={e => handleFilterChange('maVT', e.target.value)}
                     />
@@ -306,8 +305,7 @@ function KhoDanhMucVatTu() {
                   <td className="p-1">
                     <input 
                       type="text" 
-                      placeholder="Lọc tên vật tư..." 
-                      className="form-input h-[30px] text-[12px] py-1 px-2 text-left" 
+                      className="form-input h-[30px] text-[12px] py-1 px-2 text-center w-full" 
                       value={filters.tenVT}
                       onChange={e => handleFilterChange('tenVT', e.target.value)}
                     />
@@ -315,19 +313,18 @@ function KhoDanhMucVatTu() {
                   <td className="p-1">
                     <input 
                       type="text" 
-                      placeholder="Lọc quy cách..." 
-                      className="form-input h-[30px] text-[12px] py-1 px-2 text-left" 
+                      className="form-input h-[30px] text-[12px] py-1 px-2 text-center w-full" 
                       value={filters.quyCach}
                       onChange={e => handleFilterChange('quyCach', e.target.value)}
                     />
                   </td>
-                  <td className="p-1">
+                  <td className="p-1" style={{minWidth: '120px'}}>
                     <select 
-                      className="form-input h-[30px] text-[12px] px-2 py-0.5 text-left" 
+                      className="form-input h-[30px] text-[12px] px-2 py-0.5 text-center w-full" 
                       value={filters.donViTinh}
                       onChange={e => handleFilterChange('donViTinh', e.target.value)}
                     >
-                      <option value="">Tất cả ĐVT</option>
+                      <option value="">All</option>
                       {DON_VI_OPTIONS.map(opt => (
                         <option key={opt} value={opt}>{opt}</option>
                       ))}

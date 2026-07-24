@@ -263,8 +263,7 @@ function DanhMucDichVu() {
                   <td className="p-1">
                     <input 
                       type="text" 
-                      placeholder="Lọc mã..." 
-                      className="form-input h-[26px] text-[12px] py-0.5 px-1.5" 
+                      className="form-input h-[26px] text-[12px] py-0.5 px-1.5 text-center w-full" 
                       value={dvFilters.maDV}
                       onChange={e => handleDvFilterChange('maDV', e.target.value)}
                     />
@@ -272,8 +271,7 @@ function DanhMucDichVu() {
                   <td className="p-1">
                     <input 
                       type="text" 
-                      placeholder="Lọc tên dịch vụ..." 
-                      className="form-input h-[26px] text-[12px] py-0.5 px-1.5" 
+                      className="form-input h-[26px] text-[12px] py-0.5 px-1.5 text-center w-full" 
                       value={dvFilters.tenDV}
                       onChange={e => handleDvFilterChange('tenDV', e.target.value)}
                     />

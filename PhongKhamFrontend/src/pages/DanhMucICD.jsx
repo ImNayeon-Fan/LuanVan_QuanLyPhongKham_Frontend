@@ -236,8 +236,7 @@ function DanhMucICD() {
                   <td className="p-1">
                     <input 
                       type="text" 
-                      placeholder="Lọc mã..." 
-                      className="form-input h-[26px] text-[12px] !py-0.5 !pl-2 !pr-2"
+                      className="form-input h-[26px] text-[12px] !py-0.5 !pl-2 !pr-2 text-center w-full"
                       value={icdFilters.maICD}
                       onChange={e => handleIcdFilterChange('maICD', e.target.value)}
                     />
@@ -245,8 +244,7 @@ function DanhMucICD() {
                   <td className="p-1">
                     <input 
                       type="text" 
-                      placeholder="Lọc tên bệnh..." 
-                      className="form-input h-[26px] text-[12px] !py-0.5 !pl-2 !pr-2"
+                      className="form-input h-[26px] text-[12px] !py-0.5 !pl-2 !pr-2 text-center w-full"
                       value={icdFilters.tenBenh}
                       onChange={e => handleIcdFilterChange('tenBenh', e.target.value)}
                     />

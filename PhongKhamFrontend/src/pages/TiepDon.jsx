@@ -117,29 +117,78 @@ function TiepDon() {
     }
   };
 
+  // Hàm định dạng và tự động ràng buộc Ngày sinh (DD/MM/YYYY): Ngày <= 31, Tháng <= 12, Năm <= Năm hiện tại
+  const formatAndValidateDob = (inputVal, isDeleting = false) => {
+    if (isDeleting) return inputVal;
+
+    const digits = inputVal.replace(/\D/g, '').slice(0, 8);
+    if (!digits) return '';
+
+    let dayStr = '';
+    let monthStr = '';
+    let yearStr = '';
+
+    // 1. Ngày (tối đa 31)
+    if (digits.length >= 2) {
+      let day = parseInt(digits.slice(0, 2), 10);
+      if (isNaN(day) || day < 1) day = 1;
+      if (day > 31) day = 31;
+      dayStr = String(day).padStart(2, '0');
+    } else {
+      dayStr = digits;
+    }
+
+    // 2. Tháng (tối đa 12)
+    if (digits.length >= 4) {
+      let month = parseInt(digits.slice(2, 4), 10);
+      if (isNaN(month) || month < 1) month = 1;
+      if (month > 12) month = 12;
+      monthStr = String(month).padStart(2, '0');
+    } else if (digits.length === 3) {
+      monthStr = digits.slice(2, 3);
+    }
+
+    // 3. Năm (tối đa năm hiện tại, VD: 2026)
+    if (digits.length >= 5) {
+      yearStr = digits.slice(4);
+      if (digits.length === 8) {
+        let year = parseInt(yearStr, 10);
+        const currentYear = new Date().getFullYear();
+        if (year > currentYear) year = currentYear;
+        if (year < 1900) year = 1900;
+        yearStr = String(year);
+      }
+    }
+
+    // 4. Ràng buộc số ngày tối đa theo thực tế của tháng/năm
+    if (digits.length >= 4) {
+      let day = parseInt(dayStr, 10);
+      let month = parseInt(monthStr, 10);
+      let year = yearStr.length === 4 ? parseInt(yearStr, 10) : 2024;
+      const maxDays = new Date(year, month, 0).getDate();
+      if (day > maxDays) {
+        dayStr = String(maxDays).padStart(2, '0');
+      }
+    }
+
+    if (digits.length <= 2) return dayStr;
+    if (digits.length <= 4) return `${dayStr}/${monthStr}`;
+    return `${dayStr}/${monthStr}/${yearStr}`;
+  };
+
   // Tự động định dạng dấu gạch chéo ngày sinh (DD/MM/YYYY) khi gõ
   const handleNgaySinhChange = (e) => {
     let val = e.target.value;
     const isDeleting = e.nativeEvent.inputType === 'deleteContentBackward';
-    
-    if (!isDeleting) {
-      const digits = val.replace(/\D/g, '');
-      if (digits.length > 0) {
-        if (digits.length <= 2) val = digits;
-        else if (digits.length <= 4) val = `${digits.slice(0, 2)}/${digits.slice(2)}`;
-        else val = `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4, 8)}`;
-      }
-    }
-    if (val.length <= 10) setFormData(prev => ({ ...prev, ngaySinh: val }));
+    const formatted = formatAndValidateDob(val, isDeleting);
+    if (formatted.length <= 10) setFormData(prev => ({ ...prev, ngaySinh: formatted }));
   };
 
   const handleNgaySinhBlur = () => {
     let val = formData.ngaySinh.trim();
-    const digits = val.replace(/\D/g, '');
-    if (digits.length === 8) {
-      val = `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4, 8)}`;
-      setFormData(prev => ({ ...prev, ngaySinh: val }));
-    }
+    if (!val) return;
+    const formatted = formatAndValidateDob(val, false);
+    setFormData(prev => ({ ...prev, ngaySinh: formatted }));
   };
 
   // Điền nhanh thông tin bệnh nhân cũ (F2)
@@ -249,6 +298,19 @@ function TiepDon() {
       }
 
       if (res && (res.data || res.maPhieu)) {
+        if (location.state?.maDatLich) {
+          try {
+            const allDatLich = JSON.parse(localStorage.getItem('danhSachDatLich') || '[]');
+            const updated = allDatLich.map(item => 
+              String(item.maDatLich) === String(location.state.maDatLich)
+                ? { ...item, trangThai: 'DaTiepNhan' }
+                : item
+            );
+            localStorage.setItem('danhSachDatLich', JSON.stringify(updated));
+          } catch (e) {
+            console.error(e);
+          }
+        }
         const maBN = res.data?.maBN || res.maBN;
         const maPhieu = res.data?.maPhieu || res.maPhieu;
         showSuccess(`Tiếp nhận bệnh nhân thành công! Mã BN: ${maBN}, Mã Phiếu: ${maPhieu}`, 5000);

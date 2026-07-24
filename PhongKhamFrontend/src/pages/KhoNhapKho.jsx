@@ -796,12 +796,12 @@ function KhoNhapKho() {
                       <td></td>
                       <td></td>
                       <td></td>
-                      <td className="p-1">
-                        <select className="form-input h-[26px] text-[12px] py-0 !px-2 !pl-2" value={filters.expiryStatus} onChange={e => handleFilterChange('expiryStatus', e.target.value)}>
-                          <option value="All">Tất cả HSD</option>
+                      <td className="p-1" style={{minWidth: '120px'}}>
+                        <select className="form-input h-[26px] text-[11px] py-0 !px-1.5 text-center w-full" value={filters.expiryStatus} onChange={e => handleFilterChange('expiryStatus', e.target.value)}>
+                          <option value="All">All HSD</option>
                           <option value="Safe">An toàn</option>
-                          <option value="Expiring">Hạn ngắn (&lt;6 th)</option>
-                          <option value="Expired">Đã hết hạn</option>
+                          <option value="Expiring">Hạn ngắn</option>
+                          <option value="Expired">Hết hạn</option>
                         </select>
                       </td>
                       {isManager && <td></td>}
@@ -1085,12 +1085,12 @@ function KhoNhapKho() {
                       <td></td>
                       <td></td>
                       <td></td>
-                      <td className="p-1">
-                        <select className="form-input h-[26px] text-[12px] py-0 !px-2 !pl-2" value={vatTuLotsFilters.expiryStatus} onChange={e => handleVatTuLotsFilterChange('expiryStatus', e.target.value)}>
-                          <option value="All">Tất cả HSD</option>
+                      <td className="p-1" style={{minWidth: '120px'}}>
+                        <select className="form-input h-[26px] text-[11px] py-0 !px-1.5 text-center w-full" value={vatTuLotsFilters.expiryStatus} onChange={e => handleVatTuLotsFilterChange('expiryStatus', e.target.value)}>
+                          <option value="All">All HSD</option>
                           <option value="Safe">An toàn</option>
-                          <option value="Expiring">Hạn ngắn (&lt;6 th)</option>
-                          <option value="Expired">Đã hết hạn</option>
+                          <option value="Expiring">Hạn ngắn</option>
+                          <option value="Expired">Hết hạn</option>
                         </select>
                       </td>
                       {isManager && <td></td>}

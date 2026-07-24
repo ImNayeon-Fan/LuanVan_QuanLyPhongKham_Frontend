@@ -41,7 +41,7 @@ function LichPhongKham() {
 
   // Quản lý danh sách lịch hẹn & bộ lọc tìm kiếm
   const [appointments, setAppointments] = useState([]);
-  const [apptFilters, setApptFilters] = useState({ search: '', date: '' });
+  const [apptFilters, setApptFilters] = useState({ search: '', date: new Date().toISOString().split('T')[0], trangThai: 'ChuaTiepNhan' });
   
   // Quản lý danh sách lịch trực bác sĩ & danh sách bác sĩ phục vụ chọn lựa
   const [doctorSchedules, setDoctorSchedules] = useState([]);
@@ -131,7 +131,7 @@ function LichPhongKham() {
     if (activeTab === 'appt' && (userRole === 'Admin' || userRole === 'LeTan')) {
       loadAppointments();
     }
-  }, [apptFilters.search, apptFilters.date, activeTab, userRole]);
+  }, [apptFilters.search, apptFilters.date, apptFilters.trangThai, activeTab, userRole]);
 
   // Tải lại danh sách lịch trực bác sĩ khi tuần hiển thị hoặc tab chuyển đổi
   useEffect(() => {
@@ -177,6 +177,17 @@ function LichPhongKham() {
       });
       if (res && res.data) {
         setAppointments(res.data);
+        // Đồng bộ toàn bộ trạng thái thực tế từ DB vào localStorage
+        try {
+          const allDatLich = JSON.parse(localStorage.getItem('danhSachDatLich') || '[]');
+          const updated = allDatLich.map(item => {
+            const match = res.data.find(a => String(a.maDatLich) === String(item.maDatLich));
+            return match ? { ...item, trangThai: match.trangThai } : item;
+          });
+          localStorage.setItem('danhSachDatLich', JSON.stringify(updated));
+        } catch (e) {
+          console.error(e);
+        }
       } else {
         setAppointments([]);
       }
@@ -219,6 +230,20 @@ function LichPhongKham() {
         showError('Thao tác không được hỗ trợ!');
         return;
       }
+
+      // Đồng bộ trạng thái mới vào localStorage để Cổng khách hàng hiển thị khớp 100%
+      try {
+        const allDatLich = JSON.parse(localStorage.getItem('danhSachDatLich') || '[]');
+        const updated = allDatLich.map(item => 
+          String(item.maDatLich) === String(maDatLich) 
+            ? { ...item, trangThai: newStatus } 
+            : item
+        );
+        localStorage.setItem('danhSachDatLich', JSON.stringify(updated));
+      } catch (e) {
+        console.error(e);
+      }
+
       loadAppointments();
     } catch (err) {
       showError(err.message || 'Lỗi cập nhật trạng thái lịch hẹn!');
@@ -229,6 +254,23 @@ function LichPhongKham() {
    * Tiếp nhận bệnh nhân: Giải mã thông tin phụ và truyền sang màn hình Tiếp đón
    */
   const handleReceivePatient = async (appt) => {
+    // Kiểm tra ngày hẹn khám
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const todayStr = `${year}-${month}-${day}`;
+
+    if (appt.ngayHen) {
+      if (appt.ngayHen > todayStr) {
+        showError('Chưa tới ngày hẹn!');
+        return;
+      } else if (appt.ngayHen < todayStr) {
+        showError('Đã qua ngày hẹn!');
+        return;
+      }
+    }
+
     // Nếu lịch hẹn đang ở trạng thái Chờ xác nhận, tự động xác nhận qua API trước khi tiếp nhận
     if (appt.trangThai === 'ChoXacNhan') {
       try {
@@ -332,7 +374,15 @@ function LichPhongKham() {
       (appt.hoTenKhach || '').toLowerCase().includes(apptFilters.search.toLowerCase()) ||
       (appt.sdt || '').includes(apptFilters.search);
     const matchesDate = apptFilters.date ? appt.ngayHen === apptFilters.date : true;
-    return matchesSearch && matchesDate;
+
+    let matchesStatus = true;
+    if (apptFilters.trangThai === 'ChuaTiepNhan') {
+      matchesStatus = appt.trangThai === 'ChoXacNhan' || appt.trangThai === 'DaXacNhan';
+    } else if (apptFilters.trangThai && apptFilters.trangThai !== 'All') {
+      matchesStatus = appt.trangThai === apptFilters.trangThai;
+    }
+
+    return matchesSearch && matchesDate && matchesStatus;
   });
 
   const formatDateDMY = (dateObj) => {
@@ -379,7 +429,7 @@ function LichPhongKham() {
                   : 'font-medium text-[var(--text-muted)] border-b-0'
               }`}
             >
-              Lịch Đặt Khám Bệnh Nhân ({appointments.length})
+              Lịch Đặt Khám Bệnh Nhân
             </button>
           )}
           <button
@@ -415,17 +465,28 @@ function LichPhongKham() {
                 />
                 <Search size={14} className="absolute left-2.5 top-2.5 text-[var(--text-muted)]" />
               </div>
-              <div className="w-[180px]">
+              <div className="w-[160px]">
                 <input
                   type="date"
                   value={apptFilters.date}
+                  min={new Date().toISOString().split('T')[0]}
                   onChange={(e) => setApptFilters(prev => ({ ...prev, date: e.target.value }))}
                   className="form-input h-[34px] text-[13px] font-inherit"
                 />
               </div>
-              {(apptFilters.search || apptFilters.date) && (
+              <div className="w-[190px]">
+                <select
+                  value={apptFilters.trangThai}
+                  onChange={(e) => setApptFilters(prev => ({ ...prev, trangThai: e.target.value }))}
+                  className="form-input h-[34px] text-[13px] font-inherit font-semibold"
+                >
+                  <option value="ChuaTiepNhan">Chờ tiếp nhận</option>
+                  <option value="DaHuy">Đã hủy</option>
+                </select>
+              </div>
+              {(apptFilters.search || apptFilters.date !== new Date().toISOString().split('T')[0] || apptFilters.trangThai !== 'ChuaTiepNhan') && (
                 <button 
-                  onClick={() => setApptFilters({ search: '', date: '' })} 
+                  onClick={() => setApptFilters({ search: '', date: new Date().toISOString().split('T')[0], trangThai: 'ChuaTiepNhan' })} 
                   className="btn-outline h-[34px] text-[12.5px] m-0 px-3 font-inherit"
                 >
                   Xóa bộ lọc
@@ -483,27 +544,41 @@ function LichPhongKham() {
                             onChange={(e) => handleUpdateStatus(appt.maDatLich, e.target.value)}
                             className={`border rounded-md h-8 text-[12px] w-[130px] font-semibold font-inherit outline-none transition-all duration-150 cursor-pointer ${
                               appt.trangThai === 'DaXacNhan' ? 'text-[#10b981] bg-emerald-50/30 border-emerald-200' :
+                              appt.trangThai === 'DaTiepNhan' ? 'text-blue-600 bg-blue-50/30 border-blue-200' :
                               appt.trangThai === 'DaKham' ? 'text-[var(--primary)] bg-sky-50/30 border-sky-200' :
                               appt.trangThai === 'DaHuy' ? 'text-[#ef4444] bg-red-50/30 border-red-200' : 'text-[#6b7280] bg-slate-50/30 border-slate-200'
                             }`}
                             style={{ textAlign: 'center', textAlignLast: 'center', padding: '0 20px 0 8px' }}
+                            disabled={appt.trangThai === 'DaTiepNhan' || appt.trangThai === 'DaHuy' || appt.trangThai === 'DaKham'}
                           >
                             <option value="ChoXacNhan">Chờ xác nhận</option>
                             {appt.trangThai === 'DaXacNhan' && <option value="DaXacNhan">Đã xác nhận</option>}
+                            {appt.trangThai === 'DaTiepNhan' && <option value="DaTiepNhan">Đã tiếp nhận</option>}
                             {appt.trangThai === 'DaKham' && <option value="DaKham">Đã khám</option>}
                             <option value="DaHuy">Đã hủy</option>
                           </select>
                         </td>
                         <td className="p-2.5 text-center">
-                          <button
-                            onClick={() => handleReceivePatient(appt)}
-                            className={`btn-primary h-7 text-[12px] px-2.5 m-0 w-auto mt-0 font-inherit inline-flex items-center gap-1 ${
-                              (appt.trangThai === 'DaHuy' || appt.trangThai === 'DaKham') ? 'opacity-50 cursor-not-allowed' : 'opacity-100 cursor-pointer'
-                            }`}
-                            disabled={appt.trangThai === 'DaHuy' || appt.trangThai === 'DaKham'}
-                          >
-                            Tiếp nhận <ArrowRight size={12} />
-                          </button>
+                          {appt.trangThai === 'DaTiepNhan' ? (
+                            <span className="inline-flex items-center gap-1 text-[12px] font-bold text-blue-600 bg-blue-50 px-2.5 py-1 rounded-md border border-blue-200">
+                              Đã tiếp nhận ✓
+                            </span>
+                          ) : appt.trangThai === 'DaKham' ? (
+                            <span className="inline-flex items-center gap-1 text-[12px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-md border border-emerald-200">
+                              Đã khám xong ✓
+                            </span>
+                          ) : appt.trangThai === 'DaHuy' ? (
+                            <span className="inline-flex items-center gap-1 text-[12px] font-bold text-slate-400 bg-slate-50 px-2.5 py-1 rounded-md border border-slate-200">
+                              Đã hủy
+                            </span>
+                          ) : (
+                            <button
+                              onClick={() => handleReceivePatient(appt)}
+                              className="btn-primary h-7 text-[12px] px-2.5 m-0 w-auto mt-0 font-inherit inline-flex items-center gap-1 cursor-pointer"
+                            >
+                              Tiếp nhận <ArrowRight size={12} />
+                            </button>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -755,8 +830,17 @@ function LichPhongKham() {
                 <label className="form-label font-semibold mb-1.5 text-[13px]">Ngày làm việc</label>
                 <input
                   type="date"
+                  min={new Date().toISOString().split('T')[0]}
                   value={docForm.ngayLamViec}
-                  onChange={(e) => setDocForm(prev => ({ ...prev, ngayLamViec: e.target.value }))}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    const todayStr = new Date().toISOString().split('T')[0];
+                    if (val && val < todayStr) {
+                      showError('Không thể chọn ngày làm việc trong quá khứ!');
+                      return;
+                    }
+                    setDocForm(prev => ({ ...prev, ngayLamViec: val }));
+                  }}
                   className="form-input h-9 text-[13px] px-2.5 font-inherit"
                   required
                 />

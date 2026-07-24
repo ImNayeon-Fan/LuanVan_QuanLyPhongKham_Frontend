@@ -428,33 +428,33 @@ function PhanQuyenNhanSu() {
                   <td></td>
                   <td className="p-1">
                     <input
-                      type="text" placeholder="Lọc..." className="form-input h-[26px] text-xs !py-0.5 !pl-2 !pr-2"
+                      type="text" className="form-input h-[26px] text-xs !py-0.5 !pl-2 !pr-2 text-center w-full"
                       value={filters.maNV} onChange={e => handleFilterChange('maNV', e.target.value)}
                     />
                   </td>
                   <td className="p-1">
                     <input
-                      type="text" placeholder="Lọc..." className="form-input h-[26px] text-xs !py-0.5 !pl-2 !pr-2"
+                      type="text" className="form-input h-[26px] text-xs !py-0.5 !pl-2 !pr-2 text-center w-full"
                       value={filters.email} onChange={e => handleFilterChange('email', e.target.value)}
                     />
                   </td>
                   <td className="p-1">
                     <input
-                      type="text" placeholder="Lọc..." className="form-input h-[26px] text-xs !py-0.5 !pl-2 !pr-2"
+                      type="text" className="form-input h-[26px] text-xs !py-0.5 !pl-2 !pr-2 text-center w-full"
                       value={filters.hoTen} onChange={e => handleFilterChange('hoTen', e.target.value)}
                     />
                   </td>
-                  <td className="p-1">
+                  <td className="p-1" style={{minWidth: '110px'}}>
                     <select
-                      className="form-input h-[26px] text-xs !py-0 !pl-2 !pr-6"
+                      className="form-input h-[26px] text-xs !py-0 !pl-2 !pr-6 text-center w-full"
                       value={filters.roleName} onChange={e => handleFilterChange('roleName', e.target.value)}
                     >
-                      <option value="">Tất cả</option>
+                      <option value="">All</option>
                       <option value="Admin">Admin</option>
-                      <option value="BacSi">BacSi</option>
-                      <option value="LeTan">LeTan</option>
-                      <option value="ThuNgan">ThuNgan</option>
-                      <option value="QuanLyKho">QuanLyKho</option>
+                      <option value="BacSi">Bác sĩ</option>
+                      <option value="LeTan">Lễ tân</option>
+                      <option value="ThuNgan">Thu ngân</option>
+                      <option value="QuanLyKho">Quản lý kho</option>
                     </select>
                   </td>
                   <td className="p-1">

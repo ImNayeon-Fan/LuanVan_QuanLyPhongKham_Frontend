@@ -41,6 +41,13 @@ function DatLichPublic() {
   // Xử lý thay đổi thông tin trên form đặt lịch
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    if (name === 'ngayHen') {
+      const todayStr = new Date().toISOString().split('T')[0];
+      if (value && value < todayStr) {
+        showWarning('Không thể chọn ngày hẹn khám trong quá khứ!');
+        return;
+      }
+    }
     setBookingForm(prev => ({ ...prev, [name]: value }));
   };
 
@@ -334,6 +341,7 @@ function DatLichPublic() {
                   <input
                     type="date"
                     name="ngayHen"
+                    min={new Date().toISOString().split('T')[0]}
                     value={bookingForm.ngayHen}
                     onChange={handleInputChange}
                     className="form-input h-10 text-[13.5px]"

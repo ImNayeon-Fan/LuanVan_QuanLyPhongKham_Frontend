@@ -332,10 +332,10 @@ function KhoDanhMucThuoc() {
               <thead>
                 <tr className="sticky top-0 z-10 bg-[var(--bg-main)] border-b-2 border-[var(--border-color)]">
                   <th className="w-[50px] text-center p-2">STT</th>
-                  <th className="w-[100px] p-2">Mã thuốc</th>
+                  <th className="w-[130px] p-2">Mã thuốc</th>
                   <th className="w-[220px] p-2">Tên thuốc</th>
                   <th className="p-2">Hoạt chất chính</th>
-                  <th className="w-[100px] p-2">Đơn vị tính</th>
+                  <th className="w-[150px] p-2">Đơn vị tính</th>
                   {isManager && <th className="w-[155px] p-2 text-center">Trạng thái</th>}
                   {isManager && <th className="w-[60px] p-2 text-center">Xóa</th>}
                 </tr>
@@ -345,8 +345,7 @@ function KhoDanhMucThuoc() {
                   <td className="p-1">
                     <input 
                       type="text" 
-                      placeholder="Lọc mã..." 
-                      className="form-input h-[28px] text-[12px] py-0.5 px-2 text-left" 
+                      className="form-input h-[28px] text-[12px] py-0.5 px-2 text-center w-full" 
                       value={filters.maThuoc}
                       onChange={e => handleFilterChange('maThuoc', e.target.value)}
                     />
@@ -354,8 +353,7 @@ function KhoDanhMucThuoc() {
                   <td className="p-1">
                     <input 
                       type="text" 
-                      placeholder="Lọc tên thuốc..." 
-                      className="form-input h-[28px] text-[12px] py-0.5 px-2 text-left" 
+                      className="form-input h-[28px] text-[12px] py-0.5 px-2 text-center w-full" 
                       value={filters.tenThuoc}
                       onChange={e => handleFilterChange('tenThuoc', e.target.value)}
                     />
@@ -363,19 +361,18 @@ function KhoDanhMucThuoc() {
                   <td className="p-1">
                     <input 
                       type="text" 
-                      placeholder="Lọc hoạt chất..." 
-                      className="form-input h-[28px] text-[12px] py-0.5 px-2 text-left" 
+                      className="form-input h-[28px] text-[12px] py-0.5 px-2 text-center w-full" 
                       value={filters.hoatChat}
                       onChange={e => handleFilterChange('hoatChat', e.target.value)}
                     />
                   </td>
-                  <td className="p-1">
+                  <td className="p-1" style={{minWidth: '120px'}}>
                     <select 
-                      className="form-input h-[28px] text-[12px] px-2 text-left" 
+                      className="form-input h-[28px] text-[12px] px-2 text-center w-full" 
                       value={filters.donViTinh}
                       onChange={e => handleFilterChange('donViTinh', e.target.value)}
                     >
-                      <option value="">Tất cả ĐVT</option>
+                      <option value="">All</option>
                       {DON_VI_OPTIONS.map(opt => (
                         <option key={opt} value={opt}>{opt}</option>
                       ))}

@@ -48,30 +48,30 @@ function App() {
           <Route path="/staff" element={<ProtectedRoute><Home /></ProtectedRoute>} />
           
           {/* Phân hệ chuyên môn khám chữa bệnh & tiếp đón bệnh nhân */}
-          <Route path="/kham-benh" element={<ProtectedRoute><KhamBenh /></ProtectedRoute>} />
-          <Route path="/tiep-don" element={<ProtectedRoute><TiepDon /></ProtectedRoute>} />
-          <Route path="/danh-sach-tiep-nhan" element={<ProtectedRoute><DanhSachTiepNhan /></ProtectedRoute>} />
-          <Route path="/ho-so-chi-tiet/:maPhieu" element={<ProtectedRoute><ChiTietBenhNhan /></ProtectedRoute>} />
-          <Route path="/ho-so-benh-an" element={<ProtectedRoute><HoSoBenhAn /></ProtectedRoute>} />
+          <Route path="/kham-benh" element={<ProtectedRoute allowedRoles={['BacSi']}><KhamBenh /></ProtectedRoute>} />
+          <Route path="/tiep-don" element={<ProtectedRoute allowedRoles={['LeTan']}><TiepDon /></ProtectedRoute>} />
+          <Route path="/danh-sach-tiep-nhan" element={<ProtectedRoute allowedRoles={['Admin', 'BacSi', 'LeTan']}><DanhSachTiepNhan /></ProtectedRoute>} />
+          <Route path="/ho-so-chi-tiet/:maPhieu" element={<ProtectedRoute allowedRoles={['Admin', 'BacSi', 'LeTan']}><ChiTietBenhNhan /></ProtectedRoute>} />
+          <Route path="/ho-so-benh-an" element={<ProtectedRoute allowedRoles={['Admin', 'BacSi', 'LeTan']}><HoSoBenhAn /></ProtectedRoute>} />
           
           {/* Quản trị hệ thống, danh mục chuyên môn và phân quyền nhân sự */}
-          <Route path="/phan-quyen" element={<ProtectedRoute><PhanQuyenNhanSu /></ProtectedRoute>} />
-          <Route path="/danhmuc/icd" element={<ProtectedRoute><DanhMucICD /></ProtectedRoute>} />
-          <Route path="/danhmuc/dich-vu" element={<ProtectedRoute><DanhMucDichVu /></ProtectedRoute>} />
-          <Route path="/danhmuc/khoa" element={<ProtectedRoute><DanhMucKhoa /></ProtectedRoute>} />
-          <Route path="/thanh-toan" element={<ProtectedRoute><ThanhToanHoaDon /></ProtectedRoute>} />
+          <Route path="/phan-quyen" element={<ProtectedRoute allowedRoles={['Admin']}><PhanQuyenNhanSu /></ProtectedRoute>} />
+          <Route path="/danhmuc/icd" element={<ProtectedRoute allowedRoles={['Admin']}><DanhMucICD /></ProtectedRoute>} />
+          <Route path="/danhmuc/dich-vu" element={<ProtectedRoute allowedRoles={['Admin']}><DanhMucDichVu /></ProtectedRoute>} />
+          <Route path="/danhmuc/khoa" element={<ProtectedRoute allowedRoles={['Admin']}><DanhMucKhoa /></ProtectedRoute>} />
+          <Route path="/thanh-toan" element={<ProtectedRoute allowedRoles={['ThuNgan']}><ThanhToanHoaDon /></ProtectedRoute>} />
           
           {/* Quản lý kho dược phẩm, vật tư y tế */}
-          <Route path="/kho/danh-muc-thuoc" element={<ProtectedRoute><KhoDanhMucThuoc /></ProtectedRoute>} />
-          <Route path="/kho/danh-muc-vat-tu" element={<ProtectedRoute><KhoDanhMucVatTu /></ProtectedRoute>} />
-          <Route path="/kho/nhap-kho" element={<ProtectedRoute><KhoNhapKho /></ProtectedRoute>} />
-          <Route path="/kho/nha-cung-cap" element={<ProtectedRoute><KhoNhaCungCap /></ProtectedRoute>} />
+          <Route path="/kho/danh-muc-thuoc" element={<ProtectedRoute allowedRoles={['QuanLyKho']}><KhoDanhMucThuoc /></ProtectedRoute>} />
+          <Route path="/kho/danh-muc-vat-tu" element={<ProtectedRoute allowedRoles={['QuanLyKho']}><KhoDanhMucVatTu /></ProtectedRoute>} />
+          <Route path="/kho/nhap-kho" element={<ProtectedRoute allowedRoles={['QuanLyKho']}><KhoNhapKho /></ProtectedRoute>} />
+          <Route path="/kho/nha-cung-cap" element={<ProtectedRoute allowedRoles={['QuanLyKho']}><KhoNhaCungCap /></ProtectedRoute>} />
           
           {/* Cổng đặt lịch khám công khai dành cho bệnh nhân tự đặt ngoài trang chủ (Không cần đăng nhập) */}
           <Route path="/dat-lich-kham" element={<DatLichPublic />} />
           
           {/* Lịch làm việc và đặt lịch hẹn khám của bác sĩ */}
-          <Route path="/lich" element={<ProtectedRoute><LichPhongKham /></ProtectedRoute>} />
+          <Route path="/lich" element={<ProtectedRoute allowedRoles={['Admin', 'BacSi', 'LeTan']}><LichPhongKham /></ProtectedRoute>} />
           
           {/* Tự động chuyển hướng về trang đăng nhập nếu người dùng gõ sai đường dẫn */}
           <Route path="*" element={<Navigate to="/login" replace />} />

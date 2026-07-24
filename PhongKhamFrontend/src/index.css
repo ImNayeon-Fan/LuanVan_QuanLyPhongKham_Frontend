@@ -464,6 +464,7 @@ a:hover {
   font-weight: 500;
   cursor: pointer;
   transition: background 0.2s;
+  white-space: nowrap;
 }
 .kb-back-btn:hover { background: rgba(255,255,255,0.3); }
 

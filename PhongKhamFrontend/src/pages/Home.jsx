@@ -64,13 +64,26 @@ function Home() {
     }
   });
 
+  // Xác định chuẩn hóa vai trò (Role) của người dùng hiện tại
+  const userRole = (() => {
+    const rawRole = (userInfo.role || userInfo.roleName || '').toString().toLowerCase();
+    const id = userInfo.roleID || userInfo.roleId;
+
+    if (id === 1 || rawRole === 'admin' || rawRole.includes('quản trị')) return 'Admin';
+    if (id === 2 || rawRole === 'bacsi' || rawRole.includes('bác sĩ') || rawRole.includes('bac si')) return 'BacSi';
+    if (id === 3 || rawRole === 'letan' || rawRole.includes('lễ tân') || rawRole.includes('le tan')) return 'LeTan';
+    if (id === 4 || rawRole === 'thungan' || rawRole.includes('thu ngân') || rawRole.includes('thu ngan')) return 'ThuNgan';
+    if (id === 5 || rawRole === 'quanlykho' || rawRole.includes('kho')) return 'QuanLyKho';
+
+    return 'Admin';
+  })();
+
   // Tìm thông tin mới nhất của nhân viên này từ danh sách nhân viên trong localStorage
   const latestUserInfo = (() => {
     try {
       const storedList = localStorage.getItem('danhSachNhanVien');
       if (storedList) {
         const list = JSON.parse(storedList);
-        // Tìm theo username trước, nếu không có thì tìm theo họ tên (bỏ qua hoa thường và khoảng trắng thừa)
         const targetUsername = userInfo.username ? userInfo.username.trim().toLowerCase() : '';
         const targetName = userInfo.name ? userInfo.name.trim().toLowerCase() : '';
         
@@ -86,11 +99,11 @@ function Home() {
   })();
 
   // Giá trị hiển thị ưu tiên lấy từ danh sách nhân viên mới nhất, sau đó đến session và cuối cùng là mặc định
-  const userMaNV = (latestUserInfo && latestUserInfo.maNV) || userInfo.maNV || (userInfo.role === 'Bác sĩ' ? 'NV002' : 'NV003');
-  const userHoTen = (latestUserInfo && latestUserInfo.hoTen) || userInfo.hoTen || userInfo.name || 'Mai Xuân Phát';
-  const userSdt = (latestUserInfo && latestUserInfo.sdt) || userInfo.sdt || '0909090909';
-  const userEmail = (latestUserInfo && latestUserInfo.email) || userInfo.email || `${userInfo.username || 'maixuanphat'}@phongkham.vn`;
-  const userKhoa = (latestUserInfo && latestUserInfo.khoa) || userInfo.chuyenMon || userInfo.khoa || (userInfo.role === 'Bác sĩ' ? 'Khoa Nội' : undefined);
+  const userMaNV = (latestUserInfo && latestUserInfo.maNV) || userInfo.maNV || (userRole === 'BacSi' ? 'NV003' : 'NV001');
+  const userHoTen = (latestUserInfo && latestUserInfo.hoTen) || userInfo.hoTen || userInfo.name || 'Người dùng';
+  const userSdt = (latestUserInfo && latestUserInfo.sdt) || userInfo.sdt || 'N/A';
+  const userEmail = (latestUserInfo && latestUserInfo.email) || userInfo.email || `${userInfo.username || 'user'}@phongkham.vn`;
+  const userKhoa = (latestUserInfo && latestUserInfo.khoa) || userInfo.chuyenMon || userInfo.khoa || (userRole === 'BacSi' ? 'Khoa Nội' : undefined);
   const userTrangThai = (latestUserInfo && latestUserInfo.trangThai) || userInfo.trangThai || 'active';
 
   const handleLogout = async () => {
@@ -115,15 +128,13 @@ function Home() {
       setNewPassword('');
       setConfirmPassword('');
       setShowPasswordModal(false);
-      
-      // Buộc người dùng đăng nhập lại vì token cũ đã bị vô hiệu hóa ở BE
       handleLogout();
     } catch (err) {
       showError(err.message || 'Có lỗi xảy ra khi đổi mật khẩu.');
     }
   };
 
-  const modules = [
+  const allModules = [
     { key: 'phanquyen',  name: 'Phân quyền & Nhân sự',  icon: <ShieldCheck size={32} /> },
     { key: 'danhmuc',    name: 'Danh mục dùng chung',    icon: <Database size={32} /> },
     { key: 'tiepnhan',   name: 'Tiếp nhận & Khám bệnh', icon: <Stethoscope size={32} /> },
@@ -131,6 +142,41 @@ function Home() {
     { key: 'thanhtoan',  name: 'Thanh toán & Hóa đơn',  icon: <Receipt size={32} /> },
     { key: 'lichhen',    name: 'Lịch & Đặt hẹn khám',    icon: <Calendar size={32} /> },
   ];
+
+  // Lọc các Module Card trên màn hình Dashboard theo đúng Vai trò (Role)
+  const visibleModules = (() => {
+    switch (userRole) {
+      case 'Admin':
+        return allModules.filter(m => ['phanquyen', 'danhmuc', 'tiepnhan', 'lichhen'].includes(m.key));
+      case 'BacSi':
+        return allModules.filter(m => ['tiepnhan', 'lichhen'].includes(m.key));
+      case 'LeTan':
+        return allModules.filter(m => ['tiepnhan', 'lichhen'].includes(m.key));
+      case 'QuanLyKho':
+        return allModules.filter(m => ['kho'].includes(m.key));
+      case 'ThuNgan':
+        return allModules.filter(m => ['thanhtoan'].includes(m.key));
+      default:
+        return allModules;
+    }
+  })();
+
+  // Lọc sub-modules trong popover "Tiếp nhận & Khám bệnh" theo đúng Vai trò (Role)
+  const visibleTiepNhanSubModules = (() => {
+    if (userRole === 'Admin') {
+      // Chỉ 2 mục: Danh sách bệnh nhân đã tiếp đón và Hồ sơ bệnh án
+      return subModules.filter(s => s.route === '/danh-sach-tiep-nhan' || s.route === '/ho-so-benh-an');
+    }
+    if (userRole === 'BacSi') {
+      // Chỉ 3 mục: Khám bệnh cho bệnh nhân, Danh sách bệnh nhân đã tiếp đón và Hồ sơ bệnh án
+      return subModules.filter(s => s.route === '/kham-benh' || s.route === '/danh-sach-tiep-nhan' || s.route === '/ho-so-benh-an');
+    }
+    if (userRole === 'LeTan') {
+      // Chỉ 3 mục: Tiếp đón bệnh nhân, Danh sách bệnh nhân đã tiếp đón và Hồ sơ bệnh án
+      return subModules.filter(s => s.route === '/tiep-don' || s.route === '/danh-sach-tiep-nhan' || s.route === '/ho-so-benh-an');
+    }
+    return subModules;
+  })();
 
   return (
     <div className="home-container" style={{ position: 'relative', minHeight: '100vh' }}>
@@ -169,10 +215,10 @@ function Home() {
             className="flex items-center gap-2.5 px-4 py-2 bg-white border border-slate-200 rounded-xl shadow-sm hover:bg-slate-50 transition-all duration-200 cursor-pointer"
           >
             <div className="w-8 h-8 rounded-full bg-[var(--primary-light)] text-[var(--primary)] flex items-center justify-center font-bold">
-              {userInfo.name ? userInfo.name.charAt(0).toUpperCase() : 'U'}
+              {userHoTen ? userHoTen.charAt(0).toUpperCase() : 'U'}
             </div>
             <div className="text-left hidden md:block">
-              <div className="text-sm font-semibold text-slate-800">{userInfo.name || 'Người dùng'}</div>
+              <div className="text-sm font-semibold text-slate-800">{userHoTen}</div>
               <div className="text-xs text-slate-500 font-medium">{userInfo.role || 'Nhân viên'}</div>
             </div>
             <ChevronDown size={16} className={`text-slate-400 transition-transform duration-200 ${showProfileDropdown ? 'rotate-180' : ''}`} />
@@ -227,7 +273,7 @@ function Home() {
       </div>
 
       <div className="grid-container" style={{ position: 'relative' }}>
-        {modules.map((mod) => {
+        {visibleModules.map((mod) => {
           const isTiepNhan = mod.key === 'tiepnhan';
           const isPhanQuyen = mod.key === 'phanquyen';
           const isDanhMuc = mod.key === 'danhmuc';
@@ -239,6 +285,8 @@ function Home() {
                            (isDanhMuc && expandedModule === 'danhmuc');
           const isClickable = isTiepNhan || isPhanQuyen || isDanhMuc || isKho || isThanhToan || isLichHen;
           
+          const currentSubModules = isTiepNhan ? visibleTiepNhanSubModules : isKho ? subModulesKho : subModulesDanhMuc;
+
           return (
             <div 
               key={mod.key} 
@@ -271,7 +319,7 @@ function Home() {
               {isActive && (
                 <div className="home-popover">
                   <div className="home-popover-arrow" />
-                  {(isTiepNhan ? subModules : isKho ? subModulesKho : subModulesDanhMuc).map((sub, i) => (
+                  {currentSubModules.map((sub, i) => (
                     <div
                       key={i}
                       className="home-popover-item"
@@ -293,10 +341,8 @@ function Home() {
       {/* MODAL 1: THÔNG TIN CÁ NHÂN */}
       {showInfoModal && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }} className="flex justify-center items-center">
-          {/* Backdrop blur */}
           <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(4px)' }} onClick={() => setShowInfoModal(false)} />
           
-          {/* Modal Container */}
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden relative z-10 border border-slate-100 animate-in fade-in zoom-in-95 duration-200">
             <div className="px-6 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white flex justify-between items-center">
               <h3 className="font-semibold text-base m-0">Thông tin cá nhân</h3>
@@ -364,10 +410,8 @@ function Home() {
       {/* MODAL 2: ĐỔI MẬT KHẨU */}
       {showPasswordModal && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }} className="flex justify-center items-center">
-          {/* Backdrop blur */}
           <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(15, 23, 42, 0.4)', backdropFilter: 'blur(4px)' }} onClick={() => setShowPasswordModal(false)} />
           
-          {/* Modal Container */}
           <form onSubmit={handleChangePassword} className="bg-white rounded-2xl shadow-2xl w-full max-w-sm overflow-hidden relative z-10 border border-slate-100 animate-in fade-in zoom-in-95 duration-200 m-0">
             <div className="px-6 py-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white flex justify-between items-center">
               <h3 className="font-semibold text-base m-0">Đổi mật khẩu</h3>

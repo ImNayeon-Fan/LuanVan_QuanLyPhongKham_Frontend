@@ -273,7 +273,7 @@ function KhoNhaCungCap() {
                   <td></td>
                   <td className="p-1">
                     <input 
-                      type="text" placeholder="Lọc theo tên..." className="form-input h-[26px] text-[12px] py-[2px] !px-2 !pl-2"
+                      type="text" className="form-input h-[26px] text-[12px] py-[2px] !px-2 !pl-2 text-center w-full"
                       value={filters.tenNCC} onChange={e => setFilters({ ...filters, tenNCC: e.target.value })}
                     />
                   </td>

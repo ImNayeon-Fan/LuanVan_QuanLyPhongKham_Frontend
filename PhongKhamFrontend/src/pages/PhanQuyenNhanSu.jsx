@@ -52,6 +52,7 @@ function PhanQuyenNhanSu() {
   const [formData, setFormData] = useState({
     maNV: '', hoTen: '', sdt: '', email: '', chuyenMon: '', username: '', passwordHash: '', roleName: 'BacSi', isActive: true
   });
+  const [isAddingNew, setIsAddingNew] = useState(false);
 
   // State lưu trữ bộ lọc tìm kiếm trên danh sách
   const [filters, setFilters] = useState({
@@ -179,7 +180,7 @@ function PhanQuyenNhanSu() {
     return pages;
   };
 
-  const isEdit = staffList.some(s => s.maNV === formData.maNV);
+  const isEdit = !isAddingNew && selectedStaff !== null;
 
   const handleFilterChange = (key, val) => {
     setFilters({ ...filters, [key]: val });
@@ -189,6 +190,7 @@ function PhanQuyenNhanSu() {
    * Khởi tạo form thêm mới nhân sự (Tự động tính mã nhân viên tiếp theo)
    */
   const handleAddNew = () => {
+    setIsAddingNew(true);
     const nextStt = staffList.length + 1;
     const nvNumbers = staffList
       .map(s => s.maNV)
@@ -242,7 +244,7 @@ function PhanQuyenNhanSu() {
       return;
     }
 
-    const isEdit = staffList.some(s => s.maNV === formData.maNV);
+    const isEdit = !isAddingNew;
     if (!isEdit && !formData.passwordHash.trim()) {
       showToast('Vui lòng nhập Mật khẩu tài khoản!', 'error');
       return;
@@ -280,6 +282,7 @@ function PhanQuyenNhanSu() {
       }
 
       await loadStaffList(activeStatusFilter);
+      setIsAddingNew(false);
       setSelectedStaff({
         ...formData,
         roleID: mappedRoleID,
@@ -351,6 +354,7 @@ function PhanQuyenNhanSu() {
   };
 
   const handleCancel = () => {
+    setIsAddingNew(false);
     setSelectedStaff(null);
   };
 
@@ -464,6 +468,7 @@ function PhanQuyenNhanSu() {
                       onChange={e => {
                         setActiveStatusFilter(e.target.value);
                         setCurrentPage(1);
+                        setIsAddingNew(false);
                         setSelectedStaff(null);
                       }}
                     >
@@ -486,7 +491,10 @@ function PhanQuyenNhanSu() {
                       className={`kb-table-row cursor-pointer transition-[background-color] duration-150 ${
                         isSelected ? 'bg-[var(--primary-light)]' : 'bg-transparent'
                       }`}
-                      onClick={() => setSelectedStaff(staff)}
+                      onClick={() => {
+                        setIsAddingNew(false);
+                        setSelectedStaff(staff);
+                      }}
                     >
                       <td className="text-center py-2.5 px-2 font-medium text-[var(--text-muted)]">{startIndex + idx + 1}</td>
                       <td className={`font-semibold py-2.5 px-2 ${isSelected ? 'text-[var(--primary-hover)]' : 'text-[var(--text-main)]'}`}>
@@ -611,7 +619,7 @@ function PhanQuyenNhanSu() {
                         <input
                           type="text" className="form-input h-[34px] text-[13px] pl-3" placeholder="VD: NV001, BS001" value={formData.maNV}
                           onChange={e => setFormData({ ...formData, maNV: e.target.value })} required
-                          disabled={staffList.some(s => s.maNV === selectedStaff.maNV && selectedStaff.username !== '')}
+                          disabled={!isAddingNew}
                         />
                       </div>
 

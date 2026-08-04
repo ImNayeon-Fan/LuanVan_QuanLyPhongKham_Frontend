@@ -594,14 +594,54 @@ export const apiTraCuuLichHenCongKhai = async (hoTen, sdt) => {
 
 
 // API Lấy danh sách danh mục vật tư y tế (có hỗ trợ tìm kiếm và phân trang)
-export const apiGetVatTuList = async (query = '', donViTinh = '', page = 1, pageSize = 100) => {
+export const apiGetVatTuList = async (param1 = '', donViTinh = '', page = 1, pageSize = 100) => {
+  let maVatTu = '', tenVatTu = '', quyCach = '';
+  let p = page, ps = pageSize, dvt = donViTinh;
+
+  if (typeof param1 === 'object' && param1 !== null) {
+    maVatTu = param1.maVatTu || '';
+    tenVatTu = param1.tenVatTu || param1.query || '';
+    quyCach = param1.quyCach || '';
+    dvt = param1.donViTinh || '';
+    p = param1.page || 1;
+    ps = param1.pageSize || 100;
+  } else {
+    tenVatTu = param1 || '';
+  }
+
   const queryParams = new URLSearchParams({
-    page: page.toString(),
-    pageSize: pageSize.toString()
+    page: p.toString(),
+    pageSize: ps.toString()
   });
-  if (query) queryParams.append('tenVatTu', query);
-  if (donViTinh) queryParams.append('donViTinh', donViTinh);
+  if (maVatTu) queryParams.append('maVatTu', maVatTu);
+  if (tenVatTu) queryParams.append('tenVatTu', tenVatTu);
+  if (quyCach) queryParams.append('quyCach', quyCach);
+  if (dvt) queryParams.append('donViTinh', dvt);
+
   return await apiFetch(`/VatTu?` + queryParams.toString());
+};
+
+// API Thêm mới vật tư y tế vào danh mục
+export const apiAddVatTu = async (vatTuData) => {
+  return await apiFetch('/VatTu', {
+    method: 'POST',
+    body: JSON.stringify(vatTuData)
+  });
+};
+
+// API Cập nhật thông tin vật tư y tế
+export const apiUpdateVatTu = async (maVatTu, vatTuData) => {
+  return await apiFetch(`/VatTu/${maVatTu}`, {
+    method: 'PUT',
+    body: JSON.stringify(vatTuData)
+  });
+};
+
+// API Xóa (tắt) danh mục vật tư y tế (Soft Delete)
+export const apiDeleteVatTu = async (maVatTu) => {
+  return await apiFetch(`/VatTu/${maVatTu}`, {
+    method: 'DELETE'
+  });
 };
 
 // ==========================================

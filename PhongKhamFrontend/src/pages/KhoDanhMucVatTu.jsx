@@ -4,52 +4,27 @@ import {
   ArrowLeft, Plus, Trash2, Save, Database, ClipboardList
 } from 'lucide-react';
 import { useToast } from '../utils/ToastContext';
-
-// Dữ liệu mẫu danh mục vật tư y tế ban đầu (30 loai vat tu da dang, khong loi font chu)
-const DEFAULT_SUPPLIES = [
-  { maVT: 'VT001', tenVT: 'Găng tay y tế không bột (Size M)', quyCach: 'Hộp 100 cái', donViTinh: 'Hộp' },
-  { maVT: 'VT002', tenVT: 'Băng thun cuộn y tế', quyCach: 'Cuộn 10cm x 5m', donViTinh: 'Cuộn' },
-  { maVT: 'VT003', tenVT: 'Kim tiêm dùng một lần 5ml', quyCach: 'Hộp 100 cây (Vinahankook)', donViTinh: 'Hộp' },
-  { maVT: 'VT004', tenVT: 'Bông gòn y tế kháng khuẩn', quyCach: 'Gói 500g', donViTinh: 'Gói' },
-  { maVT: 'VT005', tenVT: 'Cồn sát trùng 70 độ', quyCach: 'Chai 500ml', donViTinh: 'Chai' },
-  { maVT: 'VT006', tenVT: 'Khẩu trang y tế 4 lớp', quyCach: 'Hộp 50 cái', donViTinh: 'Hộp' },
-  { maVT: 'VT007', tenVT: 'Kim tiêm dùng một lần 3ml', quyCach: 'Hộp 100 cây (Vinahankook)', donViTinh: 'Hộp' },
-  { maVT: 'VT008', tenVT: 'Nước muối sinh lý NaCl 0.9%', quyCach: 'Chai 500ml', donViTinh: 'Chai' },
-  { maVT: 'VT009', tenVT: 'Băng cá nhân vô trùng Urgosteril', quyCach: 'Hộp 50 miếng', donViTinh: 'Hộp' },
-  { maVT: 'VT010', tenVT: 'Gạc phẫu thuật tiệt trùng', quyCach: 'Gói 10 miếng (8x10cm)', donViTinh: 'Gói' },
-  { maVT: 'VT011', tenVT: 'Dây truyền dịch vô trùng', quyCach: 'Bịch 1 bộ', donViTinh: 'Bộ' },
-  { maVT: 'VT012', tenVT: 'Que đè lưỡi gỗ tiệt trùng', quyCach: 'Hộp 100 cái', donViTinh: 'Hộp' },
-  { maVT: 'VT013', tenVT: 'Chỉ khâu phẫu thuật tự tiêu 3/0', quyCach: 'Hộp 12 tép (Vycril)', donViTinh: 'Hộp' },
-  { maVT: 'VT014', tenVT: 'Cồn đỏ Povidine 10%', quyCach: 'Chai 90ml', donViTinh: 'Chai' },
-  { maVT: 'VT015', tenVT: 'Bơm tiêm dùng một lần 10ml', quyCach: 'Hộp 100 cây (Vinahankook)', donViTinh: 'Hộp' },
-  { maVT: 'VT016', tenVT: 'Băng keo cuộn giấy y tế', quyCach: 'Cuộn 2.5cm x 5m', donViTinh: 'Cuộn' },
-  { maVT: 'VT017', tenVT: 'Khăn ướt cồn Alcohol Pads', quyCach: 'Hộp 100 miếng', donViTinh: 'Hộp' },
-  { maVT: 'VT018', tenVT: 'Ống lấy máu chân không EDTA', quyCach: 'Khay 100 ống (xanh dương)', donViTinh: 'Khay' },
-  { maVT: 'VT019', tenVT: 'Ống lấy máu chân không Serum', quyCach: 'Khay 100 ống (đỏ)', donViTinh: 'Khay' },
-  { maVT: 'VT020', tenVT: 'Que thử thai nhanh (Quickstrip)', quyCach: 'Hộp 1 cái', donViTinh: 'Hộp' },
-  { maVT: 'VT021', tenVT: 'Gel siêu âm y tế', quyCach: 'Bình 5 lít', donViTinh: 'Bình' },
-  { maVT: 'VT022', tenVT: 'Mũ phẫu thuật con sâu', quyCach: 'Bịch 100 cái', donViTinh: 'Bịch' },
-  { maVT: 'VT023', tenVT: 'Tấm lót y tế chống thấm', quyCach: 'Gói 10 miếng (60x90cm)', donViTinh: 'Gói' },
-  { maVT: 'VT024', tenVT: 'Ống thông tiểu Foley 2 nhánh', quyCach: 'Sợi', donViTinh: 'Sợi' },
-  { maVT: 'VT025', tenVT: 'Kim cánh bướm lấy máu 23G', quyCach: 'Hộp 100 cái', donViTinh: 'Hộp' },
-  { maVT: 'VT026', tenVT: 'Nhiệt kế điện tử hồng ngoại', quyCach: 'Cái (Microlife)', donViTinh: 'Cái' },
-  { maVT: 'VT027', tenVT: 'Dung dịch sát khuẩn tay nhanh', quyCach: 'Chai 500ml (vòi nhấn)', donViTinh: 'Chai' },
-  { maVT: 'VT028', tenVT: 'Băng cuộn y tế (băng gạc)', quyCach: 'Cuộn 0.08m x 2m', donViTinh: 'Cuộn' },
-  { maVT: 'VT029', tenVT: 'Kim châm cứu tiệt trùng', quyCach: 'Hộp 100 cây (Khánh Phong)', donViTinh: 'Hộp' },
-  { maVT: 'VT030', tenVT: 'Túi đựng rác thải y tế lây nhiễm', quyCach: 'Xấp 1kg (màu vàng)', donViTinh: 'Xấp' },
-];
+import {
+  apiGetVatTuList,
+  apiAddVatTu,
+  apiUpdateVatTu,
+  apiDeleteVatTu
+} from '../utils/api';
 
 const DON_VI_OPTIONS = ['Cái', 'Hộp', 'Cuộn', 'Gói', 'Chai', 'Thùng', 'Bộ', 'Sợi', 'Khay', 'Bình', 'Bịch', 'Xấp'];
 
 /**
- * Component Quản lý Danh mục Vật tư tiêu hao tại phòng khám
+ * Component Quản lý Danh mục Vật tư tiêu hao tại phòng khám (Kết nối Backend API thực tế)
  */
 function KhoDanhMucVatTu() {
   const navigate = useNavigate();
   const { showSuccess, showError } = useToast();
   
   const [supplies, setSupplies] = useState([]);
+  const [totalItems, setTotalItems] = useState(0);
   const [selectedSupply, setSelectedSupply] = useState(null);
+  const [isAddingNew, setIsAddingNew] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   // State thông tin form điền
   const [formData, setFormData] = useState({
@@ -71,27 +46,47 @@ function KhoDanhMucVatTu() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // Tải danh sách vật tư y tế từ LocalStorage
-  useEffect(() => {
+  /**
+   * Tải danh sách vật tư y tế từ Backend API theo phân trang và bộ lọc
+   */
+  const loadVatTuList = async () => {
+    setLoading(true);
     try {
-      const stored = localStorage.getItem('danhMucVatTu');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        // Neu danh sach cu chi co 6 hoac it hon phan tu, tu dong nang cap len danh sach 30 vat tu da dang moi
-        if (parsed.length <= 6) {
-          localStorage.setItem('danhMucVatTu', JSON.stringify(DEFAULT_SUPPLIES));
-          setSupplies(DEFAULT_SUPPLIES);
-        } else {
-          setSupplies(parsed);
-        }
+      const res = await apiGetVatTuList({
+        maVatTu: filters.maVT,
+        tenVatTu: filters.tenVT,
+        quyCach: filters.quyCach,
+        donViTinh: filters.donViTinh,
+        page: currentPage,
+        pageSize: itemsPerPage
+      });
+
+      if (res && res.data) {
+        const mapped = res.data.map(item => ({
+          maVT: item.maVatTu || item.maVT,
+          tenVT: item.tenVatTu || item.tenVT,
+          quyCach: item.quyCach || '',
+          donViTinh: item.donViTinh || 'Hộp',
+          isActive: item.isActive !== undefined ? item.isActive : true
+        }));
+        setSupplies(mapped);
+        setTotalItems(res.total || mapped.length);
       } else {
-        localStorage.setItem('danhMucVatTu', JSON.stringify(DEFAULT_SUPPLIES));
-        setSupplies(DEFAULT_SUPPLIES);
+        setSupplies([]);
+        setTotalItems(0);
       }
-    } catch (e) {
-      setSupplies(DEFAULT_SUPPLIES);
+    } catch (error) {
+      console.error('Lỗi tải danh mục vật tư:', error);
+      showError('Không thể nạp danh mục vật tư từ hệ thống: ' + (error.message || 'Lỗi kết nối'));
+    } finally {
+      setLoading(false);
     }
-  }, []);
+  };
+
+  // Nạp dữ liệu khi đổi trang hoặc đổi bộ lọc
+  useEffect(() => {
+    loadVatTuList();
+  }, [currentPage, filters]);
 
   // Reset trang về 1 khi đổi bộ lọc
   useEffect(() => {
@@ -117,22 +112,11 @@ function KhoDanhMucVatTu() {
     }
   }, [selectedSupply]);
 
-  // Bộ lọc danh mục vật tư y tế trên client
-  const filteredSupplies = supplies.filter(item => {
-    return (
-      (item.maVT || '').toLowerCase().includes((filters.maVT || '').toLowerCase().trim()) &&
-      (item.tenVT || '').toLowerCase().includes((filters.tenVT || '').toLowerCase().trim()) &&
-      (item.quyCach || '').toLowerCase().includes((filters.quyCach || '').toLowerCase().trim()) &&
-      (item.donViTinh || '').toLowerCase().includes((filters.donViTinh || '').toLowerCase().trim())
-    );
-  });
-
   // Tính toán phân trang
-  const totalPages = Math.max(1, Math.ceil(filteredSupplies.length / itemsPerPage));
+  const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
   const activePage = Math.min(currentPage, totalPages);
   const startIndex = (activePage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const displayedSupplies = filteredSupplies.slice(startIndex, endIndex);
+  const displayedSupplies = supplies;
 
   const getPaginationItems = () => {
     const pages = [];
@@ -178,6 +162,7 @@ function KhoDanhMucVatTu() {
 
   // Khởi tạo thêm mới vật tư y tế với mã tự sinh tăng dần (VTxxx)
   const handleAddNew = () => {
+    setIsAddingNew(true);
     const supplyNumbers = supplies
       .map(s => s.maVT)
       .filter(id => /^VT\d+$/i.test(id))
@@ -194,48 +179,105 @@ function KhoDanhMucVatTu() {
     });
   };
 
-  // Lưu thông tin vật tư y tế (Thêm mới hoặc Cập nhật)
-  const handleSave = (e) => {
+  // Lưu thông tin vật tư y tế (Thêm mới POST hoặc Cập nhật PUT qua API)
+  const handleSave = async (e) => {
     if (e) e.preventDefault();
-    if (!formData.tenVT.trim()) {
+
+    const maVT = formData.maVT.trim().toUpperCase();
+    const tenVT = formData.tenVT.trim();
+    const quyCach = formData.quyCach.trim();
+    const donViTinh = formData.donViTinh.trim();
+
+    // 1. Validate Mã vật tư
+    if (!maVT) {
+      showError("Vui lòng nhập mã vật tư!");
+      return;
+    }
+    if (maVT.length > 10) {
+      showError("Mã vật tư không được vượt quá 10 ký tự!");
+      return;
+    }
+    if (/\s/.test(maVT)) {
+      showError("Mã vật tư không được chứa khoảng trắng!");
+      return;
+    }
+    if (!/^[A-Za-z0-9]+$/.test(maVT)) {
+      showError("Mã vật tư chỉ được chứa chữ cái và chữ số, không chứa ký tự đặc biệt!");
+      return;
+    }
+
+    // 2. Validate Tên vật tư
+    if (!tenVT) {
       showError("Vui lòng nhập tên vật tư!");
       return;
     }
-    if (!formData.maVT.trim()) {
-      showError("Mã vật tư không được để trống!");
+    if (tenVT.length > 100) {
+      showError("Tên vật tư không được vượt quá 100 ký tự!");
       return;
     }
 
-    const updatedSupply = {
-      maVT: formData.maVT.trim().toUpperCase(),
-      tenVT: formData.tenVT.trim(),
-      quyCach: formData.quyCach.trim(),
-      donViTinh: formData.donViTinh
-    };
-
-    let newList = [];
-    const isEditingExisting = supplies.some(s => s.maVT === updatedSupply.maVT);
-
-    if (isEditingExisting) {
-      newList = supplies.map(s => s.maVT === updatedSupply.maVT ? updatedSupply : s);
-    } else {
-      newList = [...supplies, updatedSupply];
+    // 3. Validate Quy cách đóng gói
+    if (quyCach && quyCach.length > 100) {
+      showError("Quy cách đóng gói của vật tư không được vượt quá 100 ký tự!");
+      return;
     }
 
-    setSupplies(newList);
-    localStorage.setItem('danhMucVatTu', JSON.stringify(newList));
-    setSelectedSupply(updatedSupply);
-    showSuccess("Lưu thông tin danh mục vật tư thành công!");
+    // 4. Validate Đơn vị tính
+    if (!donViTinh) {
+      showError("Vui lòng chọn đơn vị tính!");
+      return;
+    }
+
+    try {
+      if (isAddingNew) {
+        const payload = {
+          maVatTu: maVT,
+          tenVatTu: tenVT,
+          quyCach: quyCach || null,
+          donViTinh: donViTinh
+        };
+        await apiAddVatTu(payload);
+        showSuccess("Thêm mới danh mục vật tư thành công!");
+      } else {
+        const payload = {
+          tenVatTu: tenVT,
+          quyCach: quyCach || null,
+          donViTinh: donViTinh,
+          isActive: true
+        };
+        await apiUpdateVatTu(maVT, payload);
+        showSuccess("Cập nhật thông tin danh mục vật tư thành công!");
+      }
+
+      await loadVatTuList();
+      setIsAddingNew(false);
+      setSelectedSupply({
+        maVT: maVT,
+        tenVT: tenVT,
+        quyCach: quyCach,
+        donViTinh: donViTinh,
+        isNew: false
+      });
+    } catch (error) {
+      console.error("Lỗi khi lưu vật tư:", error);
+      showError("Không thể lưu thông tin vật tư: " + (error.message || 'Lỗi hệ thống'));
+    }
   };
 
-  // Xóa vật tư y tế khỏi danh mục
-  const handleDeleteSupply = (maVT, tenVT) => {
+  // Xóa (tắt) vật tư y tế khỏi danh mục qua Backend API (DELETE)
+  const handleDeleteSupply = async (maVT, tenVT) => {
     if (window.confirm(`Bạn có chắc chắn muốn xóa vật tư: ${tenVT} (Mã: ${maVT})?`)) {
-      const newList = supplies.filter(s => s.maVT !== maVT);
-      setSupplies(newList);
-      localStorage.setItem('danhMucVatTu', JSON.stringify(newList));
-      if (selectedSupply && selectedSupply.maVT === maVT) {
-        setSelectedSupply(null);
+      try {
+        await apiDeleteVatTu(maVT);
+        showSuccess("Xóa vật tư thành công!");
+        await loadVatTuList();
+        if (selectedSupply && selectedSupply.maVT === maVT) {
+          setSelectedSupply(null);
+          setIsAddingNew(false);
+        }
+      } catch (error) {
+        console.error("Lỗi khi xóa vật tư:", error);
+        showError("Không thể xóa vật tư: " + (error.message || 'Lỗi hệ thống'));
       }
     }
   };
@@ -334,13 +376,22 @@ function KhoDanhMucVatTu() {
                 </tr>
               </thead>
               <tbody>
-                {displayedSupplies.map((item, idx) => {
+                {loading ? (
+                  <tr>
+                    <td colSpan={6} className="text-center p-10 text-[var(--text-muted)]">
+                      Đang nạp dữ liệu danh mục vật tư từ hệ thống...
+                    </td>
+                  </tr>
+                ) : displayedSupplies.map((item, idx) => {
                   const isSelected = selectedSupply && selectedSupply.maVT === item.maVT;
                   return (
                     <tr 
                       key={item.maVT}
                       className={`kb-table-row cursor-pointer transition-colors duration-150 ${isSelected ? 'bg-[var(--primary-light)]' : 'bg-transparent'}`}
-                      onClick={() => setSelectedSupply(item)}
+                      onClick={() => {
+                        setIsAddingNew(false);
+                        setSelectedSupply(item);
+                      }}
                     >
                       <td className="text-center py-2.5 px-2 text-[var(--text-muted)]">
                         {startIndex + idx + 1}
@@ -368,7 +419,7 @@ function KhoDanhMucVatTu() {
                     </tr>
                   );
                 })}
-                {filteredSupplies.length === 0 && (
+                {!loading && displayedSupplies.length === 0 && (
                   <tr>
                     <td colSpan={6} className="text-center p-10 text-[var(--text-muted)]">
                       Không tìm thấy vật tư trùng khớp với bộ lọc tìm kiếm
@@ -427,7 +478,7 @@ function KhoDanhMucVatTu() {
                 &gt;
               </button>
             </div>
-            <span>Hiển thị {filteredSupplies.length === 0 ? 0 : startIndex + 1} - {Math.min(endIndex, filteredSupplies.length)} trên tổng {filteredSupplies.length} vật tư</span>
+            <span>Hiển thị {totalItems === 0 ? 0 : startIndex + 1} - {Math.min(startIndex + displayedSupplies.length, totalItems)} trên tổng {totalItems} vật tư</span>
           </div>
         </div>
 
@@ -465,7 +516,8 @@ function KhoDanhMucVatTu() {
                           value={formData.maVT}
                           onChange={e => handleInputChange('maVT', e.target.value)}
                           required
-                          disabled={!selectedSupply.isNew}
+                          maxLength={10}
+                          disabled={!isAddingNew}
                         />
                       </div>
 
@@ -478,6 +530,7 @@ function KhoDanhMucVatTu() {
                           value={formData.tenVT}
                           onChange={e => handleInputChange('tenVT', e.target.value)}
                           required
+                          maxLength={100}
                         />
                       </div>
 
@@ -489,6 +542,7 @@ function KhoDanhMucVatTu() {
                           placeholder="Quy cách đóng gói (VD: Hộp 100 cái)..."
                           value={formData.quyCach}
                           onChange={e => handleInputChange('quyCach', e.target.value)}
+                          maxLength={100}
                         />
                       </div>
 
@@ -514,7 +568,10 @@ function KhoDanhMucVatTu() {
                   <button 
                     type="button" 
                     className="btn-outline w-[100px] h-9 flex items-center justify-center p-0 m-0" 
-                    onClick={() => setSelectedSupply(null)}
+                    onClick={() => {
+                      setIsAddingNew(false);
+                      setSelectedSupply(null);
+                    }}
                   >
                     Hủy
                   </button>

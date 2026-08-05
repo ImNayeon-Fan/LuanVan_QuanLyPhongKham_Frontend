@@ -451,6 +451,7 @@ function TiepDon() {
                     placeholder="NHẬP HỌ VÀ TÊN (CHỮ HOA)..."
                     value={formData.hoTen}
                     onChange={e => setFormData({ ...formData, hoTen: e.target.value.toUpperCase() })}
+                    maxLength={50}
                   />
                 </div>
 
@@ -494,6 +495,7 @@ function TiepDon() {
                     type="text" className="form-input pl-3 h-9"
                     placeholder="Số nhà, đường, xã, huyện, tỉnh/thành..."
                     value={formData.diaChi} onChange={e => setFormData({ ...formData, diaChi: e.target.value })}
+                    maxLength={100}
                   />
                 </div>
 
@@ -504,6 +506,7 @@ function TiepDon() {
                     className="form-input pl-3 min-h-[44px] h-[44px] resize-none py-1.5 px-3"
                     placeholder="Tiền sử dị ứng, tim mạch, huyết áp..."
                     value={formData.tienSuBenh} onChange={e => setFormData({ ...formData, tienSuBenh: e.target.value })}
+                    maxLength={100}
                   />
                 </div>
               </div>
@@ -526,6 +529,7 @@ function TiepDon() {
                   className="form-input pl-3 min-h-[120px] resize-none py-2 px-3"
                   placeholder="Nhập lý do đến khám bệnh hoặc triệu chứng lâm sàng..."
                   value={formData.lyDoKham} onChange={e => setFormData({ ...formData, lyDoKham: e.target.value })}
+                  maxLength={100}
                 />
               </div>
 

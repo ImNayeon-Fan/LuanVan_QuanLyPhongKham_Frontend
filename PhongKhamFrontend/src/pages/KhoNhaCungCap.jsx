@@ -412,7 +412,7 @@ function KhoNhaCungCap() {
                     <label className="form-label text-[12.5px]">Số điện thoại liên lạc</label>
                     <input 
                       type="text" className="form-input h-9 text-[13px] !pl-3" placeholder="Nhập số điện thoại..." value={formData.sDT}
-                      onChange={e => handleInputChange('sDT', e.target.value)} disabled={!isManager}
+                      onChange={e => handleInputChange('sDT', e.target.value)} disabled={!isManager} maxLength={10}
                     />
                   </div>
 
@@ -420,7 +420,7 @@ function KhoNhaCungCap() {
                     <label className="form-label text-[12.5px]">Địa chỉ trụ sở</label>
                     <input 
                       type="text" className="form-input h-9 text-[13px] !pl-3" placeholder="Nhập địa chỉ trụ sở..." value={formData.diaChi}
-                      onChange={e => handleInputChange('diaChi', e.target.value)} disabled={!isManager}
+                      onChange={e => handleInputChange('diaChi', e.target.value)} disabled={!isManager} maxLength={150}
                     />
                   </div>
                 </div>

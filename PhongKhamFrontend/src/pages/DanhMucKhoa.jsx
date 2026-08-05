@@ -455,6 +455,7 @@ function DanhMucKhoa() {
                       value={khoaForm.tenKhoa}
                       onChange={e => setKhoaForm({ ...khoaForm, tenKhoa: e.target.value })}
                       required
+                      maxLength={50}
                     />
                   </div>
                 </div>

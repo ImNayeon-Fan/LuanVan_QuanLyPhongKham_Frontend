@@ -272,10 +272,14 @@ export const apiGetDanhSachTiepNhan = async ({ search = '', maNV = '', trangThai
       maBacSi: item.maBacSi || item.maNV,
       tenBacSi: item.tenBacSi || item.tenNhanVien,
       trangThai: item.trangThaiKham,
-      trangThaiKham: item.trangThaiKham
     }));
   }
   return res;
+};
+
+// API Lấy danh sách bác sĩ có ca trực hôm nay (Lễ tân / Admin chọn bác sĩ tiếp đón)
+export const apiGetBacSiTrucHomNay = async () => {
+  return await apiFetch('/TiepDon/bac-si-truc-hom-nay');
 };
 
 // API Lấy chi tiết hồ sơ bệnh nhân từ Backend thực tế

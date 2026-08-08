@@ -4,7 +4,7 @@ import {
   ArrowLeft, User, Stethoscope, Save, UserPlus, CheckCircle, AlertCircle
 } from 'lucide-react';
 import { useToast } from '../utils/ToastContext';
-import { apiTraCuuBenhNhan, apiTiepNhanBenhNhan, apiGetBacSiList, apiGetKhoaList, apiTiepNhanDatLich } from '../utils/api';
+import { apiTraCuuBenhNhan, apiTiepNhanBenhNhan, apiGetBacSiList, apiGetKhoaList, apiTiepNhanDatLich, apiGetBacSiTrucHomNay } from '../utils/api';
 
 // Hàm kiểm tra định dạng ngày sinh hợp lệ (DD/MM/YYYY)
 const isValidDate = (dateStr) => {
@@ -326,9 +326,31 @@ function TiepDon() {
       showError(errMsg);
     }
   };
-  // 1. Tải danh sách bác sĩ và danh mục khoa phòng từ backend
+  // 1. Tải danh sách bác sĩ trực hôm nay từ backend (Lễ tân/Admin tiếp đón)
   useEffect(() => {
     const fetchDoctors = async () => {
+      try {
+        const resOnDuty = await apiGetBacSiTrucHomNay();
+        const dutyList = Array.isArray(resOnDuty) ? resOnDuty : (resOnDuty?.data || []);
+        if (dutyList && dutyList.length > 0) {
+          const docMap = new Map();
+          dutyList.forEach(d => {
+            if (!docMap.has(d.maNV)) {
+              docMap.set(d.maNV, {
+                maNV: d.maNV,
+                hoTen: d.hoTen,
+                maKhoa: d.maKhoa,
+                chuyenMon: d.tenKhoa || d.chuyenMon
+              });
+            }
+          });
+          setDanhSachBacSi(Array.from(docMap.values()));
+          return;
+        }
+      } catch (e) {
+        console.warn('Không lấy được bác sĩ trực hôm nay, chuyển sang lấy toàn bộ danh sách bác sĩ:', e);
+      }
+
       try {
         const res = await apiGetBacSiList();
         if (res && res.data) setDanhSachBacSi(res.data);

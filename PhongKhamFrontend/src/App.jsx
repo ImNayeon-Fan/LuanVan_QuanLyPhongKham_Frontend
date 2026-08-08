@@ -16,6 +16,7 @@ import KhoNhaCungCap from './pages/KhoNhaCungCap';
 import ThanhToanHoaDon from './pages/ThanhToanHoaDon';
 import LichPhongKham from './pages/LichPhongKham';
 import DanhMucKhoa from './pages/DanhMucKhoa';
+import BaoCaoThongKe from './pages/BaoCaoThongKe';
 import DatLichPublic from './pages/DatLichPublic';
 import LandingPage from './pages/LandingPage';
 import CustomerPortal from './pages/CustomerPortal';
@@ -72,6 +73,9 @@ function App() {
           
           {/* Lịch làm việc và đặt lịch hẹn khám của bác sĩ */}
           <Route path="/lich" element={<ProtectedRoute allowedRoles={['Admin', 'BacSi', 'LeTan']}><LichPhongKham /></ProtectedRoute>} />
+          
+          {/* Báo cáo & Thống kê quản trị dành cho Admin */}
+          <Route path="/bao-cao" element={<ProtectedRoute allowedRoles={['Admin']}><BaoCaoThongKe /></ProtectedRoute>} />
           
           {/* Tự động chuyển hướng về trang đăng nhập nếu người dùng gõ sai đường dẫn */}
           <Route path="*" element={<Navigate to="/login" replace />} />

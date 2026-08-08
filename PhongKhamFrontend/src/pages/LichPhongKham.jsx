@@ -18,10 +18,14 @@ import { useToast } from '../utils/ToastContext';
 
 // Danh sách Bác sĩ mặc định nếu API không trả về
 const DEFAULT_DOCTORS = [
-  { maNV: 'NV002', hoTen: 'BS. CK1. Nguyễn Văn An', chuyenMon: 'Nội tổng quát' },
-  { maNV: 'NV003', hoTen: 'BS. CK2. Trần Thị Bình', chuyenMon: 'Tim mạch' },
-  { maNV: 'NV004', hoTen: 'ThS. BS. Phạm Minh Cường', chuyenMon: 'Nhi khoa' },
-  { maNV: 'NV005', hoTen: 'BS. Lê Hoài Nam', chuyenMon: 'Tai Mũi Họng' },
+  { maNV: 'NV002', hoTen: 'BS. CK1. Nguyễn Văn An', chuyenMon: 'Nội tổng quát', maKhoa: 'KHOA01' },
+  { maNV: 'NV006', hoTen: 'BS. CK1. Đỗ Hoài Nam', chuyenMon: 'Nội tổng quát', maKhoa: 'KHOA01' },
+  { maNV: 'NV003', hoTen: 'BS. CK2. Trần Thị Bình', chuyenMon: 'Tim mạch', maKhoa: 'KHOA02' },
+  { maNV: 'NV007', hoTen: 'BS. CK1. Vũ Thị Hương', chuyenMon: 'Tim mạch', maKhoa: 'KHOA02' },
+  { maNV: 'NV004', hoTen: 'ThS. BS. Phạm Minh Cường', chuyenMon: 'Nhi khoa', maKhoa: 'KHOA03' },
+  { maNV: 'NV008', hoTen: 'BS. Nguyễn Hoàng Long', chuyenMon: 'Nhi khoa', maKhoa: 'KHOA03' },
+  { maNV: 'NV005', hoTen: 'BS. Lê Hoài Nam', chuyenMon: 'Tai Mũi Họng', maKhoa: 'KHOA04' },
+  { maNV: 'NV009', hoTen: 'BS. CK1. Hoàng Bích Ngọc', chuyenMon: 'Tai Mũi Họng', maKhoa: 'KHOA04' },
 ];
 
 /**
@@ -705,11 +709,11 @@ function LichPhongKham() {
                                   );
                                 })}
 
-                                {userRole === 'BacSi' && (
+                                {(userRole === 'BacSi' || userRole === 'Admin') && (
                                   <button
                                     onClick={() => {
                                       setDocForm({
-                                        maNV: currentUser?.maNV || '',
+                                        maNV: doctorsList.length > 0 ? doctorsList[0].maNV : (currentUser?.maNV || ''),
                                         ngayLamViec: dateStr,
                                         caLamViec: 'Sang',
                                         phongKham: '',
@@ -780,11 +784,11 @@ function LichPhongKham() {
                                   );
                                 })}
 
-                                {userRole === 'BacSi' && (
+                                {(userRole === 'BacSi' || userRole === 'Admin') && (
                                   <button
                                     onClick={() => {
                                       setDocForm({
-                                        maNV: currentUser?.maNV || '',
+                                        maNV: doctorsList.length > 0 ? doctorsList[0].maNV : (currentUser?.maNV || ''),
                                         ngayLamViec: dateStr,
                                         caLamViec: 'Chieu',
                                         phongKham: '',
@@ -826,6 +830,24 @@ function LichPhongKham() {
             </div>
 
             <form onSubmit={handleAddDoctorSchedule} className="p-5 flex flex-col gap-3.5">
+              {userRole === 'Admin' && (
+                <div className="form-group">
+                  <label className="form-label font-semibold mb-1.5 text-[13px]">Bác sĩ phân công</label>
+                  <select
+                    value={docForm.maNV}
+                    onChange={(e) => setDocForm(prev => ({ ...prev, maNV: e.target.value }))}
+                    className="form-input h-9 text-[13px] px-2.5 font-inherit"
+                    required
+                  >
+                    {doctorsList.map(doc => (
+                      <option key={doc.maNV} value={doc.maNV}>
+                        {doc.hoTen} ({doc.chuyenMon || doc.maKhoa || doc.maNV})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               <div className="form-group">
                 <label className="form-label font-semibold mb-1.5 text-[13px]">Ngày làm việc</label>
                 <input

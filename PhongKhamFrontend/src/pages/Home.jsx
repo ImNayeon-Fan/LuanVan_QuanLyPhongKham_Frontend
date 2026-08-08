@@ -17,6 +17,7 @@ import {
   Users,
   User,
   Lock,
+  TrendingUp,
   X
 } from 'lucide-react';
 import { apiLogout, apiChangePassword } from '../utils/api';
@@ -141,13 +142,14 @@ function Home() {
     { key: 'kho',        name: 'Quản lý kho dược',        icon: <Pill size={32} /> },
     { key: 'thanhtoan',  name: 'Thanh toán & Hóa đơn',  icon: <Receipt size={32} /> },
     { key: 'lichhen',    name: 'Lịch & Đặt hẹn khám',    icon: <Calendar size={32} /> },
+    { key: 'baocao',     name: 'Báo cáo & Thống kê',    icon: <TrendingUp size={32} /> },
   ];
 
   // Lọc các Module Card trên màn hình Dashboard theo đúng Vai trò (Role)
   const visibleModules = (() => {
     switch (userRole) {
       case 'Admin':
-        return allModules.filter(m => ['phanquyen', 'danhmuc', 'tiepnhan', 'lichhen'].includes(m.key));
+        return allModules.filter(m => ['phanquyen', 'danhmuc', 'tiepnhan', 'lichhen', 'baocao'].includes(m.key));
       case 'BacSi':
         return allModules.filter(m => ['tiepnhan', 'lichhen'].includes(m.key));
       case 'LeTan':
@@ -280,10 +282,11 @@ function Home() {
           const isKho = mod.key === 'kho';
           const isThanhToan = mod.key === 'thanhtoan';
           const isLichHen = mod.key === 'lichhen';
+          const isBaoCao = mod.key === 'baocao';
           const isActive = (isTiepNhan && expandedModule === 'tiepnhan') || 
                            (isKho && expandedModule === 'kho') || 
                            (isDanhMuc && expandedModule === 'danhmuc');
-          const isClickable = isTiepNhan || isPhanQuyen || isDanhMuc || isKho || isThanhToan || isLichHen;
+          const isClickable = isTiepNhan || isPhanQuyen || isDanhMuc || isKho || isThanhToan || isLichHen || isBaoCao;
           
           const currentSubModules = isTiepNhan ? visibleTiepNhanSubModules : isKho ? subModulesKho : subModulesDanhMuc;
 
@@ -307,6 +310,8 @@ function Home() {
                     navigate('/phan-quyen');
                   } else if (isThanhToan) {
                     navigate('/thanh-toan');
+                  } else if (isBaoCao) {
+                    navigate('/bao-cao');
                   }
                 }}
                 style={{ cursor: isClickable ? 'pointer' : 'default' }}

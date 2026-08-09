@@ -204,7 +204,9 @@ function ChiTietBenhNhan() {
                 </div>
                 <div>
                   <span className="text-[var(--text-muted)] block text-[12px] font-medium mb-0.5">Lý do đến khám:</span>
-                  <p className="font-medium text-[var(--text-main)] m-0 p-2 px-3 bg-[var(--bg-main)] rounded-[var(--radius-md)]">{patient.lyDoKham || 'Chưa nhập'}</p>
+                  <p className="font-medium text-[var(--text-main)] m-0 p-2 px-3 bg-[var(--bg-main)] rounded-[var(--radius-md)]">
+                    {patient.lyDoKham ? (patient.lyDoKham.includes('###') ? patient.lyDoKham.split('###')[0].trim() : patient.lyDoKham) : 'Chưa nhập'}
+                  </p>
                 </div>
                 <div>
                   <span className="text-[var(--text-muted)] block text-[12px] font-medium mb-0.5">Tiền sử bệnh lý:</span>

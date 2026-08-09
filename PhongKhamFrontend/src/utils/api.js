@@ -282,6 +282,31 @@ export const apiGetBacSiTrucHomNay = async () => {
   return await apiFetch('/TiepDon/bac-si-truc-hom-nay');
 };
 
+// API Thống kê 1: Doanh thu tổng quan từ Backend
+export const apiGetDoanhThuTongQuan = async (mocThoiGian = 'month') => {
+  try {
+    return await apiFetch(`/ThongKe/DoanhThuTongQuan?mocThoiGian=${mocThoiGian}`);
+  } catch (err) {
+    if (err.status === 404) return null;
+    throw err;
+  }
+};
+
+// API Thống kê 2: Lượt khám gần đây từ Backend
+export const apiGetLuotKhamGanDay = async ({ tuNgay = '', denNgay = '', maBacSi = '' } = {}) => {
+  try {
+    const params = new URLSearchParams();
+    if (tuNgay) params.append('tuNgay', tuNgay);
+    if (denNgay) params.append('denNgay', denNgay);
+    if (maBacSi) params.append('maBacSi', maBacSi);
+    const queryStr = params.toString();
+    return await apiFetch(`/ThongKe/LuotKhamGanDay${queryStr ? '?' + queryStr : ''}`);
+  } catch (err) {
+    if (err.status === 404) return null;
+    throw err;
+  }
+};
+
 // API Lấy chi tiết hồ sơ bệnh nhân từ Backend thực tế
 export const apiGetChiTietPhieuKham = async (maPhieu) => {
   const data = await apiFetch(`/TiepDon/${maPhieu}`);

@@ -1263,7 +1263,7 @@ function CustomerPortal() {
                             <tr key={appt.maDatLich} className="text-slate-700">
                               <td className="py-3 font-semibold text-blue-600">{appt.maDatLich}</td>
                               <td className="py-3">{appt.ngayHen}</td>
-                              <td className="py-3 max-w-[200px] truncate">{appt.yeuCauKham}</td>
+                              <td className="py-3 max-w-[200px] truncate">{appt.yeuCauKham ? (appt.yeuCauKham.includes('###') ? appt.yeuCauKham.split('###')[0].trim() : appt.yeuCauKham) : ''}</td>
                               <td className="py-3 text-center">{getStatusBadge(appt.trangThai)}</td>
                             </tr>
                           ))}

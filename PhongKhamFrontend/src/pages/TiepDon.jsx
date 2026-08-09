@@ -55,7 +55,7 @@ function TiepDon() {
       diaChi: state.diaChi || '',
       tienSuBenh: state.tienSuBenh || '',
       maBacSi: state.maNV || '',
-      lyDoKham: state.lyDoKham || ''
+      lyDoKham: state.lyDoKham ? (state.lyDoKham.includes('###') ? state.lyDoKham.split('###')[0].trim() : state.lyDoKham) : ''
     };
   });
 

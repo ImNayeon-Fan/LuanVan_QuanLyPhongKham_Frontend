@@ -258,6 +258,11 @@ function LichPhongKham() {
    * Tiếp nhận bệnh nhân: Giải mã thông tin phụ và truyền sang màn hình Tiếp đón
    */
   const handleReceivePatient = async (appt) => {
+    if (userRole !== 'LeTan') {
+      showError('Chỉ Lễ tân mới có quyền tiếp nhận bệnh nhân vào khám!');
+      return;
+    }
+
     // Kiểm tra ngày hẹn khám
     const today = new Date();
     const year = today.getFullYear();
@@ -553,7 +558,7 @@ function LichPhongKham() {
                               appt.trangThai === 'DaHuy' ? 'text-[#ef4444] bg-red-50/30 border-red-200' : 'text-[#6b7280] bg-slate-50/30 border-slate-200'
                             }`}
                             style={{ textAlign: 'center', textAlignLast: 'center', padding: '0 20px 0 8px' }}
-                            disabled={appt.trangThai === 'DaTiepNhan' || appt.trangThai === 'DaHuy' || appt.trangThai === 'DaKham'}
+                            disabled={userRole !== 'LeTan' || appt.trangThai === 'DaTiepNhan' || appt.trangThai === 'DaHuy' || appt.trangThai === 'DaKham'}
                           >
                             <option value="ChoXacNhan">Chờ xác nhận</option>
                             {appt.trangThai === 'DaXacNhan' && <option value="DaXacNhan">Đã xác nhận</option>}
@@ -575,13 +580,17 @@ function LichPhongKham() {
                             <span className="inline-flex items-center gap-1 text-[12px] font-bold text-slate-400 bg-slate-50 px-2.5 py-1 rounded-md border border-slate-200">
                               Đã hủy
                             </span>
-                          ) : (
+                          ) : userRole === 'LeTan' ? (
                             <button
                               onClick={() => handleReceivePatient(appt)}
                               className="btn-primary h-7 text-[12px] px-2.5 m-0 w-auto mt-0 font-inherit inline-flex items-center gap-1 cursor-pointer"
                             >
                               Tiếp nhận <ArrowRight size={12} />
                             </button>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-[12px] font-semibold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md border border-slate-200">
+                              Chỉ xem
+                            </span>
                           )}
                         </td>
                       </tr>

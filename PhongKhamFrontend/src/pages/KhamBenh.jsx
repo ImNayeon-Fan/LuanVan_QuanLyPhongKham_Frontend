@@ -1324,7 +1324,9 @@ function KhamBenh() {
                     <div className="kb-patient-info">
                       <p className="kb-patient-name">{bn.hoTen}</p>
                       <p className="kb-patient-meta">{bn.maBN} · {bn.gioiTinh}</p>
-                      <p className="kb-patient-reason">{bn.lyDoKham || '—'}</p>
+                      <p className="kb-patient-reason">
+                        {bn.lyDoKham ? (bn.lyDoKham.includes('###') ? bn.lyDoKham.split('###')[0].trim() : bn.lyDoKham) : '—'}
+                      </p>
                     </div>
                     <div>
                       <span className="kb-status-badge" style={{ color: ts.color, backgroundColor: ts.bg }}>{ts.label}</span>
@@ -1345,7 +1347,9 @@ function KhamBenh() {
               <div>
                 <h2>{selectedBN.hoTen}</h2>
                 <p>{selectedBN.maBN} · {selectedBN.gioiTinh}</p>
-                <p className="text-[#6b7280] text-[13px]">Lý do khám: {selectedBN.lyDoKham || '—'}</p>
+                <p className="text-[#6b7280] text-[13px]">
+                  Lý do khám: {selectedBN.lyDoKham ? (selectedBN.lyDoKham.includes('###') ? selectedBN.lyDoKham.split('###')[0].trim() : selectedBN.lyDoKham) : '—'}
+                </p>
               </div>
             </div>
           )}

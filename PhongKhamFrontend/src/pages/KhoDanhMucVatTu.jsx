@@ -14,7 +14,7 @@ import {
 const DON_VI_OPTIONS = ['Cái', 'Hộp', 'Cuộn', 'Gói', 'Chai', 'Thùng', 'Bộ', 'Sợi', 'Khay', 'Bình', 'Bịch', 'Xấp'];
 
 /**
- * Component Quản lý Danh mục Vật tư tiêu hao tại phòng khám (Kết nối Backend API thực tế)
+ * Component Quản lý Danh mục Vật tư tiêu hao tại phòng khám (Đã đồng bộ giao diện & Trạng thái với Danh mục Thuốc)
  */
 function KhoDanhMucVatTu() {
   const navigate = useNavigate();
@@ -31,7 +31,8 @@ function KhoDanhMucVatTu() {
     maVT: '',
     tenVT: '',
     quyCach: '',
-    donViTinh: 'Hộp'
+    donViTinh: 'Hộp',
+    isActive: true
   });
 
   // State bộ lọc tìm kiếm
@@ -39,7 +40,8 @@ function KhoDanhMucVatTu() {
     maVT: '',
     tenVT: '',
     quyCach: '',
-    donViTinh: ''
+    donViTinh: '',
+    trangThai: ''
   });
 
   // State quản lý phân trang
@@ -57,8 +59,8 @@ function KhoDanhMucVatTu() {
         tenVatTu: filters.tenVT,
         quyCach: filters.quyCach,
         donViTinh: filters.donViTinh,
-        page: currentPage,
-        pageSize: itemsPerPage
+        page: 1,
+        pageSize: 1000
       });
 
       if (res && res.data) {
@@ -67,10 +69,10 @@ function KhoDanhMucVatTu() {
           tenVT: item.tenVatTu || item.tenVT,
           quyCach: item.quyCach || '',
           donViTinh: item.donViTinh || 'Hộp',
-          isActive: item.isActive !== undefined ? item.isActive : true
+          isActive: item.isActive !== false && item.IsActive !== false
         }));
         setSupplies(mapped);
-        setTotalItems(res.total || mapped.length);
+        setTotalItems(mapped.length);
       } else {
         setSupplies([]);
         setTotalItems(0);
@@ -83,10 +85,10 @@ function KhoDanhMucVatTu() {
     }
   };
 
-  // Nạp dữ liệu khi đổi trang hoặc đổi bộ lọc
+  // Nạp dữ liệu khi mount
   useEffect(() => {
     loadVatTuList();
-  }, [currentPage, filters]);
+  }, []);
 
   // Reset trang về 1 khi đổi bộ lọc
   useEffect(() => {
@@ -100,23 +102,40 @@ function KhoDanhMucVatTu() {
         maVT: selectedSupply.maVT || '',
         tenVT: selectedSupply.tenVT || '',
         quyCach: selectedSupply.quyCach || '',
-        donViTinh: selectedSupply.donViTinh || 'Hộp'
+        donViTinh: selectedSupply.donViTinh || 'Hộp',
+        isActive: selectedSupply.isActive !== false
       });
     } else {
       setFormData({
         maVT: '',
         tenVT: '',
         quyCach: '',
-        donViTinh: 'Hộp'
+        donViTinh: 'Hộp',
+        isActive: true
       });
     }
   }, [selectedSupply]);
 
+  // Lọc danh sách vật tư trên client theo tiêu chí (mã, tên, quy cách, ĐVT, trạng thái)
+  const filteredSupplies = supplies.filter(item => {
+    const matchMa = (item.maVT || '').toLowerCase().includes((filters.maVT || '').toLowerCase().trim());
+    const matchTen = (item.tenVT || '').toLowerCase().includes((filters.tenVT || '').toLowerCase().trim());
+    const matchQuyCach = (item.quyCach || '').toLowerCase().includes((filters.quyCach || '').toLowerCase().trim());
+    const matchDvt = !filters.donViTinh || (item.donViTinh || '').toLowerCase() === filters.donViTinh.toLowerCase();
+    
+    let matchStatus = true;
+    if (filters.trangThai === 'active') matchStatus = item.isActive !== false;
+    if (filters.trangThai === 'inactive') matchStatus = item.isActive === false;
+
+    return matchMa && matchTen && matchQuyCach && matchDvt && matchStatus;
+  });
+
   // Tính toán phân trang
-  const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+  const totalCount = filteredSupplies.length;
+  const totalPages = Math.max(1, Math.ceil(totalCount / itemsPerPage));
   const activePage = Math.min(currentPage, totalPages);
   const startIndex = (activePage - 1) * itemsPerPage;
-  const displayedSupplies = supplies;
+  const displayedSupplies = filteredSupplies.slice(startIndex, startIndex + itemsPerPage);
 
   const getPaginationItems = () => {
     const pages = [];
@@ -175,6 +194,7 @@ function KhoDanhMucVatTu() {
       tenVT: '',
       quyCach: '',
       donViTinh: 'Hộp',
+      isActive: true,
       isNew: true
     });
   };
@@ -234,7 +254,8 @@ function KhoDanhMucVatTu() {
           maVatTu: maVT,
           tenVatTu: tenVT,
           quyCach: quyCach || null,
-          donViTinh: donViTinh
+          donViTinh: donViTinh,
+          isActive: formData.isActive
         };
         await apiAddVatTu(payload);
         showSuccess("Thêm mới danh mục vật tư thành công!");
@@ -243,7 +264,7 @@ function KhoDanhMucVatTu() {
           tenVatTu: tenVT,
           quyCach: quyCach || null,
           donViTinh: donViTinh,
-          isActive: true
+          isActive: formData.isActive
         };
         await apiUpdateVatTu(maVT, payload);
         showSuccess("Cập nhật thông tin danh mục vật tư thành công!");
@@ -256,6 +277,7 @@ function KhoDanhMucVatTu() {
         tenVT: tenVT,
         quyCach: quyCach,
         donViTinh: donViTinh,
+        isActive: formData.isActive,
         isNew: false
       });
     } catch (error) {
@@ -264,12 +286,12 @@ function KhoDanhMucVatTu() {
     }
   };
 
-  // Xóa (tắt) vật tư y tế khỏi danh mục qua Backend API (DELETE)
+  // Xóa (Ngừng sử dụng) vật tư y tế khỏi danh mục qua Backend API (DELETE)
   const handleDeleteSupply = async (maVT, tenVT) => {
-    if (window.confirm(`Bạn có chắc chắn muốn xóa vật tư: ${tenVT} (Mã: ${maVT})?`)) {
+    if (window.confirm(`Bạn có chắc chắn muốn ngừng sử dụng vật tư: ${tenVT} (Mã: ${maVT})?`)) {
       try {
         await apiDeleteVatTu(maVT);
-        showSuccess("Xóa vật tư thành công!");
+        showSuccess("Ngừng sử dụng vật tư thành công!");
         await loadVatTuList();
         if (selectedSupply && selectedSupply.maVT === maVT) {
           setSelectedSupply(null);
@@ -277,7 +299,7 @@ function KhoDanhMucVatTu() {
         }
       } catch (error) {
         console.error("Lỗi khi xóa vật tư:", error);
-        showError("Không thể xóa vật tư: " + (error.message || 'Lỗi hệ thống'));
+        showError("Không thể ngừng sử dụng vật tư: " + (error.message || 'Lỗi hệ thống'));
       }
     }
   };
@@ -328,9 +350,10 @@ function KhoDanhMucVatTu() {
                 <tr className="sticky top-0 z-10 bg-[var(--bg-main)] border-b-2 border-[var(--border-color)]">
                   <th className="w-[50px] text-center p-2">STT</th>
                   <th className="w-[100px] p-2">Mã vật tư</th>
-                  <th className="w-[220px] p-2">Tên vật tư</th>
+                  <th className="w-[200px] p-2">Tên vật tư</th>
                   <th className="p-2">Quy cách đóng gói</th>
                   <th className="w-[100px] p-2">Đơn vị tính</th>
+                  <th className="w-[140px] p-2 text-center">Trạng thái</th>
                   <th className="w-[60px] p-2 text-center">Xóa</th>
                 </tr>
                 {/* Lọc tìm kiếm */}
@@ -360,7 +383,7 @@ function KhoDanhMucVatTu() {
                       onChange={e => handleFilterChange('quyCach', e.target.value)}
                     />
                   </td>
-                  <td className="p-1" style={{minWidth: '120px'}}>
+                  <td className="p-1" style={{minWidth: '100px'}}>
                     <select 
                       className="form-input h-[30px] text-[12px] px-2 py-0.5 text-center w-full" 
                       value={filters.donViTinh}
@@ -372,13 +395,24 @@ function KhoDanhMucVatTu() {
                       ))}
                     </select>
                   </td>
+                  <td className="p-1" style={{minWidth: '130px'}}>
+                    <select 
+                      className="form-input h-[30px] text-[12px] px-2 py-0.5 text-center w-full" 
+                      value={filters.trangThai}
+                      onChange={e => handleFilterChange('trangThai', e.target.value)}
+                    >
+                      <option value="">All</option>
+                      <option value="active">Đang được sử dụng</option>
+                      <option value="inactive">Ngừng sử dụng</option>
+                    </select>
+                  </td>
                   <td></td>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
                   <tr>
-                    <td colSpan={6} className="text-center p-10 text-[var(--text-muted)]">
+                    <td colSpan={7} className="text-center p-10 text-[var(--text-muted)]">
                       Đang nạp dữ liệu danh mục vật tư từ hệ thống...
                     </td>
                   </tr>
@@ -387,7 +421,7 @@ function KhoDanhMucVatTu() {
                   return (
                     <tr 
                       key={item.maVT}
-                      className={`kb-table-row cursor-pointer transition-colors duration-150 ${isSelected ? 'bg-[var(--primary-light)]' : 'bg-transparent'}`}
+                      className={`kb-table-row cursor-pointer transition-colors duration-150 ${isSelected ? 'bg-[var(--primary-light)]' : 'bg-transparent'} ${item.isActive === false ? 'opacity-65' : ''}`}
                       onClick={() => {
                         setIsAddingNew(false);
                         setSelectedSupply(item);
@@ -404,14 +438,28 @@ function KhoDanhMucVatTu() {
                         {item.quyCach || '—'}
                       </td>
                       <td className="py-2.5 px-2 font-medium">{item.donViTinh}</td>
+                      <td className="py-2.5 px-2 text-center font-medium">
+                        {item.isActive !== false ? (
+                          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-green-100 text-green-700 whitespace-nowrap">
+                            Đang được sử dụng
+                          </span>
+                        ) : (
+                          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-gray-100 text-gray-500 whitespace-nowrap">
+                            Ngừng sử dụng
+                          </span>
+                        )}
+                      </td>
                       <td className="py-2.5 px-2 text-center">
                         <button 
-                          className="kb-icon-btn kb-icon-btn--danger mx-auto"
+                          className={`kb-icon-btn kb-icon-btn--danger mx-auto ${item.isActive === false ? 'opacity-30 cursor-not-allowed' : ''}`}
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleDeleteSupply(item.maVT, item.tenVT);
+                            if (item.isActive !== false) {
+                              handleDeleteSupply(item.maVT, item.tenVT);
+                            }
                           }}
-                          title="Xóa vật tư"
+                          disabled={item.isActive === false}
+                          title={item.isActive === false ? "Vật tư đã ngừng sử dụng" : "Ngừng sử dụng vật tư"}
                         >
                           <Trash2 size={13} />
                         </button>
@@ -421,7 +469,7 @@ function KhoDanhMucVatTu() {
                 })}
                 {!loading && displayedSupplies.length === 0 && (
                   <tr>
-                    <td colSpan={6} className="text-center p-10 text-[var(--text-muted)]">
+                    <td colSpan={7} className="text-center p-10 text-[var(--text-muted)]">
                       Không tìm thấy vật tư trùng khớp với bộ lọc tìm kiếm
                     </td>
                   </tr>
@@ -478,7 +526,7 @@ function KhoDanhMucVatTu() {
                 &gt;
               </button>
             </div>
-            <span>Hiển thị {totalItems === 0 ? 0 : startIndex + 1} - {Math.min(startIndex + displayedSupplies.length, totalItems)} trên tổng {totalItems} vật tư</span>
+            <span>Hiển thị {totalCount === 0 ? 0 : startIndex + 1} - {Math.min(startIndex + displayedSupplies.length, totalCount)} trên tổng {totalCount} vật tư</span>
           </div>
         </div>
 
@@ -558,6 +606,18 @@ function KhoDanhMucVatTu() {
                             <option key={opt} value={opt}>{opt}</option>
                           ))}
                         </select>
+                      </div>
+
+                      <div className="form-group m-0 mt-2">
+                        <label className="flex items-center gap-2 cursor-pointer text-[12.5px] font-medium text-slate-700">
+                          <input 
+                            type="checkbox"
+                            checked={formData.isActive}
+                            onChange={(e) => handleInputChange('isActive', e.target.checked)}
+                            className="w-4 h-4 text-[#10b981] rounded border-gray-300 focus:ring-[#10b981] cursor-pointer"
+                          />
+                          <span>Trạng thái hoạt động (Đang được sử dụng)</span>
+                        </label>
                       </div>
                     </div>
                   </div>

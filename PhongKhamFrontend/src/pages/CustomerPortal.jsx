@@ -11,14 +11,16 @@ import {
   apiTraCuuHoSoCongKhai, 
   apiTraCuuLichHenCongKhai,
   apiGetAvailableDoctorsOnSchedule, 
-  apiCreateDatLichKham 
+  apiCreateDatLichKham,
+  apiGetKhoaList
 } from '../utils/api';
 
 const DEPARTMENTS = [
-  { maKhoa: 'KHOA01', tenKhoa: 'Nội tổng quát' },
-  { maKhoa: 'KHOA02', tenKhoa: 'Tim mạch' },
-  { maKhoa: 'KHOA03', tenKhoa: 'Nhi khoa' },
-  { maKhoa: 'KHOA04', tenKhoa: 'Tai Mũi Họng' }
+  { maKhoa: 'KH01', tenKhoa: 'Nội tổng quát' },
+  { maKhoa: 'KH02', tenKhoa: 'Ngoại tổng quát' },
+  { maKhoa: 'KH03', tenKhoa: 'Nhi khoa' },
+  { maKhoa: 'KH04', tenKhoa: 'Sản phụ khoa' },
+  { maKhoa: 'KH05', tenKhoa: 'Tai Mũi Họng' }
 ];
 
 
@@ -59,6 +61,23 @@ function CustomerPortal() {
   const [selectedKhoa, setSelectedKhoa] = useState('all');
 
 
+
+  // State danh mục Khoa phòng lấy từ API (mặc định lấy DEPARTMENTS)
+  const [departmentsList, setDepartmentsList] = useState(DEPARTMENTS);
+
+  useEffect(() => {
+    const fetchKhoas = async () => {
+      try {
+        const res = await apiGetKhoaList('', '', 1, 100);
+        if (res && res.data && Array.isArray(res.data) && res.data.length > 0) {
+          setDepartmentsList(res.data);
+        }
+      } catch (err) {
+        console.warn('Sử dụng danh sách khoa mặc định:', err);
+      }
+    };
+    fetchKhoas();
+  }, []);
 
   // State phục vụ load danh sách bác sĩ công khai từ API
   const [doctorsList, setDoctorsList] = useState([]);
@@ -844,7 +863,7 @@ function CustomerPortal() {
                           required
                         >
                           <option value="">Chọn chuyên khoa</option>
-                          {DEPARTMENTS.map(dept => (
+                          {departmentsList.map(dept => (
                             <option key={dept.maKhoa} value={dept.maKhoa}>
                               {dept.tenKhoa}
                             </option>

@@ -483,14 +483,6 @@ function LichPhongKham() {
                   <option value="DaHuy">Đã hủy</option>
                 </select>
               </div>
-              {(apptFilters.search || apptFilters.date !== new Date().toISOString().split('T')[0] || apptFilters.trangThai !== 'ChuaTiepNhan') && (
-                <button 
-                  onClick={() => setApptFilters({ search: '', date: new Date().toISOString().split('T')[0], trangThai: 'ChuaTiepNhan' })} 
-                  className="btn-outline h-[34px] text-[12.5px] m-0 px-3 font-inherit"
-                >
-                  Xóa bộ lọc
-                </button>
-              )}
             </div>
 
             {/* Bảng danh sách */}

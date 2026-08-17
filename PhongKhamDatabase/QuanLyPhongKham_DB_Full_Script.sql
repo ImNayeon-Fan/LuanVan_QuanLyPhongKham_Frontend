@@ -7,7 +7,7 @@ END
 GO
 USE [QuanLyPhongKham_DB]
 GO
-/****** Object:  Table [dbo].[BenhNhan]    Script Date: 8/17/2026 9:29:10 PM ******/
+/****** Object:  Table [dbo].[BenhNhan]    Script Date: 8/17/2026 9:32:17 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -27,7 +27,7 @@ PRIMARY KEY CLUSTERED
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[ChiTietDichVuYTe]    Script Date: 8/17/2026 9:29:10 PM ******/
+/****** Object:  Table [dbo].[ChiTietDichVuYTe]    Script Date: 8/17/2026 9:32:17 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -44,7 +44,7 @@ PRIMARY KEY CLUSTERED
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[ChiTietDonThuoc]    Script Date: 8/17/2026 9:29:10 PM ******/
+/****** Object:  Table [dbo].[ChiTietDonThuoc]    Script Date: 8/17/2026 9:32:17 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -63,7 +63,7 @@ PRIMARY KEY CLUSTERED
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[ChiTietDonThuoc_Lo]    Script Date: 8/17/2026 9:29:10 PM ******/
+/****** Object:  Table [dbo].[ChiTietDonThuoc_Lo]    Script Date: 8/17/2026 9:32:17 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -82,7 +82,7 @@ CREATE TABLE [dbo].[ChiTietDonThuoc_Lo](
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[ChiTietPhieuKhamICD]    Script Date: 8/17/2026 9:29:10 PM ******/
+/****** Object:  Table [dbo].[ChiTietPhieuKhamICD]    Script Date: 8/17/2026 9:32:17 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -98,7 +98,7 @@ PRIMARY KEY CLUSTERED
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[ChiTietVatTu_Lo]    Script Date: 8/17/2026 9:29:10 PM ******/
+/****** Object:  Table [dbo].[ChiTietVatTu_Lo]    Script Date: 8/17/2026 9:32:17 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -117,7 +117,7 @@ CREATE TABLE [dbo].[ChiTietVatTu_Lo](
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[ChiTietVatTuPhieuKham]    Script Date: 8/17/2026 9:29:10 PM ******/
+/****** Object:  Table [dbo].[ChiTietVatTuPhieuKham]    Script Date: 8/17/2026 9:32:17 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -135,7 +135,7 @@ PRIMARY KEY CLUSTERED
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[DanhMucICD]    Script Date: 8/17/2026 9:29:10 PM ******/
+/****** Object:  Table [dbo].[DanhMucICD]    Script Date: 8/17/2026 9:32:17 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -150,7 +150,7 @@ PRIMARY KEY CLUSTERED
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[DanhMucKhoa]    Script Date: 8/17/2026 9:29:10 PM ******/
+/****** Object:  Table [dbo].[DanhMucKhoa]    Script Date: 8/17/2026 9:32:17 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -165,7 +165,7 @@ PRIMARY KEY CLUSTERED
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[DanhMucThuoc]    Script Date: 8/17/2026 9:29:10 PM ******/
+/****** Object:  Table [dbo].[DanhMucThuoc]    Script Date: 8/17/2026 9:32:17 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -183,7 +183,7 @@ PRIMARY KEY CLUSTERED
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[DanhMucVatTu]    Script Date: 8/17/2026 9:29:10 PM ******/
+/****** Object:  Table [dbo].[DanhMucVatTu]    Script Date: 8/17/2026 9:32:17 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -201,7 +201,7 @@ PRIMARY KEY CLUSTERED
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[DatLichKham]    Script Date: 8/17/2026 9:29:10 PM ******/
+/****** Object:  Table [dbo].[DatLichKham]    Script Date: 8/17/2026 9:32:17 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -222,7 +222,7 @@ PRIMARY KEY CLUSTERED
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[DichVuYTe]    Script Date: 8/17/2026 9:29:10 PM ******/
+/****** Object:  Table [dbo].[DichVuYTe]    Script Date: 8/17/2026 9:32:17 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -240,7 +240,7 @@ PRIMARY KEY CLUSTERED
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[DonThuoc]    Script Date: 8/17/2026 9:29:10 PM ******/
+/****** Object:  Table [dbo].[DonThuoc]    Script Date: 8/17/2026 9:32:17 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -257,7 +257,7 @@ PRIMARY KEY CLUSTERED
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[HoaDon]    Script Date: 8/17/2026 9:29:10 PM ******/
+/****** Object:  Table [dbo].[HoaDon]    Script Date: 8/17/2026 9:32:17 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -280,7 +280,7 @@ PRIMARY KEY CLUSTERED
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[LichLamViec]    Script Date: 8/17/2026 9:29:10 PM ******/
+/****** Object:  Table [dbo].[LichLamViec]    Script Date: 8/17/2026 9:32:17 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -300,7 +300,7 @@ PRIMARY KEY CLUSTERED
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[LoThuoc]    Script Date: 8/17/2026 9:29:10 PM ******/
+/****** Object:  Table [dbo].[LoThuoc]    Script Date: 8/17/2026 9:32:17 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -322,7 +322,7 @@ PRIMARY KEY CLUSTERED
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[LoVatTu]    Script Date: 8/17/2026 9:29:10 PM ******/
+/****** Object:  Table [dbo].[LoVatTu]    Script Date: 8/17/2026 9:32:17 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -344,7 +344,7 @@ CREATE TABLE [dbo].[LoVatTu](
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[NhaCungCap]    Script Date: 8/17/2026 9:29:10 PM ******/
+/****** Object:  Table [dbo].[NhaCungCap]    Script Date: 8/17/2026 9:32:17 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -361,7 +361,7 @@ PRIMARY KEY CLUSTERED
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[NhanVien]    Script Date: 8/17/2026 9:29:10 PM ******/
+/****** Object:  Table [dbo].[NhanVien]    Script Date: 8/17/2026 9:32:17 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -381,7 +381,7 @@ PRIMARY KEY CLUSTERED
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[PhieuKham]    Script Date: 8/17/2026 9:29:10 PM ******/
+/****** Object:  Table [dbo].[PhieuKham]    Script Date: 8/17/2026 9:32:17 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -406,7 +406,7 @@ PRIMARY KEY CLUSTERED
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[Roles]    Script Date: 8/17/2026 9:29:10 PM ******/
+/****** Object:  Table [dbo].[Roles]    Script Date: 8/17/2026 9:32:17 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -421,7 +421,7 @@ PRIMARY KEY CLUSTERED
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[Users]    Script Date: 8/17/2026 9:29:10 PM ******/
+/****** Object:  Table [dbo].[Users]    Script Date: 8/17/2026 9:32:17 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -508,145 +508,145 @@ GO
 SET IDENTITY_INSERT [dbo].[LichLamViec] ON 
 
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (1, N'NV002', CAST(N'2026-08-17' AS Date), N'Sang', N'Phong 101', N'KhÃ¡m Ná»™i tá»•ng quÃ¡t', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (1, N'NV002', CAST(N'2026-08-17' AS Date), N'Sang', N'Phong 101', N'Kham Noi tong quat', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (2, N'NV003', CAST(N'2026-08-17' AS Date), N'Chieu', N'Phong 102', N'KhÃ¡m Ngoáº¡i tá»•ng quÃ¡t', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (2, N'NV003', CAST(N'2026-08-17' AS Date), N'Chieu', N'Phong 102', N'Kham Ngoai tong quat', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (3, N'NV004', CAST(N'2026-08-17' AS Date), N'Sang', N'Phong 103', N'KhÃ¡m Nhi khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (3, N'NV004', CAST(N'2026-08-17' AS Date), N'Sang', N'Phong 103', N'Kham Nhi khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (4, N'NV009', CAST(N'2026-08-17' AS Date), N'Chieu', N'Phong 104', N'KhÃ¡m Sáº£n phá»¥ khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (4, N'NV009', CAST(N'2026-08-17' AS Date), N'Chieu', N'Phong 104', N'Kham San phu khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (5, N'NV010', CAST(N'2026-08-17' AS Date), N'Sang', N'Phong 105', N'KhÃ¡m Tai MÅ©i Há»ng', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (5, N'NV010', CAST(N'2026-08-17' AS Date), N'Sang', N'Phong 105', N'Kham Tai Mui Hong', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (6, N'NV002', CAST(N'2026-08-18' AS Date), N'Chieu', N'Phong 101', N'KhÃ¡m Ná»™i tá»•ng quÃ¡t', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (6, N'NV002', CAST(N'2026-08-18' AS Date), N'Chieu', N'Phong 101', N'Kham Noi tong quat', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (7, N'NV003', CAST(N'2026-08-18' AS Date), N'Sang', N'Phong 102', N'KhÃ¡m Ngoáº¡i tá»•ng quÃ¡t', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (7, N'NV003', CAST(N'2026-08-18' AS Date), N'Sang', N'Phong 102', N'Kham Ngoai tong quat', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (8, N'NV004', CAST(N'2026-08-18' AS Date), N'Chieu', N'Phong 103', N'KhÃ¡m Nhi khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (8, N'NV004', CAST(N'2026-08-18' AS Date), N'Chieu', N'Phong 103', N'Kham Nhi khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (9, N'NV009', CAST(N'2026-08-18' AS Date), N'Sang', N'Phong 104', N'KhÃ¡m Sáº£n phá»¥ khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (9, N'NV009', CAST(N'2026-08-18' AS Date), N'Sang', N'Phong 104', N'Kham San phu khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (10, N'NV010', CAST(N'2026-08-18' AS Date), N'Chieu', N'Phong 105', N'KhÃ¡m Tai MÅ©i Há»ng', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (10, N'NV010', CAST(N'2026-08-18' AS Date), N'Chieu', N'Phong 105', N'Kham Tai Mui Hong', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (11, N'NV002', CAST(N'2026-08-19' AS Date), N'Sang', N'Phong 101', N'KhÃ¡m Ná»™i tá»•ng quÃ¡t', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (11, N'NV002', CAST(N'2026-08-19' AS Date), N'Sang', N'Phong 101', N'Kham Noi tong quat', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (12, N'NV003', CAST(N'2026-08-19' AS Date), N'Chieu', N'Phong 102', N'KhÃ¡m Ngoáº¡i tá»•ng quÃ¡t', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (12, N'NV003', CAST(N'2026-08-19' AS Date), N'Chieu', N'Phong 102', N'Kham Ngoai tong quat', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (13, N'NV004', CAST(N'2026-08-19' AS Date), N'Sang', N'Phong 103', N'KhÃ¡m Nhi khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (13, N'NV004', CAST(N'2026-08-19' AS Date), N'Sang', N'Phong 103', N'Kham Nhi khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (14, N'NV009', CAST(N'2026-08-19' AS Date), N'Chieu', N'Phong 104', N'KhÃ¡m Sáº£n phá»¥ khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (14, N'NV009', CAST(N'2026-08-19' AS Date), N'Chieu', N'Phong 104', N'Kham San phu khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (15, N'NV010', CAST(N'2026-08-19' AS Date), N'Sang', N'Phong 105', N'KhÃ¡m Tai MÅ©i Há»ng', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (15, N'NV010', CAST(N'2026-08-19' AS Date), N'Sang', N'Phong 105', N'Kham Tai Mui Hong', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (16, N'NV002', CAST(N'2026-08-20' AS Date), N'Chieu', N'Phong 101', N'KhÃ¡m Ná»™i tá»•ng quÃ¡t', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (16, N'NV002', CAST(N'2026-08-20' AS Date), N'Chieu', N'Phong 101', N'Kham Noi tong quat', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (17, N'NV003', CAST(N'2026-08-20' AS Date), N'Sang', N'Phong 102', N'KhÃ¡m Ngoáº¡i tá»•ng quÃ¡t', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (17, N'NV003', CAST(N'2026-08-20' AS Date), N'Sang', N'Phong 102', N'Kham Ngoai tong quat', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (18, N'NV004', CAST(N'2026-08-20' AS Date), N'Chieu', N'Phong 103', N'KhÃ¡m Nhi khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (18, N'NV004', CAST(N'2026-08-20' AS Date), N'Chieu', N'Phong 103', N'Kham Nhi khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (19, N'NV009', CAST(N'2026-08-20' AS Date), N'Sang', N'Phong 104', N'KhÃ¡m Sáº£n phá»¥ khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (19, N'NV009', CAST(N'2026-08-20' AS Date), N'Sang', N'Phong 104', N'Kham San phu khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (20, N'NV010', CAST(N'2026-08-20' AS Date), N'Chieu', N'Phong 105', N'KhÃ¡m Tai MÅ©i Há»ng', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (20, N'NV010', CAST(N'2026-08-20' AS Date), N'Chieu', N'Phong 105', N'Kham Tai Mui Hong', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (21, N'NV002', CAST(N'2026-08-21' AS Date), N'Sang', N'Phong 101', N'KhÃ¡m Ná»™i tá»•ng quÃ¡t', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (21, N'NV002', CAST(N'2026-08-21' AS Date), N'Sang', N'Phong 101', N'Kham Noi tong quat', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (22, N'NV003', CAST(N'2026-08-21' AS Date), N'Chieu', N'Phong 102', N'KhÃ¡m Ngoáº¡i tá»•ng quÃ¡t', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (22, N'NV003', CAST(N'2026-08-21' AS Date), N'Chieu', N'Phong 102', N'Kham Ngoai tong quat', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (23, N'NV004', CAST(N'2026-08-21' AS Date), N'Sang', N'Phong 103', N'KhÃ¡m Nhi khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (23, N'NV004', CAST(N'2026-08-21' AS Date), N'Sang', N'Phong 103', N'Kham Nhi khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (24, N'NV009', CAST(N'2026-08-21' AS Date), N'Chieu', N'Phong 104', N'KhÃ¡m Sáº£n phá»¥ khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (24, N'NV009', CAST(N'2026-08-21' AS Date), N'Chieu', N'Phong 104', N'Kham San phu khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (25, N'NV010', CAST(N'2026-08-21' AS Date), N'Sang', N'Phong 105', N'KhÃ¡m Tai MÅ©i Há»ng', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (25, N'NV010', CAST(N'2026-08-21' AS Date), N'Sang', N'Phong 105', N'Kham Tai Mui Hong', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (26, N'NV002', CAST(N'2026-08-22' AS Date), N'Chieu', N'Phong 101', N'KhÃ¡m Ná»™i tá»•ng quÃ¡t', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (26, N'NV002', CAST(N'2026-08-22' AS Date), N'Chieu', N'Phong 101', N'Kham Noi tong quat', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (27, N'NV003', CAST(N'2026-08-22' AS Date), N'Sang', N'Phong 102', N'KhÃ¡m Ngoáº¡i tá»•ng quÃ¡t', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (27, N'NV003', CAST(N'2026-08-22' AS Date), N'Sang', N'Phong 102', N'Kham Ngoai tong quat', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (28, N'NV004', CAST(N'2026-08-22' AS Date), N'Chieu', N'Phong 103', N'KhÃ¡m Nhi khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (28, N'NV004', CAST(N'2026-08-22' AS Date), N'Chieu', N'Phong 103', N'Kham Nhi khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (29, N'NV009', CAST(N'2026-08-22' AS Date), N'Sang', N'Phong 104', N'KhÃ¡m Sáº£n phá»¥ khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (29, N'NV009', CAST(N'2026-08-22' AS Date), N'Sang', N'Phong 104', N'Kham San phu khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (30, N'NV010', CAST(N'2026-08-22' AS Date), N'Chieu', N'Phong 105', N'KhÃ¡m Tai MÅ©i Há»ng', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (30, N'NV010', CAST(N'2026-08-22' AS Date), N'Chieu', N'Phong 105', N'Kham Tai Mui Hong', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (31, N'NV002', CAST(N'2026-08-23' AS Date), N'Sang', N'Phong 101', N'KhÃ¡m Trá»±c Nháº­t', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (31, N'NV002', CAST(N'2026-08-23' AS Date), N'Sang', N'Phong 101', N'Kham Truc Nhat', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (32, N'NV003', CAST(N'2026-08-23' AS Date), N'Chieu', N'Phong 102', N'KhÃ¡m Trá»±c Nháº­t', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (32, N'NV003', CAST(N'2026-08-23' AS Date), N'Chieu', N'Phong 102', N'Kham Truc Nhat', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (33, N'NV004', CAST(N'2026-08-23' AS Date), N'Sang', N'Phong 103', N'KhÃ¡m Trá»±c Nháº­t', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (33, N'NV004', CAST(N'2026-08-23' AS Date), N'Sang', N'Phong 103', N'Kham Truc Nhat', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (34, N'NV009', CAST(N'2026-08-23' AS Date), N'Chieu', N'Phong 104', N'KhÃ¡m Trá»±c Nháº­t', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (34, N'NV009', CAST(N'2026-08-23' AS Date), N'Chieu', N'Phong 104', N'Kham Truc Nhat', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (35, N'NV010', CAST(N'2026-08-23' AS Date), N'Sang', N'Phong 105', N'KhÃ¡m Trá»±c Nháº­t', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (35, N'NV010', CAST(N'2026-08-23' AS Date), N'Sang', N'Phong 105', N'Kham Truc Nhat', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (36, N'NV002', CAST(N'2026-08-24' AS Date), N'Sang', N'Phong 101', N'KhÃ¡m Ná»™i tá»•ng quÃ¡t', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (36, N'NV002', CAST(N'2026-08-24' AS Date), N'Sang', N'Phong 101', N'Kham Noi tong quat', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (37, N'NV003', CAST(N'2026-08-24' AS Date), N'Chieu', N'Phong 102', N'KhÃ¡m Ngoáº¡i tá»•ng quÃ¡t', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (37, N'NV003', CAST(N'2026-08-24' AS Date), N'Chieu', N'Phong 102', N'Kham Ngoai tong quat', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (38, N'NV004', CAST(N'2026-08-24' AS Date), N'Sang', N'Phong 103', N'KhÃ¡m Nhi khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (38, N'NV004', CAST(N'2026-08-24' AS Date), N'Sang', N'Phong 103', N'Kham Nhi khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (39, N'NV009', CAST(N'2026-08-24' AS Date), N'Chieu', N'Phong 104', N'KhÃ¡m Sáº£n phá»¥ khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (39, N'NV009', CAST(N'2026-08-24' AS Date), N'Chieu', N'Phong 104', N'Kham San phu khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (40, N'NV010', CAST(N'2026-08-24' AS Date), N'Sang', N'Phong 105', N'KhÃ¡m Tai MÅ©i Há»ng', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (40, N'NV010', CAST(N'2026-08-24' AS Date), N'Sang', N'Phong 105', N'Kham Tai Mui Hong', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (41, N'NV002', CAST(N'2026-08-25' AS Date), N'Chieu', N'Phong 101', N'KhÃ¡m Ná»™i tá»•ng quÃ¡t', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (41, N'NV002', CAST(N'2026-08-25' AS Date), N'Chieu', N'Phong 101', N'Kham Noi tong quat', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (42, N'NV003', CAST(N'2026-08-25' AS Date), N'Sang', N'Phong 102', N'KhÃ¡m Ngoáº¡i tá»•ng quÃ¡t', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (42, N'NV003', CAST(N'2026-08-25' AS Date), N'Sang', N'Phong 102', N'Kham Ngoai tong quat', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (43, N'NV004', CAST(N'2026-08-25' AS Date), N'Chieu', N'Phong 103', N'KhÃ¡m Nhi khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (43, N'NV004', CAST(N'2026-08-25' AS Date), N'Chieu', N'Phong 103', N'Kham Nhi khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (44, N'NV009', CAST(N'2026-08-25' AS Date), N'Sang', N'Phong 104', N'KhÃ¡m Sáº£n phá»¥ khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (44, N'NV009', CAST(N'2026-08-25' AS Date), N'Sang', N'Phong 104', N'Kham San phu khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (45, N'NV010', CAST(N'2026-08-25' AS Date), N'Chieu', N'Phong 105', N'KhÃ¡m Tai MÅ©i Há»ng', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (45, N'NV010', CAST(N'2026-08-25' AS Date), N'Chieu', N'Phong 105', N'Kham Tai Mui Hong', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (46, N'NV002', CAST(N'2026-08-26' AS Date), N'Sang', N'Phong 101', N'KhÃ¡m Ná»™i tá»•ng quÃ¡t', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (46, N'NV002', CAST(N'2026-08-26' AS Date), N'Sang', N'Phong 101', N'Kham Noi tong quat', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (47, N'NV003', CAST(N'2026-08-26' AS Date), N'Chieu', N'Phong 102', N'KhÃ¡m Ngoáº¡i tá»•ng quÃ¡t', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (47, N'NV003', CAST(N'2026-08-26' AS Date), N'Chieu', N'Phong 102', N'Kham Ngoai tong quat', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (48, N'NV004', CAST(N'2026-08-26' AS Date), N'Sang', N'Phong 103', N'KhÃ¡m Nhi khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (48, N'NV004', CAST(N'2026-08-26' AS Date), N'Sang', N'Phong 103', N'Kham Nhi khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (49, N'NV009', CAST(N'2026-08-26' AS Date), N'Chieu', N'Phong 104', N'KhÃ¡m Sáº£n phá»¥ khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (49, N'NV009', CAST(N'2026-08-26' AS Date), N'Chieu', N'Phong 104', N'Kham San phu khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (50, N'NV010', CAST(N'2026-08-26' AS Date), N'Sang', N'Phong 105', N'KhÃ¡m Tai MÅ©i Há»ng', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (50, N'NV010', CAST(N'2026-08-26' AS Date), N'Sang', N'Phong 105', N'Kham Tai Mui Hong', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (51, N'NV002', CAST(N'2026-08-27' AS Date), N'Chieu', N'Phong 101', N'KhÃ¡m Ná»™i tá»•ng quÃ¡t', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (51, N'NV002', CAST(N'2026-08-27' AS Date), N'Chieu', N'Phong 101', N'Kham Noi tong quat', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (52, N'NV003', CAST(N'2026-08-27' AS Date), N'Sang', N'Phong 102', N'KhÃ¡m Ngoáº¡i tá»•ng quÃ¡t', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (52, N'NV003', CAST(N'2026-08-27' AS Date), N'Sang', N'Phong 102', N'Kham Ngoai tong quat', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (53, N'NV004', CAST(N'2026-08-27' AS Date), N'Chieu', N'Phong 103', N'KhÃ¡m Nhi khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (53, N'NV004', CAST(N'2026-08-27' AS Date), N'Chieu', N'Phong 103', N'Kham Nhi khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (54, N'NV009', CAST(N'2026-08-27' AS Date), N'Sang', N'Phong 104', N'KhÃ¡m Sáº£n phá»¥ khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (54, N'NV009', CAST(N'2026-08-27' AS Date), N'Sang', N'Phong 104', N'Kham San phu khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (55, N'NV010', CAST(N'2026-08-27' AS Date), N'Chieu', N'Phong 105', N'KhÃ¡m Tai MÅ©i Há»ng', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (55, N'NV010', CAST(N'2026-08-27' AS Date), N'Chieu', N'Phong 105', N'Kham Tai Mui Hong', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (56, N'NV002', CAST(N'2026-08-28' AS Date), N'Sang', N'Phong 101', N'KhÃ¡m Ná»™i tá»•ng quÃ¡t', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (56, N'NV002', CAST(N'2026-08-28' AS Date), N'Sang', N'Phong 101', N'Kham Noi tong quat', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (57, N'NV003', CAST(N'2026-08-28' AS Date), N'Chieu', N'Phong 102', N'KhÃ¡m Ngoáº¡i tá»•ng quÃ¡t', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (57, N'NV003', CAST(N'2026-08-28' AS Date), N'Chieu', N'Phong 102', N'Kham Ngoai tong quat', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (58, N'NV004', CAST(N'2026-08-28' AS Date), N'Sang', N'Phong 103', N'KhÃ¡m Nhi khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (58, N'NV004', CAST(N'2026-08-28' AS Date), N'Sang', N'Phong 103', N'Kham Nhi khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (59, N'NV009', CAST(N'2026-08-28' AS Date), N'Chieu', N'Phong 104', N'KhÃ¡m Sáº£n phá»¥ khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (59, N'NV009', CAST(N'2026-08-28' AS Date), N'Chieu', N'Phong 104', N'Kham San phu khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (60, N'NV010', CAST(N'2026-08-28' AS Date), N'Sang', N'Phong 105', N'KhÃ¡m Tai MÅ©i Há»ng', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (60, N'NV010', CAST(N'2026-08-28' AS Date), N'Sang', N'Phong 105', N'Kham Tai Mui Hong', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (61, N'NV002', CAST(N'2026-08-29' AS Date), N'Chieu', N'Phong 101', N'KhÃ¡m Ná»™i tá»•ng quÃ¡t', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (61, N'NV002', CAST(N'2026-08-29' AS Date), N'Chieu', N'Phong 101', N'Kham Noi tong quat', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (62, N'NV003', CAST(N'2026-08-29' AS Date), N'Sang', N'Phong 102', N'KhÃ¡m Ngoáº¡i tá»•ng quÃ¡t', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (62, N'NV003', CAST(N'2026-08-29' AS Date), N'Sang', N'Phong 102', N'Kham Ngoai tong quat', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (63, N'NV004', CAST(N'2026-08-29' AS Date), N'Chieu', N'Phong 103', N'KhÃ¡m Nhi khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (63, N'NV004', CAST(N'2026-08-29' AS Date), N'Chieu', N'Phong 103', N'Kham Nhi khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (64, N'NV009', CAST(N'2026-08-29' AS Date), N'Sang', N'Phong 104', N'KhÃ¡m Sáº£n phá»¥ khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (64, N'NV009', CAST(N'2026-08-29' AS Date), N'Sang', N'Phong 104', N'Kham San phu khoa', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (65, N'NV010', CAST(N'2026-08-29' AS Date), N'Chieu', N'Phong 105', N'KhÃ¡m Tai MÅ©i Há»ng', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (65, N'NV010', CAST(N'2026-08-29' AS Date), N'Chieu', N'Phong 105', N'Khám Tai Mui Hong', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (66, N'NV002', CAST(N'2026-08-30' AS Date), N'Sang', N'Phong 101', N'KhÃ¡m Trá»±c Nháº­t', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (66, N'NV002', CAST(N'2026-08-30' AS Date), N'Sang', N'Phong 101', N'Kham Truc Nhat', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (67, N'NV003', CAST(N'2026-08-30' AS Date), N'Chieu', N'Phong 102', N'KhÃ¡m Trá»±c Nháº­t', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (67, N'NV003', CAST(N'2026-08-30' AS Date), N'Chieu', N'Phong 102', N'Kham Truc Nhat', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (68, N'NV004', CAST(N'2026-08-30' AS Date), N'Sang', N'Phong 103', N'KhÃ¡m Trá»±c Nháº­t', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (68, N'NV004', CAST(N'2026-08-30' AS Date), N'Sang', N'Phong 103', N'Kham Truc Nhat', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (69, N'NV009', CAST(N'2026-08-30' AS Date), N'Chieu', N'Phong 104', N'KhÃ¡m Trá»±c Nháº­t', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (69, N'NV009', CAST(N'2026-08-30' AS Date), N'Chieu', N'Phong 104', N'Kham Truc Nhat', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
-INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (70, N'NV010', CAST(N'2026-08-30' AS Date), N'Sang', N'Phong 105', N'KhÃ¡m Trá»±c Nháº­t', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
+INSERT [dbo].[LichLamViec] ([MaLich], [MaNV], [NgayLamViec], [CaLamViec], [PhongKham], [GhiChu], [NgayDangKy]) VALUES (70, N'NV010', CAST(N'2026-08-30' AS Date), N'Sang', N'Phong 105', N'Kham Truc Nhat', CAST(N'2026-08-15T00:00:00.000' AS DateTime))
 GO
 SET IDENTITY_INSERT [dbo].[LichLamViec] OFF
 GO
@@ -756,7 +756,7 @@ GO
 SET ANSI_PADDING ON
 
 GO
-/****** Object:  Index [UQ__DanhMucK__AAD3615840AEBE5D]    Script Date: 8/17/2026 9:29:10 PM ******/
+/****** Object:  Index [UQ__DanhMucK__AAD3615840AEBE5D]    Script Date: 8/17/2026 9:32:17 PM ******/
 ALTER TABLE [dbo].[DanhMucKhoa] ADD UNIQUE NONCLUSTERED 
 (
 	[TenKhoa] ASC
@@ -765,7 +765,7 @@ GO
 SET ANSI_PADDING ON
 
 GO
-/****** Object:  Index [UQ_LichLamViec_BacSi_Ngay_Ca]    Script Date: 8/17/2026 9:29:10 PM ******/
+/****** Object:  Index [UQ_LichLamViec_BacSi_Ngay_Ca]    Script Date: 8/17/2026 9:32:17 PM ******/
 ALTER TABLE [dbo].[LichLamViec] ADD  CONSTRAINT [UQ_LichLamViec_BacSi_Ngay_Ca] UNIQUE NONCLUSTERED 
 (
 	[MaNV] ASC,
@@ -773,7 +773,7 @@ ALTER TABLE [dbo].[LichLamViec] ADD  CONSTRAINT [UQ_LichLamViec_BacSi_Ngay_Ca] U
 	[CaLamViec] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [UQ__NhanVien__1788CCAD06CD0FBA]    Script Date: 8/17/2026 9:29:10 PM ******/
+/****** Object:  Index [UQ__NhanVien__1788CCAD06CD0FBA]    Script Date: 8/17/2026 9:32:17 PM ******/
 ALTER TABLE [dbo].[NhanVien] ADD UNIQUE NONCLUSTERED 
 (
 	[UserID] ASC
@@ -782,7 +782,7 @@ GO
 SET ANSI_PADDING ON
 
 GO
-/****** Object:  Index [UQ__Roles__8A2B6160C015B4BC]    Script Date: 8/17/2026 9:29:10 PM ******/
+/****** Object:  Index [UQ__Roles__8A2B6160C015B4BC]    Script Date: 8/17/2026 9:32:17 PM ******/
 ALTER TABLE [dbo].[Roles] ADD UNIQUE NONCLUSTERED 
 (
 	[RoleName] ASC
@@ -791,7 +791,7 @@ GO
 SET ANSI_PADDING ON
 
 GO
-/****** Object:  Index [UQ__Users__536C85E4F3EDCB1B]    Script Date: 8/17/2026 9:29:10 PM ******/
+/****** Object:  Index [UQ__Users__536C85E4F3EDCB1B]    Script Date: 8/17/2026 9:32:17 PM ******/
 ALTER TABLE [dbo].[Users] ADD UNIQUE NONCLUSTERED 
 (
 	[Username] ASC

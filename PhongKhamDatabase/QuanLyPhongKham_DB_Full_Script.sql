@@ -7,7 +7,7 @@ END
 GO
 USE [QuanLyPhongKham_DB]
 GO
-/****** Object:  Table [dbo].[BenhNhan]    Script Date: 8/17/2026 9:26:53 PM ******/
+/****** Object:  Table [dbo].[BenhNhan]    Script Date: 8/17/2026 9:29:10 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -27,7 +27,7 @@ PRIMARY KEY CLUSTERED
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[ChiTietDichVuYTe]    Script Date: 8/17/2026 9:26:53 PM ******/
+/****** Object:  Table [dbo].[ChiTietDichVuYTe]    Script Date: 8/17/2026 9:29:10 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -44,7 +44,7 @@ PRIMARY KEY CLUSTERED
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[ChiTietDonThuoc]    Script Date: 8/17/2026 9:26:53 PM ******/
+/****** Object:  Table [dbo].[ChiTietDonThuoc]    Script Date: 8/17/2026 9:29:10 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -63,7 +63,7 @@ PRIMARY KEY CLUSTERED
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[ChiTietDonThuoc_Lo]    Script Date: 8/17/2026 9:26:53 PM ******/
+/****** Object:  Table [dbo].[ChiTietDonThuoc_Lo]    Script Date: 8/17/2026 9:29:10 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -82,7 +82,7 @@ CREATE TABLE [dbo].[ChiTietDonThuoc_Lo](
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[ChiTietPhieuKhamICD]    Script Date: 8/17/2026 9:26:53 PM ******/
+/****** Object:  Table [dbo].[ChiTietPhieuKhamICD]    Script Date: 8/17/2026 9:29:10 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -98,7 +98,7 @@ PRIMARY KEY CLUSTERED
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[ChiTietVatTu_Lo]    Script Date: 8/17/2026 9:26:53 PM ******/
+/****** Object:  Table [dbo].[ChiTietVatTu_Lo]    Script Date: 8/17/2026 9:29:10 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -117,7 +117,7 @@ CREATE TABLE [dbo].[ChiTietVatTu_Lo](
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[ChiTietVatTuPhieuKham]    Script Date: 8/17/2026 9:26:53 PM ******/
+/****** Object:  Table [dbo].[ChiTietVatTuPhieuKham]    Script Date: 8/17/2026 9:29:10 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -135,7 +135,7 @@ PRIMARY KEY CLUSTERED
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[DanhMucICD]    Script Date: 8/17/2026 9:26:53 PM ******/
+/****** Object:  Table [dbo].[DanhMucICD]    Script Date: 8/17/2026 9:29:10 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -150,7 +150,7 @@ PRIMARY KEY CLUSTERED
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[DanhMucKhoa]    Script Date: 8/17/2026 9:26:53 PM ******/
+/****** Object:  Table [dbo].[DanhMucKhoa]    Script Date: 8/17/2026 9:29:10 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -165,7 +165,7 @@ PRIMARY KEY CLUSTERED
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[DanhMucThuoc]    Script Date: 8/17/2026 9:26:53 PM ******/
+/****** Object:  Table [dbo].[DanhMucThuoc]    Script Date: 8/17/2026 9:29:10 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -183,7 +183,7 @@ PRIMARY KEY CLUSTERED
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[DanhMucVatTu]    Script Date: 8/17/2026 9:26:53 PM ******/
+/****** Object:  Table [dbo].[DanhMucVatTu]    Script Date: 8/17/2026 9:29:10 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -201,7 +201,7 @@ PRIMARY KEY CLUSTERED
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[DatLichKham]    Script Date: 8/17/2026 9:26:53 PM ******/
+/****** Object:  Table [dbo].[DatLichKham]    Script Date: 8/17/2026 9:29:10 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -222,7 +222,7 @@ PRIMARY KEY CLUSTERED
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[DichVuYTe]    Script Date: 8/17/2026 9:26:53 PM ******/
+/****** Object:  Table [dbo].[DichVuYTe]    Script Date: 8/17/2026 9:29:10 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -240,7 +240,7 @@ PRIMARY KEY CLUSTERED
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[DonThuoc]    Script Date: 8/17/2026 9:26:53 PM ******/
+/****** Object:  Table [dbo].[DonThuoc]    Script Date: 8/17/2026 9:29:10 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -257,7 +257,7 @@ PRIMARY KEY CLUSTERED
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[HoaDon]    Script Date: 8/17/2026 9:26:53 PM ******/
+/****** Object:  Table [dbo].[HoaDon]    Script Date: 8/17/2026 9:29:10 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -280,7 +280,7 @@ PRIMARY KEY CLUSTERED
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[LichLamViec]    Script Date: 8/17/2026 9:26:53 PM ******/
+/****** Object:  Table [dbo].[LichLamViec]    Script Date: 8/17/2026 9:29:10 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -300,7 +300,7 @@ PRIMARY KEY CLUSTERED
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[LoThuoc]    Script Date: 8/17/2026 9:26:53 PM ******/
+/****** Object:  Table [dbo].[LoThuoc]    Script Date: 8/17/2026 9:29:10 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -322,7 +322,7 @@ PRIMARY KEY CLUSTERED
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[LoVatTu]    Script Date: 8/17/2026 9:26:53 PM ******/
+/****** Object:  Table [dbo].[LoVatTu]    Script Date: 8/17/2026 9:29:10 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -344,7 +344,7 @@ CREATE TABLE [dbo].[LoVatTu](
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[NhaCungCap]    Script Date: 8/17/2026 9:26:53 PM ******/
+/****** Object:  Table [dbo].[NhaCungCap]    Script Date: 8/17/2026 9:29:10 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -361,7 +361,7 @@ PRIMARY KEY CLUSTERED
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[NhanVien]    Script Date: 8/17/2026 9:26:53 PM ******/
+/****** Object:  Table [dbo].[NhanVien]    Script Date: 8/17/2026 9:29:10 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -381,7 +381,7 @@ PRIMARY KEY CLUSTERED
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[PhieuKham]    Script Date: 8/17/2026 9:26:53 PM ******/
+/****** Object:  Table [dbo].[PhieuKham]    Script Date: 8/17/2026 9:29:10 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -406,7 +406,7 @@ PRIMARY KEY CLUSTERED
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[Roles]    Script Date: 8/17/2026 9:26:53 PM ******/
+/****** Object:  Table [dbo].[Roles]    Script Date: 8/17/2026 9:29:10 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -421,7 +421,7 @@ PRIMARY KEY CLUSTERED
 ) ON [PRIMARY]
 
 GO
-/****** Object:  Table [dbo].[Users]    Script Date: 8/17/2026 9:26:53 PM ******/
+/****** Object:  Table [dbo].[Users]    Script Date: 8/17/2026 9:29:10 PM ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -439,22 +439,6 @@ PRIMARY KEY CLUSTERED
 ) ON [PRIMARY]
 
 GO
-INSERT [dbo].[BenhNhan] ([MaBN], [HoTen], [NgaySinh], [GioiTinh], [SDT], [DiaChi], [TienSuBenh]) VALUES (N'BN001', N'Nguyen Thi Mai', CAST(N'1990-05-12' AS Date), N'Nu', N'0901234567', N'12 Nguyen Trai, Q.1, TP.HCM', N'Khong co tien su dac biet')
-GO
-INSERT [dbo].[BenhNhan] ([MaBN], [HoTen], [NgaySinh], [GioiTinh], [SDT], [DiaChi], [TienSuBenh]) VALUES (N'BN002', N'Tran Van Hung', CAST(N'1985-11-23' AS Date), N'Nam', N'0912345678', N'45 Le Loi, Q.3, TP.HCM', N'Tang huyet ap')
-GO
-INSERT [dbo].[BenhNhan] ([MaBN], [HoTen], [NgaySinh], [GioiTinh], [SDT], [DiaChi], [TienSuBenh]) VALUES (N'BN003', N'Le Thi Hong', CAST(N'2001-02-08' AS Date), N'Nu', N'0987654321', N'78 Cach Mang Thang 8, Q.10, TP.HCM', N'Di ung Penicillin')
-GO
-INSERT [dbo].[BenhNhan] ([MaBN], [HoTen], [NgaySinh], [GioiTinh], [SDT], [DiaChi], [TienSuBenh]) VALUES (N'BN004', N'Pham Van Duc', CAST(N'1975-09-30' AS Date), N'Nam', N'0977888999', N'22 Dien Bien Phu, Binh Thanh, TP.HCM', N'Dai thao duong type 2')
-GO
-INSERT [dbo].[BenhNhan] ([MaBN], [HoTen], [NgaySinh], [GioiTinh], [SDT], [DiaChi], [TienSuBenh]) VALUES (N'BN005', N'Do Thi Kim', CAST(N'1995-07-19' AS Date), N'Nu', N'0933222111', N'9 Truong Chinh, Tan Binh, TP.HCM', N'Khong')
-GO
-INSERT [dbo].[BenhNhan] ([MaBN], [HoTen], [NgaySinh], [GioiTinh], [SDT], [DiaChi], [TienSuBenh]) VALUES (N'BN006', N'Vu Minh Tuan', CAST(N'2010-01-15' AS Date), N'Nam', N'0966555444', N'56 Phan Xich Long, Phu Nhuan, TP.HCM', N'Hen suyen')
-GO
-INSERT [dbo].[BenhNhan] ([MaBN], [HoTen], [NgaySinh], [GioiTinh], [SDT], [DiaChi], [TienSuBenh]) VALUES (N'BN007', N'Ngo Thi Lan', CAST(N'1988-12-03' AS Date), N'Nu', N'0944333222', N'31 Nguyen Oanh, Go Vap, TP.HCM', N'Khong')
-GO
-INSERT [dbo].[BenhNhan] ([MaBN], [HoTen], [NgaySinh], [GioiTinh], [SDT], [DiaChi], [TienSuBenh]) VALUES (N'BN008', N'Bui Van Nam', CAST(N'1960-04-25' AS Date), N'Nam', N'0911222333', N'14 Hoang Van Thu, Tan Binh, TP.HCM', N'Tang huyet ap, viem khop')
-GO
 INSERT [dbo].[ChiTietDichVuYTe] ([MaDV], [TenDV], [GiaTien], [TrangThai]) VALUES (N'DV001', N'Kham tong quat', CAST(150000.00 AS Decimal(18, 2)), 1)
 GO
 INSERT [dbo].[ChiTietDichVuYTe] ([MaDV], [TenDV], [GiaTien], [TrangThai]) VALUES (N'DV002', N'Sieu am bung tong quat', CAST(250000.00 AS Decimal(18, 2)), 1)
@@ -466,70 +450,6 @@ GO
 INSERT [dbo].[ChiTietDichVuYTe] ([MaDV], [TenDV], [GiaTien], [TrangThai]) VALUES (N'DV005', N'Do dien tim (ECG)', CAST(100000.00 AS Decimal(18, 2)), 1)
 GO
 INSERT [dbo].[ChiTietDichVuYTe] ([MaDV], [TenDV], [GiaTien], [TrangThai]) VALUES (N'DV006', N'Noi soi Tai Mui Hong', CAST(180000.00 AS Decimal(18, 2)), 1)
-GO
-INSERT [dbo].[ChiTietDonThuoc] ([MaDonThuoc], [MaThuoc], [SoLuong], [CachDung], [TrangThaiPhatThuoc]) VALUES (N'DT001', N'TH001', 10, N'Uong 1 vien khi sot, cach 6 gio', 1)
-GO
-INSERT [dbo].[ChiTietDonThuoc] ([MaDonThuoc], [MaThuoc], [SoLuong], [CachDung], [TrangThaiPhatThuoc]) VALUES (N'DT001', N'TH003', 10, N'Uong 1 vien/ngay', 1)
-GO
-INSERT [dbo].[ChiTietDonThuoc] ([MaDonThuoc], [MaThuoc], [SoLuong], [CachDung], [TrangThaiPhatThuoc]) VALUES (N'DT002', N'TH008', 30, N'Uong 1 vien/ngay vao buoi sang', 1)
-GO
-INSERT [dbo].[ChiTietDonThuoc] ([MaDonThuoc], [MaThuoc], [SoLuong], [CachDung], [TrangThaiPhatThuoc]) VALUES (N'DT003', N'TH004', 14, N'Uong 1 vien truoc an sang', 1)
-GO
-INSERT [dbo].[ChiTietDonThuoc] ([MaDonThuoc], [MaThuoc], [SoLuong], [CachDung], [TrangThaiPhatThuoc]) VALUES (N'DT004', N'TH007', 30, N'Uong 1 vien x 2 lan/ngay sau an', 1)
-GO
-INSERT [dbo].[ChiTietDonThuoc] ([MaDonThuoc], [MaThuoc], [SoLuong], [CachDung], [TrangThaiPhatThuoc]) VALUES (N'DT005', N'TH002', 14, N'Uong 1 vien x 2 lan/ngay', 1)
-GO
-INSERT [dbo].[ChiTietDonThuoc] ([MaDonThuoc], [MaThuoc], [SoLuong], [CachDung], [TrangThaiPhatThuoc]) VALUES (N'DT006', N'TH006', 1, N'Xit 2 nhat khi kho tho', 0)
-GO
-INSERT [dbo].[ChiTietDonThuoc_Lo] ([MaDonThuoc], [MaThuoc], [MaLo], [SoLuongTru]) VALUES (N'DT001', N'TH001', N'LO-TH-001', 10)
-GO
-INSERT [dbo].[ChiTietDonThuoc_Lo] ([MaDonThuoc], [MaThuoc], [MaLo], [SoLuongTru]) VALUES (N'DT001', N'TH003', N'LO-TH-003', 10)
-GO
-INSERT [dbo].[ChiTietDonThuoc_Lo] ([MaDonThuoc], [MaThuoc], [MaLo], [SoLuongTru]) VALUES (N'DT002', N'TH008', N'LO-TH-008', 30)
-GO
-INSERT [dbo].[ChiTietDonThuoc_Lo] ([MaDonThuoc], [MaThuoc], [MaLo], [SoLuongTru]) VALUES (N'DT003', N'TH004', N'LO-TH-004', 14)
-GO
-INSERT [dbo].[ChiTietDonThuoc_Lo] ([MaDonThuoc], [MaThuoc], [MaLo], [SoLuongTru]) VALUES (N'DT004', N'TH007', N'LO-TH-007', 30)
-GO
-INSERT [dbo].[ChiTietDonThuoc_Lo] ([MaDonThuoc], [MaThuoc], [MaLo], [SoLuongTru]) VALUES (N'DT005', N'TH002', N'LO-TH-002', 14)
-GO
-INSERT [dbo].[ChiTietDonThuoc_Lo] ([MaDonThuoc], [MaThuoc], [MaLo], [SoLuongTru]) VALUES (N'DT006', N'TH006', N'LO-TH-006', 1)
-GO
-INSERT [dbo].[ChiTietPhieuKhamICD] ([MaPhieu], [MaICD]) VALUES (N'PK001', N'J00')
-GO
-INSERT [dbo].[ChiTietPhieuKhamICD] ([MaPhieu], [MaICD]) VALUES (N'PK002', N'I10')
-GO
-INSERT [dbo].[ChiTietPhieuKhamICD] ([MaPhieu], [MaICD]) VALUES (N'PK003', N'K29.7')
-GO
-INSERT [dbo].[ChiTietPhieuKhamICD] ([MaPhieu], [MaICD]) VALUES (N'PK004', N'E11')
-GO
-INSERT [dbo].[ChiTietPhieuKhamICD] ([MaPhieu], [MaICD]) VALUES (N'PK005', N'J00')
-GO
-INSERT [dbo].[ChiTietPhieuKhamICD] ([MaPhieu], [MaICD]) VALUES (N'PK006', N'J45')
-GO
-INSERT [dbo].[ChiTietVatTu_Lo] ([MaPhieu], [MaVatTu], [MaLo], [SoLuongTru]) VALUES (N'PK001', N'VT001', N'LO-VT-001', 1)
-GO
-INSERT [dbo].[ChiTietVatTu_Lo] ([MaPhieu], [MaVatTu], [MaLo], [SoLuongTru]) VALUES (N'PK002', N'VT003', N'LO-VT-003', 2)
-GO
-INSERT [dbo].[ChiTietVatTu_Lo] ([MaPhieu], [MaVatTu], [MaLo], [SoLuongTru]) VALUES (N'PK003', N'VT002', N'LO-VT-002', 1)
-GO
-INSERT [dbo].[ChiTietVatTu_Lo] ([MaPhieu], [MaVatTu], [MaLo], [SoLuongTru]) VALUES (N'PK004', N'VT001', N'LO-VT-001', 1)
-GO
-INSERT [dbo].[ChiTietVatTu_Lo] ([MaPhieu], [MaVatTu], [MaLo], [SoLuongTru]) VALUES (N'PK005', N'VT005', N'LO-VT-005', 1)
-GO
-INSERT [dbo].[ChiTietVatTu_Lo] ([MaPhieu], [MaVatTu], [MaLo], [SoLuongTru]) VALUES (N'PK006', N'VT006', N'LO-VT-006', 1)
-GO
-INSERT [dbo].[ChiTietVatTuPhieuKham] ([MaPhieu], [MaVatTu], [SoLuong], [DonGia]) VALUES (N'PK001', N'VT001', 1, CAST(3000.00 AS Decimal(18, 2)))
-GO
-INSERT [dbo].[ChiTietVatTuPhieuKham] ([MaPhieu], [MaVatTu], [SoLuong], [DonGia]) VALUES (N'PK002', N'VT003', 2, CAST(2000.00 AS Decimal(18, 2)))
-GO
-INSERT [dbo].[ChiTietVatTuPhieuKham] ([MaPhieu], [MaVatTu], [SoLuong], [DonGia]) VALUES (N'PK003', N'VT002', 1, CAST(15000.00 AS Decimal(18, 2)))
-GO
-INSERT [dbo].[ChiTietVatTuPhieuKham] ([MaPhieu], [MaVatTu], [SoLuong], [DonGia]) VALUES (N'PK004', N'VT001', 1, CAST(3000.00 AS Decimal(18, 2)))
-GO
-INSERT [dbo].[ChiTietVatTuPhieuKham] ([MaPhieu], [MaVatTu], [SoLuong], [DonGia]) VALUES (N'PK005', N'VT005', 1, CAST(5000.00 AS Decimal(18, 2)))
-GO
-INSERT [dbo].[ChiTietVatTuPhieuKham] ([MaPhieu], [MaVatTu], [SoLuong], [DonGia]) VALUES (N'PK006', N'VT006', 1, CAST(20000.00 AS Decimal(18, 2)))
 GO
 INSERT [dbo].[DanhMucICD] ([MaICD], [TenBenh]) VALUES (N'A09', N'Tieu chay va viem da day ruot nghi do nhiem trung')
 GO
@@ -584,64 +504,6 @@ GO
 INSERT [dbo].[DanhMucVatTu] ([MaVatTu], [TenVatTu], [QuyCach], [DonViTinh], [IsActive]) VALUES (N'VT005', N'Khau trang y te', N'Hop 50 cai', N'Cai', 1)
 GO
 INSERT [dbo].[DanhMucVatTu] ([MaVatTu], [TenVatTu], [QuyCach], [DonViTinh], [IsActive]) VALUES (N'VT006', N'Con sat trung 90 do', N'Chai 500ml', N'Chai', 1)
-GO
-SET IDENTITY_INSERT [dbo].[DatLichKham] ON 
-
-GO
-INSERT [dbo].[DatLichKham] ([MaDatLich], [HoTenKhach], [SDT], [NgayHen], [YeuCauKham], [TrangThai], [MaNV], [CaHen]) VALUES (1, N'Nguyen Thi Thu', N'0909111222', CAST(N'2026-08-20' AS Date), N'Kham tong quat dinh ky', N'ChoXacNhan', NULL, N'Sang')
-GO
-INSERT [dbo].[DatLichKham] ([MaDatLich], [HoTenKhach], [SDT], [NgayHen], [YeuCauKham], [TrangThai], [MaNV], [CaHen]) VALUES (2, N'Tran Van Long', N'0918222333', CAST(N'2026-08-21' AS Date), N'Dau bung vai ngay', N'DaXacNhan', N'NV002', N'Chieu')
-GO
-INSERT [dbo].[DatLichKham] ([MaDatLich], [HoTenKhach], [SDT], [NgayHen], [YeuCauKham], [TrangThai], [MaNV], [CaHen]) VALUES (3, N'Le Van Phuc', N'0922333444', CAST(N'2026-08-18' AS Date), N'Ho, sot nhe', N'DaTiepNhan', N'NV004', N'Sang')
-GO
-INSERT [dbo].[DatLichKham] ([MaDatLich], [HoTenKhach], [SDT], [NgayHen], [YeuCauKham], [TrangThai], [MaNV], [CaHen]) VALUES (4, N'Pham Thi Yen', N'0933444555', CAST(N'2026-08-22' AS Date), N'Kham thai dinh ky', N'ChoXacNhan', NULL, N'Sang')
-GO
-INSERT [dbo].[DatLichKham] ([MaDatLich], [HoTenKhach], [SDT], [NgayHen], [YeuCauKham], [TrangThai], [MaNV], [CaHen]) VALUES (5, N'Hoang Van Son', N'0944555666', CAST(N'2026-08-15' AS Date), N'Dau lung', N'DaHuy', N'NV003', N'Chieu')
-GO
-INSERT [dbo].[DatLichKham] ([MaDatLich], [HoTenKhach], [SDT], [NgayHen], [YeuCauKham], [TrangThai], [MaNV], [CaHen]) VALUES (6, N'Dang Thi Thao', N'0955666777', CAST(N'2026-08-23' AS Date), N'Kham tai mui hong', N'ChoXacNhan', NULL, N'Chieu')
-GO
-SET IDENTITY_INSERT [dbo].[DatLichKham] OFF
-GO
-SET IDENTITY_INSERT [dbo].[DichVuYTe] ON 
-
-GO
-INSERT [dbo].[DichVuYTe] ([MaChiTiet], [MaPhieu], [MaDV], [KetQua], [TrangThaiDichVu]) VALUES (1, N'PK001', N'DV001', N'Binh thuong', 1)
-GO
-INSERT [dbo].[DichVuYTe] ([MaChiTiet], [MaPhieu], [MaDV], [KetQua], [TrangThaiDichVu]) VALUES (2, N'PK002', N'DV005', N'Nhip tim deu, khong phat hien bat thuong', 1)
-GO
-INSERT [dbo].[DichVuYTe] ([MaChiTiet], [MaPhieu], [MaDV], [KetQua], [TrangThaiDichVu]) VALUES (3, N'PK003', N'DV002', N'Niem mac da day viem nhe', 1)
-GO
-INSERT [dbo].[DichVuYTe] ([MaChiTiet], [MaPhieu], [MaDV], [KetQua], [TrangThaiDichVu]) VALUES (4, N'PK004', N'DV003', N'Duong huyet cao hon binh thuong', 1)
-GO
-INSERT [dbo].[DichVuYTe] ([MaChiTiet], [MaPhieu], [MaDV], [KetQua], [TrangThaiDichVu]) VALUES (5, N'PK005', N'DV001', N'Hong do, amidan sung nhe', 1)
-GO
-INSERT [dbo].[DichVuYTe] ([MaChiTiet], [MaPhieu], [MaDV], [KetQua], [TrangThaiDichVu]) VALUES (6, N'PK006', N'DV004', N'Phoi thong khi ro, khong tham nhiem', 1)
-GO
-SET IDENTITY_INSERT [dbo].[DichVuYTe] OFF
-GO
-INSERT [dbo].[DonThuoc] ([MaDonThuoc], [MaPhieu], [NgayKeDon], [LoiDan]) VALUES (N'DT001', N'PK001', CAST(N'2026-08-10T00:00:00.000' AS DateTime), N'Uong thuoc sau an, tai kham neu khong do sau 3 ngay')
-GO
-INSERT [dbo].[DonThuoc] ([MaDonThuoc], [MaPhieu], [NgayKeDon], [LoiDan]) VALUES (N'DT002', N'PK002', CAST(N'2026-08-11T00:00:00.000' AS DateTime), N'Uong thuoc deu dan theo gio, han che muoi')
-GO
-INSERT [dbo].[DonThuoc] ([MaDonThuoc], [MaPhieu], [NgayKeDon], [LoiDan]) VALUES (N'DT003', N'PK003', CAST(N'2026-08-11T00:00:00.000' AS DateTime), N'Uong truoc an 30 phut, tranh do cay nong')
-GO
-INSERT [dbo].[DonThuoc] ([MaDonThuoc], [MaPhieu], [NgayKeDon], [LoiDan]) VALUES (N'DT004', N'PK004', CAST(N'2026-08-12T00:00:00.000' AS DateTime), N'Uong thuoc dung lieu, tai kham sau 1 thang')
-GO
-INSERT [dbo].[DonThuoc] ([MaDonThuoc], [MaPhieu], [NgayKeDon], [LoiDan]) VALUES (N'DT005', N'PK005', CAST(N'2026-08-13T00:00:00.000' AS DateTime), N'Uong du lieu khang sinh, tai kham neu sot keo dai')
-GO
-INSERT [dbo].[DonThuoc] ([MaDonThuoc], [MaPhieu], [NgayKeDon], [LoiDan]) VALUES (N'DT006', N'PK006', CAST(N'2026-08-14T00:00:00.000' AS DateTime), N'Xit thuoc khi len con kho tho, tai kham sau 1 tuan')
-GO
-INSERT [dbo].[HoaDon] ([MaHoaDon], [MaPhieu], [NgayThanhToan], [TongTienDichVu], [TongTienThuoc], [ThanhTien], [TrangThaiThanhToan], [MaNV], [TongTienVatTu], [PhuongThucTT]) VALUES (N'HD001', N'PK001', CAST(N'2026-08-10T00:00:00.000' AS DateTime), CAST(150000.00 AS Decimal(18, 2)), CAST(8000.00 AS Decimal(18, 2)), CAST(161000.00 AS Decimal(18, 2)), 1, N'NV007', CAST(3000.00 AS Decimal(18, 2)), N'Tien mat')
-GO
-INSERT [dbo].[HoaDon] ([MaHoaDon], [MaPhieu], [NgayThanhToan], [TongTienDichVu], [TongTienThuoc], [ThanhTien], [TrangThaiThanhToan], [MaNV], [TongTienVatTu], [PhuongThucTT]) VALUES (N'HD002', N'PK002', CAST(N'2026-08-11T00:00:00.000' AS DateTime), CAST(100000.00 AS Decimal(18, 2)), CAST(60000.00 AS Decimal(18, 2)), CAST(164000.00 AS Decimal(18, 2)), 1, N'NV007', CAST(4000.00 AS Decimal(18, 2)), N'Chuyen khoan')
-GO
-INSERT [dbo].[HoaDon] ([MaHoaDon], [MaPhieu], [NgayThanhToan], [TongTienDichVu], [TongTienThuoc], [ThanhTien], [TrangThaiThanhToan], [MaNV], [TongTienVatTu], [PhuongThucTT]) VALUES (N'HD003', N'PK003', CAST(N'2026-08-11T00:00:00.000' AS DateTime), CAST(250000.00 AS Decimal(18, 2)), CAST(25200.00 AS Decimal(18, 2)), CAST(290200.00 AS Decimal(18, 2)), 1, N'NV007', CAST(15000.00 AS Decimal(18, 2)), N'Tien mat')
-GO
-INSERT [dbo].[HoaDon] ([MaHoaDon], [MaPhieu], [NgayThanhToan], [TongTienDichVu], [TongTienThuoc], [ThanhTien], [TrangThaiThanhToan], [MaNV], [TongTienVatTu], [PhuongThucTT]) VALUES (N'HD004', N'PK004', CAST(N'2026-08-12T00:00:00.000' AS DateTime), CAST(120000.00 AS Decimal(18, 2)), CAST(42000.00 AS Decimal(18, 2)), CAST(165000.00 AS Decimal(18, 2)), 1, N'NV007', CAST(3000.00 AS Decimal(18, 2)), N'Tien mat')
-GO
-INSERT [dbo].[HoaDon] ([MaHoaDon], [MaPhieu], [NgayThanhToan], [TongTienDichVu], [TongTienThuoc], [ThanhTien], [TrangThaiThanhToan], [MaNV], [TongTienVatTu], [PhuongThucTT]) VALUES (N'HD005', N'PK005', CAST(N'2026-08-13T00:00:00.000' AS DateTime), CAST(150000.00 AS Decimal(18, 2)), CAST(35000.00 AS Decimal(18, 2)), CAST(190000.00 AS Decimal(18, 2)), 1, N'NV007', CAST(5000.00 AS Decimal(18, 2)), N'Tien mat')
-GO
-INSERT [dbo].[HoaDon] ([MaHoaDon], [MaPhieu], [NgayThanhToan], [TongTienDichVu], [TongTienThuoc], [ThanhTien], [TrangThaiThanhToan], [MaNV], [TongTienVatTu], [PhuongThucTT]) VALUES (N'HD006', N'PK006', CAST(N'2026-08-14T00:00:00.000' AS DateTime), CAST(200000.00 AS Decimal(18, 2)), CAST(25000.00 AS Decimal(18, 2)), CAST(245000.00 AS Decimal(18, 2)), 0, N'NV007', CAST(20000.00 AS Decimal(18, 2)), N'Chuyen khoan')
 GO
 SET IDENTITY_INSERT [dbo].[LichLamViec] ON 
 
@@ -851,22 +713,6 @@ INSERT [dbo].[NhanVien] ([MaNV], [UserID], [HoTen], [ChuyenMon], [SDT], [Email],
 GO
 INSERT [dbo].[NhanVien] ([MaNV], [UserID], [HoTen], [ChuyenMon], [SDT], [Email], [MaKhoa]) VALUES (N'NV010', 10, N'Hoang Bich Ngoc', N'Tai Mui Hong', N'0900000010', N'mxp1803.bacsi5@gmail.com', N'KH05')
 GO
-INSERT [dbo].[PhieuKham] ([MaPhieu], [MaBN], [NgayKham], [Mach], [NhietDo], [HuyetAp], [CanNang], [ChieuCao], [KetLuan], [TrangThaiKham], [LyDoKham], [MaNV]) VALUES (N'PK001', N'BN001', CAST(N'2026-08-10T08:30:00.000' AS DateTime), 78, 36.8, N'120/80', 55.5, 160, N'Cam cum thong thuong, ke don thuoc dieu tri trieu chung', 2, N'Ho, so mui, dau hong', N'NV002')
-GO
-INSERT [dbo].[PhieuKham] ([MaPhieu], [MaBN], [NgayKham], [Mach], [NhietDo], [HuyetAp], [CanNang], [ChieuCao], [KetLuan], [TrangThaiKham], [LyDoKham], [MaNV]) VALUES (N'PK002', N'BN002', CAST(N'2026-08-11T09:00:00.000' AS DateTime), 82, 36.6, N'150/95', 72, 170, N'Tang huyet ap, can theo doi va dung thuoc deu dan', 2, N'Dau dau, chong mat', N'NV002')
-GO
-INSERT [dbo].[PhieuKham] ([MaPhieu], [MaBN], [NgayKham], [Mach], [NhietDo], [HuyetAp], [CanNang], [ChieuCao], [KetLuan], [TrangThaiKham], [LyDoKham], [MaNV]) VALUES (N'PK003', N'BN003', CAST(N'2026-08-11T10:15:00.000' AS DateTime), 76, 37, N'110/70', 48, 158, N'Viem da day nhe, ke thuoc va tu van che do an', 2, N'Dau bung vung thuong vi', N'NV003')
-GO
-INSERT [dbo].[PhieuKham] ([MaPhieu], [MaBN], [NgayKham], [Mach], [NhietDo], [HuyetAp], [CanNang], [ChieuCao], [KetLuan], [TrangThaiKham], [LyDoKham], [MaNV]) VALUES (N'PK004', N'BN004', CAST(N'2026-08-12T08:00:00.000' AS DateTime), 80, 36.7, N'130/85', 68, 165, N'Dai thao duong type 2, dieu chinh lieu Metformin', 2, N'Tai kham dinh ky dai thao duong', N'NV002')
-GO
-INSERT [dbo].[PhieuKham] ([MaPhieu], [MaBN], [NgayKham], [Mach], [NhietDo], [HuyetAp], [CanNang], [ChieuCao], [KetLuan], [TrangThaiKham], [LyDoKham], [MaNV]) VALUES (N'PK005', N'BN005', CAST(N'2026-08-13T14:00:00.000' AS DateTime), 88, 38.2, N'115/75', 52, 162, N'Viem hong cap, ke khang sinh va ha sot', 2, N'Sot, dau hong', N'NV004')
-GO
-INSERT [dbo].[PhieuKham] ([MaPhieu], [MaBN], [NgayKham], [Mach], [NhietDo], [HuyetAp], [CanNang], [ChieuCao], [KetLuan], [TrangThaiKham], [LyDoKham], [MaNV]) VALUES (N'PK006', N'BN006', CAST(N'2026-08-14T09:30:00.000' AS DateTime), 95, 37.1, N'100/65', 30, 135, N'Con hen nhe, huong dan su dung thuoc xit', 2, N'Kho tho, ho ve dem', N'NV004')
-GO
-INSERT [dbo].[PhieuKham] ([MaPhieu], [MaBN], [NgayKham], [Mach], [NhietDo], [HuyetAp], [CanNang], [ChieuCao], [KetLuan], [TrangThaiKham], [LyDoKham], [MaNV]) VALUES (N'PK007', N'BN007', CAST(N'2026-08-14T15:00:00.000' AS DateTime), 74, 36.5, N'118/76', 54, 159, NULL, 0, N'Dau bung duoi, chua ro nguyen nhan', N'NV003')
-GO
-INSERT [dbo].[PhieuKham] ([MaPhieu], [MaBN], [NgayKham], [Mach], [NhietDo], [HuyetAp], [CanNang], [ChieuCao], [KetLuan], [TrangThaiKham], [LyDoKham], [MaNV]) VALUES (N'PK008', N'BN008', CAST(N'2026-08-15T08:45:00.000' AS DateTime), 84, 36.9, N'145/90', 75, 168, NULL, 1, N'Dau khop goi, tang huyet ap tai kham', N'NV002')
-GO
 SET IDENTITY_INSERT [dbo].[Roles] ON 
 
 GO
@@ -910,7 +756,7 @@ GO
 SET ANSI_PADDING ON
 
 GO
-/****** Object:  Index [UQ__DanhMucK__AAD3615840AEBE5D]    Script Date: 8/17/2026 9:26:53 PM ******/
+/****** Object:  Index [UQ__DanhMucK__AAD3615840AEBE5D]    Script Date: 8/17/2026 9:29:10 PM ******/
 ALTER TABLE [dbo].[DanhMucKhoa] ADD UNIQUE NONCLUSTERED 
 (
 	[TenKhoa] ASC
@@ -919,7 +765,7 @@ GO
 SET ANSI_PADDING ON
 
 GO
-/****** Object:  Index [UQ_LichLamViec_BacSi_Ngay_Ca]    Script Date: 8/17/2026 9:26:53 PM ******/
+/****** Object:  Index [UQ_LichLamViec_BacSi_Ngay_Ca]    Script Date: 8/17/2026 9:29:10 PM ******/
 ALTER TABLE [dbo].[LichLamViec] ADD  CONSTRAINT [UQ_LichLamViec_BacSi_Ngay_Ca] UNIQUE NONCLUSTERED 
 (
 	[MaNV] ASC,
@@ -927,7 +773,7 @@ ALTER TABLE [dbo].[LichLamViec] ADD  CONSTRAINT [UQ_LichLamViec_BacSi_Ngay_Ca] U
 	[CaLamViec] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
 GO
-/****** Object:  Index [UQ__NhanVien__1788CCAD06CD0FBA]    Script Date: 8/17/2026 9:26:53 PM ******/
+/****** Object:  Index [UQ__NhanVien__1788CCAD06CD0FBA]    Script Date: 8/17/2026 9:29:10 PM ******/
 ALTER TABLE [dbo].[NhanVien] ADD UNIQUE NONCLUSTERED 
 (
 	[UserID] ASC
@@ -936,7 +782,7 @@ GO
 SET ANSI_PADDING ON
 
 GO
-/****** Object:  Index [UQ__Roles__8A2B6160C015B4BC]    Script Date: 8/17/2026 9:26:53 PM ******/
+/****** Object:  Index [UQ__Roles__8A2B6160C015B4BC]    Script Date: 8/17/2026 9:29:10 PM ******/
 ALTER TABLE [dbo].[Roles] ADD UNIQUE NONCLUSTERED 
 (
 	[RoleName] ASC
@@ -945,7 +791,7 @@ GO
 SET ANSI_PADDING ON
 
 GO
-/****** Object:  Index [UQ__Users__536C85E4F3EDCB1B]    Script Date: 8/17/2026 9:26:53 PM ******/
+/****** Object:  Index [UQ__Users__536C85E4F3EDCB1B]    Script Date: 8/17/2026 9:29:10 PM ******/
 ALTER TABLE [dbo].[Users] ADD UNIQUE NONCLUSTERED 
 (
 	[Username] ASC

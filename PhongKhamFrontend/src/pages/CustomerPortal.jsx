@@ -117,41 +117,10 @@ function CustomerPortal() {
   }, []);
 
   const getDoctorExperience = (doc) => {
-    const name = (doc.hoTen || '').toLowerCase();
-    const maNV = (doc.maNV || '').toUpperCase();
-    const chuyenMon = (doc.chuyenMon || doc.tenKhoa || '').toLowerCase();
-
-    if (maNV === 'NV001' || name.includes('giang')) {
-      return 'Hơn 12 năm kinh nghiệm chẩn đoán & điều trị các bệnh lý Tai Mũi Họng phức tạp, viêm xoang mạn tính, viêm tai giữa và thực hiện phẫu thuật nội soi mũi xoang nhẹ nhàng, an toàn.';
-    }
-    if (maNV === 'NV002' || name.includes('bình') || name.includes('binh')) {
-      return 'Hơn 15 năm công tác trong ngành Nội khoa tổng quát, chuyên sâu về quản lý các bệnh lý mạn tính (tăng huyết áp, đái tháo đường, rối loạn mỡ máu) và tư vấn lộ trình chăm sóc sức khỏe định kỳ.';
-    }
-    if (maNV === 'NV003' || name.includes('cường') || name.includes('cuong')) {
-      return 'Hơn 10 năm kinh nghiệm chuyên khoa Tim mạch & Mạch máu, giàu kinh nghiệm trong thăm khám siêu âm tim, đo điện tâm đồ, theo dõi xơ vữa động mạch và tư vấn phòng ngừa đột quỵ.';
-    }
-    if (maNV === 'NV004' || name.includes('mai')) {
-      return 'Hơn 9 năm tận tâm chăm sóc sức khỏe Nhi khoa, có thế mạnh trong thăm khám điều trị bệnh lý đường hô hấp, hệ tiêu hóa ở trẻ em và tư vấn chế độ dinh dưỡng phát triển thể chất toàn diện.';
-    }
-    if (maNV === 'NV005' || name.includes('tuấn') || name.includes('tuan')) {
-      return 'Hơn 14 năm kinh nghiệm thăm khám lâm sàng, tham gia nhiều chương trình tu nghiệp chuyên sâu về y học gia đình và chẩn đoán tầm soát sớm bệnh lý nguy cơ.';
-    }
-
-    if (chuyenMon.includes('nội')) {
-      return 'Hơn 11 năm kinh nghiệm trong lĩnh vực Nội khoa, chuyên thăm khám chẩn đoán đa khoa, điều trị triệt để các triệu chứng cấp tính và theo dõi bệnh lý chuyển hóa.';
-    }
-    if (chuyenMon.includes('tai mũi họng')) {
-      return 'Hơn 10 năm kinh nghiệm điều trị các bệnh lý tai mũi họng, viêm amidan, viêm xoang dị ứng và xử trí nhanh các vấn đề đường hô hấp trên.';
-    }
-    if (chuyenMon.includes('nhi')) {
-      return 'Hơn 8 năm kinh nghiệm thăm khám và chăm sóc trẻ nhỏ, tạo cảm giác thân thiện, nhẹ nhàng giúp bé thoải mái trong suốt quá trình thăm khám.';
-    }
-    if (chuyenMon.includes('tim')) {
-      return 'Hơn 13 năm kinh nghiệm trong theo dõi tim mạch lâm sàng, kiểm soát huyết áp và hướng dẫn lối sống khỏe mạnh cho bệnh nhân cao tuổi.';
-    }
-
-    const years = 8 + (doc.hoTen ? doc.hoTen.length % 7 : 4);
-    return `Hơn ${years} năm kinh nghiệm công tác lâm sàng thực tế, tận tụy chu đáo với bệnh nhân và luôn cập nhật các phương pháp điều trị tiên tiến.`;
+    if (doc.kinhNghiem) return doc.kinhNghiem;
+    if (doc.moTa) return doc.moTa;
+    if (doc.chuyenMon) return `Bác sĩ chuyên khoa ${doc.chuyenMon}`;
+    return 'Chưa cập nhật';
   };
 
   const allDisplayDoctors = doctorsList.length > 0 
@@ -160,7 +129,7 @@ function CustomerPortal() {
         hoTen: doc.hoTen,
         chuyenMon: doc.chuyenMon || 'Bác sĩ chuyên khoa',
         khoa: doc.tenKhoa || 'Phòng khám đa khoa',
-        bangCap: 'Bác sĩ chuyên khoa tại Phòng khám Đa khoa Nhật Tảo',
+        bangCap: doc.bangCap || 'Bác sĩ chuyên khoa',
         kinhNghiem: getDoctorExperience(doc),
         status: 'Đang làm việc'
       }))

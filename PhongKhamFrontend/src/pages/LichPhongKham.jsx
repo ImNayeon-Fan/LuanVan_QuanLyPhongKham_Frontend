@@ -16,18 +16,6 @@ import {
 } from '../utils/api';
 import { useToast } from '../utils/ToastContext';
 
-// Danh sách Bác sĩ mặc định nếu API không trả về
-const DEFAULT_DOCTORS = [
-  { maNV: 'NV002', hoTen: 'BS. CK1. Nguyễn Văn An', chuyenMon: 'Nội tổng quát', maKhoa: 'KHOA01' },
-  { maNV: 'NV006', hoTen: 'BS. CK1. Đỗ Hoài Nam', chuyenMon: 'Nội tổng quát', maKhoa: 'KHOA01' },
-  { maNV: 'NV003', hoTen: 'BS. CK2. Trần Thị Bình', chuyenMon: 'Tim mạch', maKhoa: 'KHOA02' },
-  { maNV: 'NV007', hoTen: 'BS. CK1. Vũ Thị Hương', chuyenMon: 'Tim mạch', maKhoa: 'KHOA02' },
-  { maNV: 'NV004', hoTen: 'ThS. BS. Phạm Minh Cường', chuyenMon: 'Nhi khoa', maKhoa: 'KHOA03' },
-  { maNV: 'NV008', hoTen: 'BS. Nguyễn Hoàng Long', chuyenMon: 'Nhi khoa', maKhoa: 'KHOA03' },
-  { maNV: 'NV005', hoTen: 'BS. Lê Hoài Nam', chuyenMon: 'Tai Mũi Họng', maKhoa: 'KHOA04' },
-  { maNV: 'NV009', hoTen: 'BS. CK1. Hoàng Bích Ngọc', chuyenMon: 'Tai Mũi Họng', maKhoa: 'KHOA04' },
-];
-
 /**
  * Component Quản lý Lịch hẹn bệnh nhân và Lịch trực bác sĩ
  */
@@ -46,10 +34,10 @@ function LichPhongKham() {
   // Quản lý danh sách lịch hẹn & bộ lọc tìm kiếm
   const [appointments, setAppointments] = useState([]);
   const [apptFilters, setApptFilters] = useState({ search: '', date: new Date().toISOString().split('T')[0], trangThai: 'ChuaTiepNhan' });
-  
+
   // Quản lý danh sách lịch trực bác sĩ & danh sách bác sĩ phục vụ chọn lựa
   const [doctorSchedules, setDoctorSchedules] = useState([]);
-  const [doctorsList, setDoctorsList] = useState(DEFAULT_DOCTORS);
+  const [doctorsList, setDoctorsList] = useState([]);
   
   /**
    * Xác định thứ Hai của tuần chứa ngày d
@@ -152,18 +140,20 @@ function LichPhongKham() {
       const response = await apiGetStaffList('active', 1, 1000);
       if (response && response.data) {
         const docs = response.data.filter(s => s.roleID === 2 || s.roleName === 'BacSi');
+        setDoctorsList(docs);
         if (docs.length > 0) {
-          setDoctorsList(docs);
           setDocForm(prev => ({ ...prev, maNV: docs[0].maNV }));
         } else {
-          setDocForm(prev => ({ ...prev, maNV: DEFAULT_DOCTORS[0].maNV }));
+          setDocForm(prev => ({ ...prev, maNV: '' }));
         }
       } else {
-        setDocForm(prev => ({ ...prev, maNV: DEFAULT_DOCTORS[0].maNV }));
+        setDoctorsList([]);
+        setDocForm(prev => ({ ...prev, maNV: '' }));
       }
     } catch (err) {
-      console.warn('Sử dụng danh sách bác sĩ mặc định:', err);
-      setDocForm(prev => ({ ...prev, maNV: DEFAULT_DOCTORS[0].maNV }));
+      console.warn('Lỗi tải danh sách bác sĩ:', err);
+      setDoctorsList([]);
+      setDocForm(prev => ({ ...prev, maNV: '' }));
     }
   };
 

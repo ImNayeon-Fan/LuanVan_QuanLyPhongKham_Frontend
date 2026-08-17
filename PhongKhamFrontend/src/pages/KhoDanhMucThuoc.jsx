@@ -11,16 +11,6 @@ import {
   apiDeleteThuoc
 } from '../utils/api';
 
-// Dữ liệu mẫu danh mục thuốc ban đầu
-const DEFAULT_DRUGS = [
-  { maThuoc: 'TH001', tenThuoc: 'Paracetamol 500mg', hoatChat: 'Paracetamol', donViTinh: 'Viên' },
-  { maThuoc: 'TH002', tenThuoc: 'Amoxicillin 500mg', hoatChat: 'Amoxicillin trihydrate', donViTinh: 'Viên' },
-  { maThuoc: 'TH003', tenThuoc: 'Panadol Extra', hoatChat: 'Paracetamol + Caffeine', donViTinh: 'Viên' },
-  { maThuoc: 'TH004', tenThuoc: 'Decolgen Forte', hoatChat: 'Paracetamol + Chlorpheniramine', donViTinh: 'Viên' },
-  { maThuoc: 'TH005', tenThuoc: 'Gaviscon Dual Action', hoatChat: 'Sodium alginate + Calcium carbonate', donViTinh: 'Chai' },
-  { maThuoc: 'TH006', tenThuoc: 'Augmentin 1g', hoatChat: 'Amoxicillin + Clavulanic acid', donViTinh: 'Hộp' },
-];
-
 const DON_VI_OPTIONS = ['Viên', 'Hộp', 'Chai', 'Gói', 'Ống', 'Tuýp'];
 
 /**

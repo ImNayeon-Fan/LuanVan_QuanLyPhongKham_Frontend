@@ -13,14 +13,6 @@ import {
 } from '../utils/api';
 import { useToast } from '../utils/ToastContext';
 
-// Danh sách khoa mặc định (dự phòng)
-const DEFAULT_KHOA = [
-  { maKhoa: 'KHOA01', tenKhoa: 'Nội tổng quát' },
-  { maKhoa: 'KHOA02', tenKhoa: 'Tim mạch' },
-  { maKhoa: 'KHOA03', tenKhoa: 'Nhi khoa' },
-  { maKhoa: 'KHOA04', tenKhoa: 'Tai Mũi Họng' }
-];
-
 /**
  * Component Quản lý Danh mục Khoa / Chuyên môn
  */
